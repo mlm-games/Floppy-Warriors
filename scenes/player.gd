@@ -1,15 +1,16 @@
 extends BaseWarrior
+class_name Player
 
 # Player-specific properties or overrides can go here
 # For example, if player has a different draw speed:
 # const DRAW_SPEED_PLAYER: float = 70.0 
 
 func _ready() -> void:
-	super() # Calls BaseWarrior._ready()
-	# Any player-specific _ready() logic here
+	super()
+	
 
 func _physics_process(delta: float) -> void:
-	super(delta) # Calls BaseWarrior._physics_process()
+	super(delta)
 	if is_dead: return
 
 	# Player-specific aiming logic
@@ -20,13 +21,16 @@ func _physics_process(delta: float) -> void:
 		# Bow visual flip is handled by super._physics_process()
 
 func _input(event: InputEvent) -> void:
-	# super(event) # BaseWarrior doesn't have _input, so no super call needed here
 	if is_dead: return
-
 	if event.is_action_pressed("fire_bow"):
-		start_drawing_bow() # Call method from BaseWarrior
+		start_drawing_bow()
 	elif event.is_action_released("fire_bow"):
-		release_bow() # Call method from BaseWarrior
+		release_bow()
+	
+	if event.is_action_pressed("airdodge"):
+		for child_node in get_children():
+			torso.apply_central_impulse(Vector2.UP*100)
+
 
 # func get_draw_speed() -> float:
 #     return DRAW_SPEED_PLAYER # Example of overriding

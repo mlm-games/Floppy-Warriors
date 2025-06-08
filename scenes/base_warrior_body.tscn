@@ -1,9 +1,9 @@
-[gd_scene load_steps=10 format=3 uid="uid://707wjyjp2s4q"]
+[gd_scene load_steps=9 format=3 uid="uid://707wjyjp2s4q"]
 
 [ext_resource type="Script" uid="uid://cyeqivtl4t374" path="res://scenes/base_warrior.gd" id="1_byylp"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_torso"]
-size = Vector2(20, 40)
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_byylp"]
+height = 38.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_head"]
 size = Vector2(18, 18)
@@ -26,9 +26,6 @@ bg_color = Color(0.2, 0.2, 0.2, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_healthfill_default"]
 bg_color = Color(0.262745, 0.870588, 0.392157, 1)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_byylp"]
-size = Vector2(182, 20)
-
 [node name="BaseWarrior" type="Node2D"]
 script = ExtResource("1_byylp")
 
@@ -46,7 +43,7 @@ color = Color(0.3, 0.5, 0.8, 1)
 polygon = PackedVector2Array(-10, -20, 10, -20, 10, 20, -10, 20)
 
 [node name="Collision" type="CollisionShape2D" parent="Torso"]
-shape = SubResource("RectangleShape2D_torso")
+shape = SubResource("CapsuleShape2D_byylp")
 
 [node name="BowPivot" type="Node2D" parent="Torso"]
 unique_name_in_owner = true
@@ -62,6 +59,11 @@ polygon = PackedVector2Array(0, -15, 5, 0, 0, 15, -2, 15, -3, 0, -2, -15)
 unique_name_in_owner = true
 position = Vector2(39, 10)
 metadata/_edit_group_ = true
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="Torso"]
+unique_name_in_owner = true
+position = Vector2(6, -4.99999)
+scale = Vector2(3.6, 5.4)
 
 [node name="Head" type="RigidBody2D" parent="."]
 position = Vector2(0, -30)
@@ -121,14 +123,13 @@ polygon = PackedVector2Array(-13, -3.5, 13, -3.5, 13, 3.5, -13, 3.5)
 shape = SubResource("CapsuleShape2D_lowerarm")
 
 [node name="LowerLegL" type="RigidBody2D" parent="."]
-position = Vector2(-6, 33)
+position = Vector2(-7, 33)
 collision_mask = 13
 mass = 0.5
 sleeping = true
 linear_damp_mode = 1
 linear_damp = 1.0
-angular_damp_mode = 1
-angular_damp = 2.0
+angular_damp = 1000.0
 metadata/_edit_group_ = true
 
 [node name="Visual" type="Polygon2D" parent="LowerLegL"]
@@ -140,14 +141,13 @@ polygon = PackedVector2Array(-14, -4, 14, -4, 14, 4, -14, 4)
 shape = SubResource("CapsuleShape2D_lowerleg")
 
 [node name="LowerLegR" type="RigidBody2D" parent="."]
-position = Vector2(5, 33)
+position = Vector2(7, 33)
 collision_mask = 13
 mass = 0.5
 sleeping = true
 linear_damp_mode = 1
 linear_damp = 1.0
-angular_damp_mode = 1
-angular_damp = 2.0
+angular_damp = 1000.0
 metadata/_edit_group_ = true
 
 [node name="Visual" type="Polygon2D" parent="LowerLegR"]
@@ -188,14 +188,14 @@ node_a = NodePath("../Torso")
 node_b = NodePath("../LowerLegL")
 angular_limit_enabled = true
 angular_limit_lower = -0.0174533
-angular_limit_upper = 0.0174533
+angular_limit_upper = 0.0349066
 
 [node name="Joint_UpperLegR_LowerLegR" type="PinJoint2D" parent="."]
-position = Vector2(6, 20)
+position = Vector2(7, 20)
 node_a = NodePath("../Torso")
 node_b = NodePath("../LowerLegR")
 angular_limit_enabled = true
-angular_limit_lower = -0.0174533
+angular_limit_lower = -0.0349066
 angular_limit_upper = 0.0174533
 
 [node name="HealthBar" type="ProgressBar" parent="."]
@@ -208,14 +208,3 @@ theme_override_styles/background = SubResource("StyleBoxFlat_healthbg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_healthfill_default")
 value = 100.0
 show_percentage = false
-
-[node name="StaticBody2D" type="StaticBody2D" parent="."]
-top_level = true
-position = Vector2(0, 57)
-metadata/_edit_group_ = true
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(30, 0)
-shape = SubResource("RectangleShape2D_byylp")
-
-[node name="Camera2D" type="Camera2D" parent="."]

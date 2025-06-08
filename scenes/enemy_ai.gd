@@ -1,4 +1,4 @@
-extends BaseWarrior
+class_name EnemyAI extends BaseWarrior
 
 var player_node: Node2D = null # Target player
 

@@ -1,0 +1,53 @@
+[gd_scene load_steps=3 format=3 uid="uid://m3mdfmp7nyrx"]
+
+[ext_resource type="PackedScene" uid="uid://cs2fl7pw33da1" path="res://addons/my-ecosystem-template/buttons/anim-button.tscn" id="1_ij6cu"]
+[ext_resource type="Script" uid="uid://di3i1rg568gm4" path="res://scenes/title_menu.gd" id="1_she06"]
+
+[node name="TitleMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_she06")
+
+[node name="PlayButton" parent="." instance=ExtResource("1_ij6cu")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.643056
+anchor_bottom = 0.643056
+offset_left = -33.0
+offset_top = -20.0
+offset_right = 33.0
+offset_bottom = 20.0
+pivot_offset = Vector2(33, 20)
+text = "Play!"
+metadata/_edit_use_anchors_ = true
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+bbcode_enabled = true
+text = "[font_size=50][color=lightgoldenrod][shake rate=1 level=25 connected=0]Floppy Archers"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RichTextLabel2" type="RichTextLabel" parent="."]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 567.0
+offset_bottom = 717.0
+grow_horizontal = 2
+bbcode_enabled = true
+text = "[font_size=25][color=lightgoldenrod][shake rate=20 level=15 connected=1][rainbow speed=-0.25 val=4] Janky mode"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="PlayButton" to="." method="_on_play_button_pressed"]

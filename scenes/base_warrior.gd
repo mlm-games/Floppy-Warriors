@@ -13,17 +13,19 @@ signal died
 @onready var health_bar: ProgressBar = get_node_or_null("HealthBar")
 @onready var bow_visual: Polygon2D = get_node_or_null("Torso/BowPivot/BowVisual")
 
+#@onready var camera_2d: Camera2D = %Camera2D
+
 
 var is_drawing_bow: bool = false
 var current_draw_power: float = 0.0 # Renamed from draw_power for clarity
 const MAX_DRAW_POWER: float = 100.0
-const DRAW_SPEED: float = 60.0 # Can be overridden by subclasses if needed
-const MIN_LAUNCH_FORCE: float = 300.0
+const DRAW_SPEED: float = 160.0 # Can be overridden by subclasses if needed
+const MIN_LAUNCH_FORCE: float = 100.0
 const MAX_LAUNCH_FORCE_ADDITION: float = 1000.0
 
 var is_dead: bool = false
 var initial_health: int
-
+var queue_free_tween: Tween
 
 func _ready() -> void:
 	# Ensure nodes are found, especially if paths differ slightly in inherited scenes
@@ -40,6 +42,7 @@ func _ready() -> void:
 	
 	# This will be called by Player and AIPlayer's _ready too
 	# If you have specific _ready logic for Player/AI, use super()._ready()
+	%VisibleOnScreenNotifier2D.screen_exited.connect(_on_screen_exited)
 
 func _physics_process(delta: float) -> void:
 	if is_dead: return
@@ -128,7 +131,7 @@ func die() -> void:
 			child_node.set_collision_mask_value(2, true)  # Collide with "players_dead"
 			child_node.set_collision_mask_value(4, false) # Don't collide with "arrows"
 			# Optional: apply small random impulse
-			# child_node.apply_central_impulse(Vector2(randf_range(-30, 30), randf_range(-80, -10)))
+			child_node.apply_central_impulse(Vector2(randf_range(-30, 30), randf_range(-80, -10)))
 	died.emit()
 
 # Helper methods for main.gd
@@ -140,3 +143,20 @@ func set_initial_health_reference() -> void:
 	if health_bar:
 		health_bar.max_value = initial_health
 		health_bar.value = health
+
+func _on_screen_exited() -> void:
+	print("body " + self.name + " left the screen...")
+	die()
+
+
+func call_queue_free()  -> void:
+	if queue_free_tween:
+		queue_free_tween.kill()
+	
+	await get_tree().create_timer(2).timeout
+	queue_free_tween = get_tree().create_tween().set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
+	
+	queue_free_tween.tween_property(self, "modulate", Color.TRANSPARENT, 0.75)
+	queue_free_tween 
+	await queue_free_tween.finished
+	queue_free()

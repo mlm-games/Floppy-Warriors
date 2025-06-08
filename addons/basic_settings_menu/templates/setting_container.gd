@@ -12,14 +12,12 @@ extends HBoxContainer
 func _ready() -> void:
 	set_initial_state()
 	label.text = setting_name
-	if modifiable_part_of_setting is Slider:
-		modifiable_part_of_setting.value_changed.connect(_on_modifiable_part_of_setting_value_changed.bind())
-	if modifiable_part_of_setting is Range and not Slider:
-		modifiable_part_of_setting.value_changed.connect(_on_modifiable_part_of_setting_value_changed.bind())
 	if modifiable_part_of_setting is CheckButton:
 		modifiable_part_of_setting.toggled.connect(_on_modifiable_part_of_setting_value_changed.bind())
-	if modifiable_part_of_setting is OptionButton:
+	elif modifiable_part_of_setting is OptionButton:
 		modifiable_part_of_setting.item_selected.connect(_on_modifiable_part_of_setting_value_changed.bind())
+	else:
+		modifiable_part_of_setting.value_changed.connect(_on_modifiable_part_of_setting_value_changed.bind())
 	debug_audio_settings()
 
 func set_initial_state():

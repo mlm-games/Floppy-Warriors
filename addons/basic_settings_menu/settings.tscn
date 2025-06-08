@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://dp42fom7cc3n0"]
+[gd_scene load_steps=8 format=3 uid="uid://dp42fom7cc3n0"]
 
 [ext_resource type="Script" uid="uid://dmkvyoeagnqhr" path="res://addons/basic_settings_menu/settings.gd" id="2_m8nmd"]
 [ext_resource type="PackedScene" uid="uid://d1kniiwptb48v" path="res://addons/basic_settings_menu/templates/option_container.tscn" id="3_3nbua"]
 [ext_resource type="PackedScene" uid="uid://bgjpgqx8f3igh" path="res://addons/basic_settings_menu/templates/int_container.tscn" id="4_3fk36"]
 [ext_resource type="PackedScene" uid="uid://cml6f2nq185vt" path="res://addons/basic_settings_menu/templates/boolean_container.tscn" id="5_2n80e"]
+[ext_resource type="Script" uid="uid://cmo5qw3rubish" path="res://addons/my-ecosystem-template/buttons/anim_button.gd" id="6_3nbua"]
 [ext_resource type="PackedScene" uid="uid://b3c7l5vjqgd12" path="res://addons/basic_settings_menu/templates/slider_setting_container.tscn" id="6_hqw76"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2n80e"]
@@ -22,7 +23,7 @@ script = ExtResource("2_m8nmd")
 metadata/_edit_use_anchors_ = true
 
 [node name="Panel" type="Panel" parent="."]
-modulate = Color(0.531784, 0.601641, 0.781793, 1)
+modulate = Color(1, 1, 1, 0.109804)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -240,11 +241,17 @@ alignment = 2
 [node name="SaveButton" type="Button" parent="MarginContainer/VBoxContainer/BottomContainer"]
 layout_mode = 2
 size_flags_horizontal = 2
+size_flags_vertical = 4
 text = "MENU_LABEL_APPLY_AND_SAVE"
+script = ExtResource("6_3nbua")
+metadata/_custom_type_script = "uid://cmo5qw3rubish"
 
 [node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/BottomContainer"]
 layout_mode = 2
+size_flags_vertical = 4
 text = "MENU_LABEL_BACK"
+script = ExtResource("6_3nbua")
+metadata/_custom_type_script = "uid://cmo5qw3rubish"
 
 [connection signal="pressed" from="MarginContainer/VBoxContainer/BottomContainer/SaveButton" to="." method="_on_save_button_pressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/BottomContainer/BackButton" to="." method="_on_back_button_pressed"]

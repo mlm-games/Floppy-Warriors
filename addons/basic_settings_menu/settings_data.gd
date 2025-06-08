@@ -59,7 +59,7 @@ func load_settings(with_ui_update : bool = false, safe: bool = true) -> bool:
 func go_back_to_previous_scene_or_main_scene(main_scene: bool = true):
 	#TODO: add your transitions here
 	if main_scene:
-		get_tree().change_scene_to_file(ProjectSettings.get_setting("application/run/main_scene"))
+		Transitions.change_scene_with_transition(ProjectSettings.get_setting("application/run/main_scene"))
 
 static func exit_settings(settings_scene: SettingsUI):
 	settings_scene.queue_free()

@@ -1,7 +1,11 @@
 [gd_scene load_steps=3 format=3 uid="uid://2g0xhrxfpgto"]
 
 [ext_resource type="PackedScene" uid="uid://707wjyjp2s4q" path="res://scenes/base_warrior_body.tscn" id="1_3vyb7"]
-[ext_resource type="PackedScene" uid="uid://rhnn0sni11dp" path="res://scenes/arrow.tscn" id="2_g2els"]
+[ext_resource type="Script" uid="uid://83pjst3eu3u0" path="res://scenes/player.gd" id="1_hggmk"]
 
 [node name="Player" instance=ExtResource("1_3vyb7")]
-arrow_scene = ExtResource("2_g2els")
+script = ExtResource("1_hggmk")
+
+[node name="Joint_Torso_Head" parent="." index="6"]
+angular_limit_lower = -0.174533
+angular_limit_upper = 0.174533

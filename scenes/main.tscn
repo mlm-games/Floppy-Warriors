@@ -1,26 +1,12 @@
-[gd_scene load_steps=10 format=3 uid="uid://bcyg1w7ev5m1i"]
+[gd_scene load_steps=9 format=3 uid="uid://bcyg1w7ev5m1i"]
 
 [ext_resource type="Script" uid="uid://b6vd74bxuq7w2" path="res://scenes/main.gd" id="1_60wdx"]
-[ext_resource type="PackedScene" uid="uid://b0c1v2d3e4f5g" path="res://scenes/base_warrior_old.tscn" id="2_abcde"]
-[ext_resource type="Script" uid="uid://ctmn1m1kdrxag" path="res://scenes/enemy_ai.gd" id="3_jyhfs"]
+[ext_resource type="PackedScene" uid="uid://bu2vv8eojvcvj" path="res://scenes/ai_player.tscn" id="2_sugp2"]
 [ext_resource type="PackedScene" uid="uid://rhnn0sni11dp" path="res://scenes/arrow.tscn" id="4_tbgi4"]
-
-[sub_resource type="PackedScene" id="PackedScene_tefeu"]
-_bundled = {
-"base_scene": 0,
-"conn_count": 0,
-"conns": PackedInt32Array(),
-"editable_instances": [],
-"names": PackedStringArray("AIPlayer", "script", "arrow_scene", "Torso", "Visual", "Collision", "BowPivot", "position", "metadata/_edit_group_", "BowVisual", "ArrowSpawnPoint", "Head", "UpperArmL", "LowerArmL", "UpperArmR", "LowerArmR", "UpperLegL", "LowerLegL", "UpperLegR", "LowerLegR", "Joint_Torso_Head", "angular_limit_lower", "angular_limit_upper", "Joint_Torso_UpperArmL", "Joint_UpperArmL_LowerArmL", "Joint_Torso_UpperArmR", "Joint_UpperArmR_LowerArmR", "Joint_Torso_UpperLegL", "Joint_UpperLegL_LowerLegL", "Joint_Torso_UpperLegR", "Joint_UpperLegR_LowerLegR", "HealthBar"),
-"node_count": 4,
-"node_paths": [NodePath("Torso")],
-"nodes": PackedInt32Array(-1, -1, 2147483647, 0, -1, 2, 1, 1, 2, 2, 0, 1073741824, 0, 2147483647, 786438, -1, 2, 7, 3, 8, 4, 0, 1, 0, 2147483647, 262153, -1, 1, 7, 5, 0, 0, 0, 2147483647, 2883604, -1, 2, 21, 6, 22, 6, 0),
-"variants": [ExtResource("2_abcde"), ExtResource("3_jyhfs"), ExtResource("4_tbgi4"), Vector2(16, -10), true, Vector2(16, 10), -0.523599],
-"version": 3
-}
+[ext_resource type="PackedScene" uid="uid://2g0xhrxfpgto" path="res://scenes/player.tscn" id="5_tbgi4"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
-size = Vector2(1200, 50)
+size = Vector2(1200, 744)
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_sugp2"]
 
@@ -44,22 +30,25 @@ outline_color = Color(0, 0, 0, 1)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_60wdx")
-ai_player_scene = SubResource("PackedScene_tefeu")
+ai_player_scene = ExtResource("2_sugp2")
 
 [node name="Ground" type="StaticBody2D" parent="."]
 position = Vector2(600, 550)
 metadata/_edit_group_ = true
 
 [node name="Collision" type="CollisionShape2D" parent="Ground"]
+position = Vector2(0, 347)
 shape = SubResource("RectangleShape2D_ground")
 
 [node name="Sprite2D" type="Sprite2D" parent="Ground"]
-position = Vector2(-1, 2.5)
-scale = Vector2(1194, 45)
+position = Vector2(-1, 74.5)
+scale = Vector2(1194, 189)
 texture = SubResource("PlaceholderTexture2D_sugp2")
 
-[node name="Player" parent="." instance=ExtResource("2_abcde")]
-position = Vector2(200, 450)
+[node name="Player" parent="." instance=ExtResource("5_tbgi4")]
+unique_name_in_owner = true
+position = Vector2(180, 477)
+arrow_scene = ExtResource("4_tbgi4")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
@@ -88,6 +77,16 @@ text = "Player HP: 100"
 label_settings = SubResource("LabelSettings_ui_text")
 vertical_alignment = 1
 
+[node name="PlayerStaminaLabel" type="Label" parent="UI"]
+unique_name_in_owner = true
+offset_left = 20.0
+offset_top = 59.0
+offset_right = 220.0
+offset_bottom = 93.0
+text = "Player Stamina: 100"
+label_settings = SubResource("LabelSettings_ui_text")
+vertical_alignment = 1
+
 [node name="AIHealthLabel" type="Label" parent="UI"]
 unique_name_in_owner = true
 anchors_preset = 1
@@ -102,3 +101,8 @@ text = "Enemy HP: 100"
 label_settings = SubResource("LabelSettings_ui_text")
 horizontal_alignment = 2
 vertical_alignment = 1
+
+[node name="Camera2D" type="Camera2D" parent="."]
+unique_name_in_owner = true
+offset = Vector2(0, -800)
+anchor_mode = 0
