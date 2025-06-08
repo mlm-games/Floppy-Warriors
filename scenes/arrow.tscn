@@ -1,0 +1,35 @@
+[gd_scene load_steps=3 format=3 uid="uid://rhnn0sni11dp"]
+
+[ext_resource type="Script" uid="uid://0snxjpslgii6" path="res://scripts/arrow.gd" id="1_umosx"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_umosx"]
+radius = 4.0
+
+[node name="Arrow" type="RigidBody2D"]
+top_level = true
+collision_layer = 8
+collision_mask = 5
+gravity_scale = 0.2
+continuous_cd = 1
+contact_monitor = true
+max_contacts_reported = 1
+script = ExtResource("1_umosx")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_umosx")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 5.0
+one_shot = true
+
+[node name="LifespanTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 5.0
+one_shot = true
+autostart = true
+
+[node name="Art" type="Polygon2D" parent="."]
+color = Color(0.466667, 0.341176, 0.215686, 1)
+polygon = PackedVector2Array(-15, -3, 15, -3, 15, 3, -15, 3)
+uv = PackedVector2Array(-15, -3, 15, -3, 15, 3, -15, 3)

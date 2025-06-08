@@ -1,0 +1,9 @@
+[gd_scene load_steps=4 format=3 uid="uid://bu2vv8eojvcvj"]
+
+[ext_resource type="PackedScene" uid="uid://707wjyjp2s4q" path="res://scenes/base_warrior_body.tscn" id="1_8ludx"]
+[ext_resource type="Script" uid="uid://ctmn1m1kdrxag" path="res://scenes/enemy_ai.gd" id="2_k31j7"]
+[ext_resource type="PackedScene" uid="uid://rhnn0sni11dp" path="res://scenes/arrow.tscn" id="3_0mxs4"]
+
+[node name="AIPlayer" instance=ExtResource("1_8ludx")]
+script = ExtResource("2_k31j7")
+arrow_scene = ExtResource("3_0mxs4")
