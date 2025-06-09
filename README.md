@@ -1,3 +1,3 @@
-# Initial template for my godot games
+# Floppy Warriors
 
-A Tip: Try already successful stuff until you are satisfied (in the profession maintainability aspect) and can do something new
+A game janky ragdolling archers (based on ragdoll archers from crazygames (maybe bowmasters too.. slightly)
