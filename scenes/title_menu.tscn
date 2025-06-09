@@ -14,17 +14,14 @@ script = ExtResource("1_she06")
 
 [node name="PlayButton" parent="." instance=ExtResource("1_ij6cu")]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 150)
 layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.643056
-anchor_bottom = 0.643056
-offset_left = -33.0
-offset_top = -20.0
-offset_right = 33.0
-offset_bottom = 20.0
+offset_left = -108.0
+offset_top = -133.0
+offset_right = 92.0
+offset_bottom = 67.0
 pivot_offset = Vector2(33, 20)
 text = "Play!"
-metadata/_edit_use_anchors_ = true
 
 [node name="RichTextLabel" type="RichTextLabel" parent="."]
 custom_minimum_size = Vector2(0, 200)
@@ -42,8 +39,10 @@ custom_minimum_size = Vector2(0, 150)
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_top = 567.0
-offset_bottom = 717.0
+offset_left = -1.0
+offset_top = 391.0
+offset_right = -1.0
+offset_bottom = 541.0
 grow_horizontal = 2
 bbcode_enabled = true
 text = "[font_size=25][color=lightgoldenrod][shake rate=20 level=15 connected=1][rainbow speed=-0.25 val=4] Janky mode"

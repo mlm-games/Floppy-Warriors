@@ -53,6 +53,9 @@ func _physics_process(delta: float) -> void:
 		current_draw_power = min(current_draw_power + get_draw_speed() * delta, MAX_DRAW_POWER)
 		if is_instance_valid(bow_visual):
 			bow_visual.modulate = Color(1, 1 - current_draw_power / MAX_DRAW_POWER, 1 - current_draw_power / MAX_DRAW_POWER)
+			%BowPointLight2D.energy =  current_draw_power / MAX_DRAW_POWER
+	else:
+		%BowPointLight2D.energy = lerpf(%BowPointLight2D.energy, 0, delta*5)
 	
 	# Aiming logic will be specific to Player (mouse) and AI (target), so it's not here.
 	# But bow visual flip can be common

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://bcyg1w7ev5m1i"]
+[gd_scene load_steps=12 format=3 uid="uid://bcyg1w7ev5m1i"]
 
 [ext_resource type="Script" uid="uid://b6vd74bxuq7w2" path="res://scenes/main.gd" id="1_60wdx"]
 [ext_resource type="PackedScene" uid="uid://bu2vv8eojvcvj" path="res://scenes/ai_player.tscn" id="2_sugp2"]
@@ -28,6 +28,27 @@ font_size = 24
 outline_size = 2
 outline_color = Color(0, 0, 0, 1)
 
+[sub_resource type="Gradient" id="Gradient_jyhfs"]
+colors = PackedColorArray(1, 1, 1, 0.2, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_tbgi4"]
+gradient = SubResource("Gradient_jyhfs")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_tefeu"]
+particle_flag_disable_z = true
+emission_shape = 3
+emission_box_extents = Vector3(600, 300, 0)
+angle_min = -180.0
+angle_max = 180.0
+initial_velocity_min = -20.0
+initial_velocity_max = 20.0
+gravity = Vector3(0, 98, 0)
+scale_min = 0.5
+scale_max = 1.5
+color = Color(1, 0.9, 0.7, 0.1)
+
 [node name="Main" type="Node2D"]
 script = ExtResource("1_60wdx")
 ai_player_scene = ExtResource("2_sugp2")
@@ -47,6 +68,7 @@ texture = SubResource("PlaceholderTexture2D_sugp2")
 
 [node name="Player" parent="." instance=ExtResource("5_tbgi4")]
 unique_name_in_owner = true
+material = null
 position = Vector2(180, 477)
 arrow_scene = ExtResource("4_tbgi4")
 
@@ -106,3 +128,15 @@ vertical_alignment = 1
 unique_name_in_owner = true
 offset = Vector2(0, -800)
 anchor_mode = 0
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+z_index = 100
+position = Vector2(603, -96)
+amount = 50
+texture = SubResource("GradientTexture2D_tbgi4")
+lifetime = 25.0
+preprocess = 2.0
+process_material = SubResource("ParticleProcessMaterial_tefeu")
+
+[node name="CanvasModulate" type="CanvasModulate" parent="."]
+color = Color(0.45098, 0.658824, 0.792157, 1)

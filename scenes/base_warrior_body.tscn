@@ -1,24 +1,83 @@
-[gd_scene load_steps=9 format=3 uid="uid://707wjyjp2s4q"]
+[gd_scene load_steps=19 format=3 uid="uid://707wjyjp2s4q"]
 
 [ext_resource type="Script" uid="uid://cyeqivtl4t374" path="res://scenes/base_warrior.gd" id="1_byylp"]
+[ext_resource type="Shader" uid="uid://u6t1kq65diyh" path="res://addons/my-ecosystem-template/lighting/rim_light.gdshader" id="1_h4hu1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_grch8"]
+shader = ExtResource("1_h4hu1")
+shader_parameter/rim_light = false
+shader_parameter/rim_thickness = 5.0
+shader_parameter/rim_intense = 1.0
+shader_parameter/rim_extra_thick = false
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_h4hu1"]
+shader = ExtResource("1_h4hu1")
+shader_parameter/rim_light = false
+shader_parameter/rim_thickness = 5.0
+shader_parameter/rim_intense = 1.0
+shader_parameter/rim_extra_thick = false
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_byylp"]
 height = 38.0
 
+[sub_resource type="Gradient" id="Gradient_h4hu1"]
+offsets = PackedFloat32Array(0, 0.986486)
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_grch8"]
+gradient = SubResource("Gradient_h4hu1")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kki3y"]
+shader = ExtResource("1_h4hu1")
+shader_parameter/rim_light = false
+shader_parameter/rim_thickness = 5.0
+shader_parameter/rim_intense = 1.0
+shader_parameter/rim_extra_thick = false
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_head"]
 size = Vector2(18, 18)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xjrxg"]
+shader = ExtResource("1_h4hu1")
+shader_parameter/rim_light = false
+shader_parameter/rim_thickness = 5.0
+shader_parameter/rim_intense = 1.0
+shader_parameter/rim_extra_thick = false
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_lowerarm"]
 radius = 3.5
 height = 26.0
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_knr1s"]
+shader = ExtResource("1_h4hu1")
+shader_parameter/rim_light = false
+shader_parameter/rim_thickness = 5.0
+shader_parameter/rim_intense = 1.0
+shader_parameter/rim_extra_thick = false
+
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_43khk"]
 friction = 0.3
 bounce = 0.5
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_t8jd0"]
+shader = ExtResource("1_h4hu1")
+shader_parameter/rim_light = false
+shader_parameter/rim_thickness = 5.0
+shader_parameter/rim_intense = 1.0
+shader_parameter/rim_extra_thick = false
+
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_lowerleg"]
 radius = 4.0
 height = 28.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nt3h6"]
+shader = ExtResource("1_h4hu1")
+shader_parameter/rim_light = false
+shader_parameter/rim_thickness = 5.0
+shader_parameter/rim_intense = 1.0
+shader_parameter/rim_extra_thick = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_healthbg"]
 bg_color = Color(0.2, 0.2, 0.2, 1)
@@ -27,9 +86,12 @@ bg_color = Color(0.2, 0.2, 0.2, 1)
 bg_color = Color(0.262745, 0.870588, 0.392157, 1)
 
 [node name="BaseWarrior" type="Node2D"]
+material = SubResource("ShaderMaterial_grch8")
 script = ExtResource("1_byylp")
 
 [node name="Torso" type="RigidBody2D" parent="."]
+material = SubResource("ShaderMaterial_h4hu1")
+use_parent_material = true
 mass = 1.5
 sleeping = true
 linear_damp_mode = 1
@@ -60,12 +122,21 @@ unique_name_in_owner = true
 position = Vector2(39, 10)
 metadata/_edit_group_ = true
 
+[node name="BowPointLight2D" type="PointLight2D" parent="Torso/BowPivot"]
+unique_name_in_owner = true
+position = Vector2(36, 10)
+color = Color(1, 0.756863, 0.027451, 1)
+energy = 0.0
+texture = SubResource("GradientTexture2D_grch8")
+
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="Torso"]
 unique_name_in_owner = true
 position = Vector2(6, -4.99999)
 scale = Vector2(3.6, 5.4)
 
 [node name="Head" type="RigidBody2D" parent="."]
+material = SubResource("ShaderMaterial_kki3y")
+use_parent_material = true
 position = Vector2(0, -30)
 collision_mask = 13
 mass = 0.8
@@ -84,6 +155,7 @@ polygon = PackedVector2Array(-9, -9, 9, -9, 9, 9, -9, 9)
 shape = SubResource("RectangleShape2D_head")
 
 [node name="LowerArmL" type="RigidBody2D" parent="."]
+material = SubResource("ShaderMaterial_xjrxg")
 position = Vector2(-13, -7)
 collision_mask = 13
 mass = 0.4
@@ -103,6 +175,8 @@ polygon = PackedVector2Array(-13, -3.5, 13, -3.5, 13, 3.5, -13, 3.5)
 shape = SubResource("CapsuleShape2D_lowerarm")
 
 [node name="LowerArmR" type="RigidBody2D" parent="."]
+material = SubResource("ShaderMaterial_knr1s")
+use_parent_material = true
 position = Vector2(14, -7)
 collision_mask = 13
 mass = 0.4
@@ -123,6 +197,8 @@ polygon = PackedVector2Array(-13, -3.5, 13, -3.5, 13, 3.5, -13, 3.5)
 shape = SubResource("CapsuleShape2D_lowerarm")
 
 [node name="LowerLegL" type="RigidBody2D" parent="."]
+material = SubResource("ShaderMaterial_t8jd0")
+use_parent_material = true
 position = Vector2(-7, 33)
 collision_mask = 13
 mass = 0.5
@@ -141,6 +217,8 @@ polygon = PackedVector2Array(-14, -4, 14, -4, 14, 4, -14, 4)
 shape = SubResource("CapsuleShape2D_lowerleg")
 
 [node name="LowerLegR" type="RigidBody2D" parent="."]
+material = SubResource("ShaderMaterial_nt3h6")
+use_parent_material = true
 position = Vector2(7, 33)
 collision_mask = 13
 mass = 0.5
