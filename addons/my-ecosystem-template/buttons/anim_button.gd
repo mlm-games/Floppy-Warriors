@@ -19,10 +19,11 @@ func _ready() -> void:
 	button_up.connect(_on_button_up)
 	pressed.connect(_on_pressed)
 	
-	set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	#set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	#size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	
 	pivot_offset = size/2
+	if Engine.is_editor_hint(): resized.connect(func(): pivot_offset = size/2)
 	
 	hover_sound_player.bus = "Sfx"
 	click_stream_player.bus = "Sfx"
@@ -30,23 +31,19 @@ func _ready() -> void:
 	
 
 func _on_mouse_entered() -> void:
-	pivot_offset = size/2
 	reset_tween()
 	tween.tween_property(self, "scale", Vector2(1.075, 1.075), 0.15).set_trans(Tween.TRANS_CUBIC)
 	if hover_audio: hover_sound_player.play()
 
 func _on_mouse_exited() -> void:
-	pivot_offset = size/2
 	reset_tween()
 	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.15).set_trans(Tween.TRANS_CUBIC)
 
 func _on_button_down() -> void:
-	pivot_offset = size/2
 	reset_tween()
 	tween.tween_property(self, "scale", Vector2(0.95, 0.95), 0.1).set_trans(Tween.TRANS_CUBIC)
 
 func _on_button_up() -> void:
-	pivot_offset = size/2
 	reset_tween()
 	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_CUBIC)
 

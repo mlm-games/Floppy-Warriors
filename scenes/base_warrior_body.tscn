@@ -91,6 +91,7 @@ material = SubResource("ShaderMaterial_grch8")
 script = ExtResource("1_byylp")
 
 [node name="Torso" type="RigidBody2D" parent="."]
+unique_name_in_owner = true
 material = SubResource("ShaderMaterial_h4hu1")
 use_parent_material = true
 mass = 1.5

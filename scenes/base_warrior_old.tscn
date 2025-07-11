@@ -37,6 +37,7 @@ bg_color = Color(0.262745, 0.870588, 0.392157, 1)
 script = ExtResource("1_base_script")
 
 [node name="Torso" type="RigidBody2D" parent="."]
+unique_name_in_owner = true
 mass = 1.5
 sleeping = true
 linear_damp_mode = 1

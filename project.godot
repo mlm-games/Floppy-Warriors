@@ -12,15 +12,16 @@ config_version=5
 
 config/name="Floppy Warriors"
 run/main_scene="uid://m3mdfmp7nyrx"
-config/features=PackedStringArray("4.4", "Forward Plus")
+config/features=PackedStringArray("4.5", "Forward Plus")
 boot_splash/bg_color=Color(0.0924416, 0.147392, 0.187741, 1)
 config/icon="res://icon.svg"
 
 [autoload]
 
-WindowManager="*res://autoloads/window_manager.gd"
+WindowManager="res://autoloads/window_manager.gd"
 SettingsData="*res://addons/basic_settings_menu/settings_data.gd"
 Transitions="*res://addons/my-ecosystem-template/transitions/transitions.tscn"
+CommonGlobals="*res://autoloads/common_globals.gd"
 
 [display]
 
@@ -32,12 +33,16 @@ window/stretch/mode="canvas_items"
 
 enabled=PackedStringArray("res://addons/basic_settings_menu/plugin.cfg")
 
+[global_group]
+
+Player=""
+
 [gui]
 
-theme/custom="uid://c7x5y6w103a4b"
-theme/custom_font="uid://dmvkvc82ltc7s"
 theme/default_font_antialiasing=2
 theme/default_font_multichannel_signed_distance_field=true
+theme/custom="uid://c7x5y6w103a4b"
+theme/custom_font="uid://dmvkvc82ltc7s"
 
 [input]
 

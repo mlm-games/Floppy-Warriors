@@ -1,10 +1,10 @@
 [gd_resource type="Theme" load_steps=26 format=3 uid="uid://c7x5y6w103a4b"]
 
-[ext_resource type="Texture2D" uid="uid://baa4v17b447a5" path="res://assets/icons/menu_button_down_arrow.svg" id="1_61lht"]
-[ext_resource type="Texture2D" uid="uid://crev5anwy02ex" path="res://assets/icons/slider_grabber.svg" id="1_fr3gc"]
-[ext_resource type="Texture2D" uid="uid://bchs3bhcok212" path="res://assets/icons/slider_grabber_disabled.svg" id="2_27fa6"]
-[ext_resource type="Texture2D" uid="uid://discd8lsquc3l" path="res://assets/icons/slider_grabber_focused.svg" id="3_0qrya"]
-[ext_resource type="Texture2D" uid="uid://b1q1c313twmj4" path="res://assets/icons/close.svg" id="5_27fa6"]
+[ext_resource type="Texture2D" uid="uid://crev5anwy02ex" path="res://assets/icons/slider_grabber.svg" id="1_ercdv"]
+[ext_resource type="Texture2D" uid="uid://bchs3bhcok212" path="res://assets/icons/slider_grabber_disabled.svg" id="2_aaxgn"]
+[ext_resource type="Texture2D" uid="uid://discd8lsquc3l" path="res://assets/icons/slider_grabber_focused.svg" id="3_4oq3s"]
+[ext_resource type="Texture2D" uid="uid://baa4v17b447a5" path="res://assets/icons/menu_button_down_arrow.svg" id="4_lbybe"]
+[ext_resource type="Texture2D" uid="uid://b1q1c313twmj4" path="res://assets/icons/close.svg" id="5_a8j7d"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_twilight_button_disabled"]
 content_margin_left = 10.0
@@ -114,7 +114,7 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 corner_detail = 6
 
-[sub_resource type="Image" id="Image_27fa6"]
+[sub_resource type="Image" id="Image_ercdv"]
 data = {
 "data": PackedByteArray(255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 64, 255, 255, 255, 64, 255, 255, 255, 0),
 "format": "RGBA8",
@@ -124,7 +124,7 @@ data = {
 }
 
 [sub_resource type="ImageTexture" id="ImageTexture_xgtnn"]
-image = SubResource("Image_27fa6")
+image = SubResource("Image_ercdv")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_twilight_slider_track_filled"]
 bg_color = Color(0.780392, 0.690196, 0.886275, 0.8)
@@ -140,10 +140,10 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 border_color = Color(0.345098, 0.435294, 0.486275, 0.5)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_twilight_lineedit_focus"]
 content_margin_left = 6.0
@@ -196,10 +196,10 @@ corner_radius_bottom_left = 8
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_twilight_progress_fill_health"]
 bg_color = Color(0.780392, 0.690196, 0.886275, 1)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_twilight_tab_hovered"]
 content_margin_left = 8.0
@@ -285,9 +285,9 @@ CheckButton/styles/hover = SubResource("StyleBoxFlat_twilight_button_hover")
 CheckButton/styles/normal = SubResource("StyleBoxFlat_twilight_button_normal")
 CheckButton/styles/pressed = SubResource("StyleBoxFlat_twilight_button_pressed")
 HScrollBar/styles/grabber = SubResource("StyleBoxFlat_j3b7q")
-HSlider/icons/grabber = ExtResource("1_fr3gc")
-HSlider/icons/grabber_disabled = ExtResource("2_27fa6")
-HSlider/icons/grabber_highlight = ExtResource("3_0qrya")
+HSlider/icons/grabber = ExtResource("1_ercdv")
+HSlider/icons/grabber_disabled = ExtResource("2_aaxgn")
+HSlider/icons/grabber_highlight = ExtResource("3_4oq3s")
 HSlider/icons/tick = SubResource("ImageTexture_xgtnn")
 HSlider/styles/grabber_area = SubResource("StyleBoxFlat_twilight_slider_track_filled")
 HSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_twilight_slider_track_filled")
@@ -304,7 +304,7 @@ OptionButton/colors/font_color = Color(0.878431, 0.878431, 0.878431, 1)
 OptionButton/colors/font_hover_color = Color(1, 0.95, 0.85, 1)
 OptionButton/colors/font_pressed_color = Color(0.121569, 0.121569, 0.121569, 1)
 OptionButton/constants/arrow_margin = 4
-OptionButton/icons/arrow = ExtResource("1_61lht")
+OptionButton/icons/arrow = ExtResource("4_lbybe")
 OptionButton/styles/disabled = SubResource("StyleBoxFlat_twilight_button_disabled")
 OptionButton/styles/focus = SubResource("StyleBoxFlat_twilight_button_hover")
 OptionButton/styles/hover = SubResource("StyleBoxFlat_twilight_button_hover")
@@ -329,9 +329,9 @@ TabContainer/styles/tab_hovered = SubResource("StyleBoxFlat_twilight_tab_hovered
 TabContainer/styles/tab_selected = SubResource("StyleBoxFlat_twilight_tab_selected")
 TabContainer/styles/tab_unselected = SubResource("StyleBoxFlat_twilight_tab_unselected")
 VScrollBar/styles/grabber = SubResource("StyleBoxFlat_q5a3w")
-VSlider/icons/grabber = ExtResource("1_fr3gc")
-VSlider/icons/grabber_disabled = ExtResource("2_27fa6")
-VSlider/icons/grabber_highlight = ExtResource("3_0qrya")
+VSlider/icons/grabber = ExtResource("1_ercdv")
+VSlider/icons/grabber_disabled = ExtResource("2_aaxgn")
+VSlider/icons/grabber_highlight = ExtResource("3_4oq3s")
 VSlider/styles/grabber_area = SubResource("StyleBoxFlat_twilight_slider_track_filled")
 VSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_twilight_slider_track_filled")
 VSlider/styles/slider = SubResource("StyleBoxFlat_twilight_progress_bg")
@@ -339,5 +339,5 @@ Window/colors/title_color = Color(1, 0.756863, 0.027451, 1)
 Window/constants/close_h_offset = 18
 Window/constants/close_v_offset = 18
 Window/constants/title_height = 24
-Window/icons/close = ExtResource("5_27fa6")
+Window/icons/close = ExtResource("5_a8j7d")
 Window/styles/panel = SubResource("StyleBoxFlat_twilight_window_panel")

@@ -1,6 +1,6 @@
 extends Node2D
 
-@export var ai_player_scene: PackedScene # Assign AIPlayer.tscn in Inspector
+@export var ai_player_scene: PackedScene
 @export var player_start_position: Vector2 = Vector2(200, 450)
 @export var ai_start_position: Vector2 = Vector2(800, 450)
 
@@ -9,6 +9,7 @@ extends Node2D
 @onready var player_health_label: Label = %PlayerHealthLabel
 @onready var player_stamina_label: Label = %PlayerStaminaLabel
 @onready var ai_health_label: Label = $UI/AIHealthLabel
+@onready var bg_texture: TextureRect = $Background/BGTexture
 
 var current_ai_player: EnemyAI = null
 var game_over: bool = false
@@ -29,8 +30,7 @@ func _ready() -> void:
 	status_label.text = "Score: " + str(score)
 	update_health_labels()
 
-
-func _process(delta: float) -> void: # Use _process for UI updates
+func _process(_delta: float) -> void:
 	if not game_over:
 		update_health_labels()
 		%Camera2D.offset = lerp(%Camera2D.offset, Vector2.ZERO, 0.1)
@@ -59,7 +59,8 @@ func spawn_new_ai() -> void:
 	current_ai_player.set_target(player)
 	current_ai_player.set_initial_health_reference()
 	
-	current_ai_player.health += score * 0.5 # Increase difficulty slightly for new AI (e.g., more health or faster firing), For now leave at this
+	@warning_ignore("integer_division")
+	current_ai_player.health += score/2 # Increase difficulty slightly for new AI (e.g., more health or faster firing), For now leave at this
 
 
 func _on_player_died() -> void:
