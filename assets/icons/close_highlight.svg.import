@@ -1,14 +1,14 @@
 [remap]
 
 importer="svg"
-type="SVGTexture"
+type="DPITexture"
 uid="uid://ww12n24h23xs"
-path="res://.godot/imported/close_highlight.svg-cd52fd6f45c1fe76b81c88c3e32b1c55.svgtex"
+path="res://.godot/imported/close_highlight.svg-cd52fd6f45c1fe76b81c88c3e32b1c55.dpitex"
 
 [deps]
 
 source_file="res://assets/icons/close_highlight.svg"
-dest_files=["res://.godot/imported/close_highlight.svg-cd52fd6f45c1fe76b81c88c3e32b1c55.svgtex"]
+dest_files=["res://.godot/imported/close_highlight.svg-cd52fd6f45c1fe76b81c88c3e32b1c55.dpitex"]
 
 [params]
 

@@ -1,14 +1,14 @@
 [remap]
 
 importer="svg"
-type="SVGTexture"
+type="DPITexture"
 uid="uid://dwex2xq8b3pk0"
-path="res://.godot/imported/bow.svg-cdc76ec88a65f8d51cee0b4481efba20.svgtex"
+path="res://.godot/imported/bow.svg-cdc76ec88a65f8d51cee0b4481efba20.dpitex"
 
 [deps]
 
 source_file="res://assets/art/bow.svg"
-dest_files=["res://.godot/imported/bow.svg-cdc76ec88a65f8d51cee0b4481efba20.svgtex"]
+dest_files=["res://.godot/imported/bow.svg-cdc76ec88a65f8d51cee0b4481efba20.dpitex"]
 
 [params]
 
