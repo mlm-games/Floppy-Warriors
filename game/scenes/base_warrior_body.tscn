@@ -2,6 +2,11 @@
 
 [ext_resource type="Script" uid="uid://cyeqivtl4t374" path="res://game/scenes/base_warrior.gd" id="1_byylp"]
 [ext_resource type="Shader" uid="uid://u6t1kq65diyh" path="res://addons/my-ecosystem-template/lighting/rim_light.gdshader" id="1_h4hu1"]
+[ext_resource type="Texture2D" uid="uid://dwex2xq8b3pk0" path="res://game/assets/art/bow.svg" id="3_7y3eu"]
+[ext_resource type="Texture2D" uid="uid://dn35kehu7dq3d" path="res://game/assets/art/body.svg" id="3_t5u31"]
+[ext_resource type="Texture2D" uid="uid://b2r56sb707fv6" path="res://game/assets/art/head.svg" id="4_6y2oc"]
+[ext_resource type="Texture2D" uid="uid://cc0v66xiwg1oc" path="res://game/assets/art/hand.svg" id="5_lcr4p"]
+[ext_resource type="Texture2D" uid="uid://cy11j7qowtv5u" path="res://game/assets/art/leg.svg" id="6_dhiud"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_grch8"]
 shader = ExtResource("1_h4hu1")
@@ -103,8 +108,14 @@ angular_damp = 3.0
 metadata/_edit_group_ = true
 
 [node name="Visual" type="Polygon2D" parent="Torso" unique_id=2059346226]
+visible = false
 color = Color(0.3, 0.5, 0.8, 1)
 polygon = PackedVector2Array(-10, -20, 10, -20, 10, 20, -10, 20)
+
+[node name="Body" type="Sprite2D" parent="Torso" unique_id=2117917235]
+position = Vector2(0.5824996, -3.5762787e-07)
+scale = Vector2(0.044, 0.049)
+texture = ExtResource("3_t5u31")
 
 [node name="Collision" type="CollisionShape2D" parent="Torso" unique_id=234433675]
 shape = SubResource("CapsuleShape2D_byylp")
@@ -113,8 +124,8 @@ shape = SubResource("CapsuleShape2D_byylp")
 unique_name_in_owner = true
 position = Vector2(0, -10)
 
-[node name="BowVisual" type="Polygon2D" parent="Torso/BowPivot" unique_id=1457305799]
-unique_name_in_owner = true
+[node name="TestBowVisual" type="Polygon2D" parent="Torso/BowPivot" unique_id=1457305799]
+visible = false
 position = Vector2(34, 10)
 color = Color(0.5, 0.3, 0.1, 1)
 polygon = PackedVector2Array(0, -15, 5, 0, 0, 15, -2, 15, -3, 0, -2, -15)
@@ -131,6 +142,13 @@ color = Color(1, 0.756863, 0.027451, 1)
 energy = 0.0
 texture = SubResource("GradientTexture2D_grch8")
 texture_scale = 1.78
+
+[node name="BowVisual" type="Sprite2D" parent="Torso/BowPivot" unique_id=812997167]
+unique_name_in_owner = true
+position = Vector2(34, 10)
+scale = Vector2(0.775, 0.775)
+texture = ExtResource("3_7y3eu")
+flip_h = true
 
 [node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="Torso" unique_id=844281152]
 unique_name_in_owner = true
@@ -150,12 +168,18 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="Head" unique_id=464865282]
+[node name="TestVisual" type="Polygon2D" parent="Head" unique_id=464865282]
+visible = false
 color = Color(0.9, 0.7, 0.5, 1)
 polygon = PackedVector2Array(-9, -9, 9, -9, 9, 9, -9, 9)
 
 [node name="Collision" type="CollisionShape2D" parent="Head" unique_id=1176671172]
 shape = SubResource("RectangleShape2D_head")
+
+[node name="Visual" type="Sprite2D" parent="Head" unique_id=2130808811]
+position = Vector2(1.9073486e-06, 3.8146973e-06)
+scale = Vector2(0.045, 0.045)
+texture = ExtResource("4_6y2oc")
 
 [node name="LowerArmL" type="RigidBody2D" parent="." unique_id=1396160316]
 material = SubResource("ShaderMaterial_xjrxg")
@@ -169,13 +193,20 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="LowerArmL" unique_id=432710790]
+[node name="TestVisual" type="Polygon2D" parent="LowerArmL" unique_id=432710790]
+visible = false
 rotation = 1.5708
 color = Color(0.9, 0.7, 0.5, 1)
-polygon = PackedVector2Array(-13, -3.5, 13, -3.5, 13, 3.5, -13, 3.5)
+polygon = PackedVector2Array(-13, -3.5, 12.999985, -4.0000477, 13, 3.5, -13, 3.5)
+uv = PackedVector2Array(-13, -3.5, 13, -3.5, 13, 3.5, -13, 3.5)
 
 [node name="Collision" type="CollisionShape2D" parent="LowerArmL" unique_id=1293877809]
 shape = SubResource("CapsuleShape2D_lowerarm")
+
+[node name="Hand" type="Sprite2D" parent="LowerArmL" unique_id=1686939332]
+position = Vector2(0, 1)
+scale = Vector2(0.03759446, 0.05)
+texture = ExtResource("5_lcr4p")
 
 [node name="LowerArmR" type="RigidBody2D" parent="." unique_id=1970353265]
 material = SubResource("ShaderMaterial_knr1s")
@@ -191,13 +222,19 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="LowerArmR" unique_id=1277088805]
+[node name="TestVisual" type="Polygon2D" parent="LowerArmR" unique_id=1277088805]
+visible = false
 rotation = 1.5708
 color = Color(0.9, 0.7, 0.5, 1)
 polygon = PackedVector2Array(-13, -3.5, 13, -3.5, 13, 3.5, -13, 3.5)
 
 [node name="Collision" type="CollisionShape2D" parent="LowerArmR" unique_id=142468542]
 shape = SubResource("CapsuleShape2D_lowerarm")
+
+[node name="Hand2" type="Sprite2D" parent="LowerArmR" unique_id=41022432]
+position = Vector2(0, 1)
+scale = Vector2(0.03759446, 0.05)
+texture = ExtResource("5_lcr4p")
 
 [node name="LowerLegL" type="RigidBody2D" parent="." unique_id=1168387115]
 material = SubResource("ShaderMaterial_t8jd0")
@@ -211,10 +248,16 @@ linear_damp = 1.0
 angular_damp = 1000.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="LowerLegL" unique_id=440602992]
+[node name="TestVisual" type="Polygon2D" parent="LowerLegL" unique_id=440602992]
+visible = false
 rotation = 1.5708
 color = Color(0.9, 0.7, 0.5, 1)
 polygon = PackedVector2Array(-14, -4, 14, -4, 14, 4, -14, 4)
+
+[node name="Leg" type="Sprite2D" parent="LowerLegL" unique_id=1757925013]
+position = Vector2(0, 1)
+scale = Vector2(0.055, 0.055)
+texture = ExtResource("6_dhiud")
 
 [node name="Collision" type="CollisionShape2D" parent="LowerLegL" unique_id=534525328]
 shape = SubResource("CapsuleShape2D_lowerleg")
@@ -231,10 +274,15 @@ linear_damp = 1.0
 angular_damp = 1000.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="LowerLegR" unique_id=743947940]
+[node name="TestVisual" type="Polygon2D" parent="LowerLegR" unique_id=743947940]
 rotation = 1.5708
 color = Color(0.9, 0.7, 0.5, 1)
 polygon = PackedVector2Array(-14, -4, 14, -4, 14, 4, -14, 4)
+
+[node name="Leg" type="Sprite2D" parent="LowerLegR" unique_id=674283144]
+position = Vector2(3.8146973e-06, 1)
+scale = Vector2(0.055, 0.055)
+texture = ExtResource("6_dhiud")
 
 [node name="Collision" type="CollisionShape2D" parent="LowerLegR" unique_id=1164905773]
 shape = SubResource("CapsuleShape2D_lowerleg")

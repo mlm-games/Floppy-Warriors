@@ -11,7 +11,7 @@ signal died
 @onready var bow_pivot: Node2D = %BowPivot
 @onready var arrow_spawn_point: Marker2D = %ArrowSpawnPoint
 @onready var health_bar: ProgressBar = %HealthBar
-@onready var bow_visual: Polygon2D = %BowVisual
+@onready var bow_visual: Sprite2D = %BowVisual
 
 var is_drawing_bow: bool = false
 var current_draw_power: float = 0.0
