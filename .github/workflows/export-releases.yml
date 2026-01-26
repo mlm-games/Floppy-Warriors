@@ -19,7 +19,7 @@ on:
       mark_prerelease:
         description: 'Mark as prerelease'
         required: true
-        default: 'false'
+        default: false
         type: boolean
       # publish_to_choco:
       #   description: 'Publish to Chocolatey'
@@ -34,7 +34,7 @@ on:
       publish_to_aur:
         description: 'Publish to AUR'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 jobs:
