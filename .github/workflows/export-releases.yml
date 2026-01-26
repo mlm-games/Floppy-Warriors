@@ -76,7 +76,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-            - name: Commit Previous Version Code
+      - name: Commit Previous Version Code
         run: |
           echo "Previous version code: ${{ steps.prev_version.outputs.prev_code }}"
           echo "New version code: ${{ steps.prev_version.outputs.new_code }}"
