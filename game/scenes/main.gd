@@ -96,7 +96,7 @@ func _input(event: InputEvent) -> void:
 		get_tree().reload_current_scene()
 	
 	if event.is_action_pressed("settings"):
-		Transitions.change_scene_with_transition("uid://dp42fom7cc3n0")
+		STransitions.change_scene_with_transition("uid://dp42fom7cc3n0")
 
 
 func tween_camera_on_player_death()  -> void:

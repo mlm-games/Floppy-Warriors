@@ -18,20 +18,28 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-WindowManager="res://game/scripts/autoloads/window_manager.gd"
-SettingsData="*uid://cm7tj20jlgtlh"
-Transitions="*res://addons/my-ecosystem-template/transitions/transitions.tscn"
+WindowManager="*res://game/scripts/autoloads/window_manager.gd"
 CommonGlobals="*res://game/scripts/autoloads/common_globals.gd"
+STransitions="*res://addons/my-ecosystem-template/transitions/screen_transitions.tscn"
+UiAudioM="*res://addons/my-ecosystem-template/managers/audio/ui_audio_manager.gd"
+AudioM="*res://addons/my-ecosystem-template/managers/audio/autoload_audio_manager.gd"
+PauseMenu="*res://addons/my-ecosystem-template/pause-menu/pause_menu_layer.tscn"
+A="*res://game/scenes/autoloads/autoload.tscn"
+SettingsApplier="*uid://b5jtf7dbnupqj"
+SettingsManager="*uid://wfehnu87uuxk"
+DebugShortcutsManager="*res://addons/my-ecosystem-template/managers/debug_shortcuts_manager.gd"
+LayerNames="*uid://dpotfesii40yn"
 
 [display]
 
 window/size/viewport_width=1200
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
+window/handheld/orientation=4
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/basic_settings_menu/plugin.cfg")
+enabled=PackedStringArray("res://addons/basic_settings_menu/plugin.cfg", "res://addons/layer_names/plugin.cfg")
 
 [global_group]
 
@@ -72,17 +80,33 @@ settings={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)
 ]
 }
+undo={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":true,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":90,"key_label":0,"unicode":122,"location":0,"echo":false,"script":null)
+]
+}
+redo={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":true,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":89,"key_label":0,"unicode":121,"location":0,"echo":false,"script":null)
+, Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":true,"ctrl_pressed":true,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":90,"key_label":0,"unicode":90,"location":0,"echo":false,"script":null)
+]
+}
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://locales/translations.ar.translation", "res://locales/translations.bg.translation", "res://locales/translations.br.translation", "res://locales/translations.bs.translation", "res://locales/translations.cs.translation", "res://locales/translations.da.translation", "res://locales/translations.de.translation", "res://locales/translations.el.translation", "res://locales/translations.en.translation", "res://locales/translations.es.translation", "res://locales/translations.fi.translation", "res://locales/translations.fr.translation", "res://locales/translations.he.translation", "res://locales/translations.hu.translation", "res://locales/translations.it.translation", "res://locales/translations.ja.translation", "res://locales/translations.ko.translation", "res://locales/translations.lzh.translation", "res://locales/translations.nb.translation", "res://locales/translations.nl.translation", "res://locales/translations.pl.translation", "res://locales/translations.pt.translation", "res://locales/translations.ro.translation", "res://locales/translations.ru.translation", "res://locales/translations.sv.translation", "res://locales/translations.th.translation", "res://locales/translations.tr.translation", "res://locales/translations.zh.translation")
+locale/translations=PackedStringArray("res://locale/translations.ar.translation", "res://locale/translations.bg.translation", "res://locale/translations.br.translation", "res://locale/translations.bs.translation", "res://locale/translations.cs.translation", "res://locale/translations.da.translation", "res://locale/translations.de.translation", "res://locale/translations.el.translation", "res://locale/translations.en.translation", "res://locale/translations.es.translation", "res://locale/translations.fi.translation", "res://locale/translations.fr.translation", "res://locale/translations.he.translation", "res://locale/translations.hu.translation", "res://locale/translations.it.translation", "res://locale/translations.ja.translation", "res://locale/translations.ko.translation", "res://locale/translations.lzh.translation", "res://locale/translations.nb.translation", "res://locale/translations.nl.translation", "res://locale/translations.pl.translation", "res://locale/translations.pt.translation", "res://locale/translations.ro.translation", "res://locale/translations.ru.translation", "res://locale/translations.sv.translation", "res://locale/translations.th.translation", "res://locale/translations.tr.translation", "res://locale/translations.zh.translation")
 
 [layer_names]
 
-2d_render/layer_1="bodies_active"
-2d_render/layer_2="bodies_dead"
-2d_render/layer_3="ground"
-2d_render/layer_4="arrows"
+2d_render/layer_1="BodiesActive"
+2d_render/layer_2="BodiesDead"
+2d_render/layer_3="Ground"
+2d_render/layer_4="Arrows"
+2d_render/layer_10="GameBounds"
+2d_physics/layer_1="BodiesActive"
+2d_navigation/layer_1="BodiesActive"
+2d_physics/layer_10="GameBounds"
+2d_navigation/layer_10="GameBounds"
 
 [rendering]
 
