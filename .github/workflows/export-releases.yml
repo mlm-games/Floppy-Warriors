@@ -9,12 +9,12 @@ on:
       upload_to_itch:
         description: 'Upload exported files to itch.io?'
         required: false
-        default: 'true'
+        default: true
         type: boolean
       auto_generate_changelog:
         description: 'Auto-generate changelog from commits'
         required: false
-        default: false
+        default: true
         type: boolean
       mark_prerelease:
         description: 'Mark as prerelease'
@@ -34,7 +34,12 @@ on:
       publish_to_aur:
         description: 'Publish to AUR'
         required: false
-        default: false
+        default: true
+        type: boolean
+      publish_to_snap:
+        description: 'Publish to Snapcraft'
+        required: false
+        default: true
         type: boolean
 
 jobs:
@@ -300,9 +305,29 @@ jobs:
               ref: 'main',
               inputs: {
                 version_name: '${{ inputs.version_name }}',
-                increment_pkgrel: 'false'
               }
             });
             
             console.log('Triggered AUR publish workflow for version ${{ inputs.version_name }}');
 
+  update-snap:
+    needs: [prepare-and-build]
+    runs-on: ubuntu-latest
+    if: ${{ inputs.publish_to_snap == true }}
+    steps:
+      - name: Trigger Snapcraft publish workflow
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'snapcraft-upload.yml',
+              ref: 'main',
+              inputs: {
+                version_name: '${{ inputs.version_name }}',
+              }
+            });
+            
+            console.log('Triggered Snapcraft publish workflow for version ${{ inputs.version_name }}');
