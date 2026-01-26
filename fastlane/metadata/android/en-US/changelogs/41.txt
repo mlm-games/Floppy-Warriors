@@ -1,0 +1,1 @@
+- Modify default values and add Snapcraft publishing step

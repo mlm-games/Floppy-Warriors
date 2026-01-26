@@ -1,3 +1,8 @@
+## v1.0.3
+
+- Modify default values and add Snapcraft publishing step
+
+
 ## v1.0.2
 
 - test snap fix
