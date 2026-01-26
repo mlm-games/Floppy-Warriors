@@ -53,13 +53,14 @@
        xml:space="preserve"
        style="font-size:825.507px;font-family:'Open Sans';-inkscape-font-specification:'Open Sans';writing-mode:lr-tb;direction:ltr;opacity:0.806867;fill:#220b28;stroke:#ffccaa;stroke-width:76.2373"
        x="29.267849"
-       y="550.651"
-       id="text2"><tspan
+       y="38.651375"
+       id="text2"
+       transform="scale(1,-1)"><tspan
          sodipodi:role="line"
          id="tspan2"
          x="29.267849"
-         y="550.651"
-         style="stroke-width:76.2373;stroke:#ffccaa">T</tspan></text>
+         y="38.651375"
+         style="stroke:#ffccaa;stroke-width:76.2373">T</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:93.413px;font-family:'Open Sans';-inkscape-font-specification:'Open Sans';writing-mode:lr-tb;direction:ltr;opacity:0.806867;fill:#220b28;stroke:#ffccaa;stroke-width:8.6269"
