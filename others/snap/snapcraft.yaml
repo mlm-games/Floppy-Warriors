@@ -1,6 +1,6 @@
-name: <placeholdername>
+name: floppy-warriors
 base: core22
-version: '<PlaceHolderVersion>'
+version: '1.0.0'
 summary: <PlaceHolderShortDesc>
 description: |
   <PlaceHolderLongDesc>
@@ -13,13 +13,13 @@ architectures:
   - build-on: arm64
 
 apps:
-  <placeholdername>:
-    command: <placeholdername>
+  floppy-warriors:
+    command: floppy-warriors
     extensions: [gnome]
     plugs: [home, network, removable-media, unity7]
 
 parts:
-  <placeholdername>:
+  floppy-warriors:
     plugin: dump
     source: ./builds/
     source-type: local
@@ -32,8 +32,8 @@ parts:
       - libpulse0
     override-build: |
       craftctl build
-      chmod +x $SNAPCRAFT_PART_INSTALL/<placeholdername>
+      chmod +x $SNAPCRAFT_PART_INSTALL/floppy-warriors
 
 layout:
-  /usr/share/<placeholdername>:
-    bind: $SNAP/usr/share/<placeholdername>
+  /usr/share/floppy-warriors:
+    bind: $SNAP/usr/share/floppy-warriors

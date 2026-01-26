@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=<PlaceHolderName>
+Name=Floppy Warriors
 Comment=<PlaceholderShortDesc>
-Exec=<placeholdername> %F
-Icon=io.github.mlm_games.<placeholdername>
+Exec=floppy-warriors %F
+Icon=io.github.mlm_games.floppy-warriors
 Terminal=false
 Type=Application
 Categories=<PlaceholderCategories>

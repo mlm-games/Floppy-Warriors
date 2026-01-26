@@ -1,14 +1,14 @@
 $ErrorActionPreference = 'Stop'
 
-$packageName = '<placeholdername>'
+$packageName = 'floppy-warriors'
 $toolsDir = "$(Split-Path -parent $MyInvocation.MyCommand.Definition)"
-$url = 'https://github.com/mlm-games/<placeholdername>/releases/download/<PlaceHolderVersion>/<placeholdername>.exe'
+$url = 'https://github.com/mlm-games/floppy-warriors/releases/download/1.0.0/floppy-warriors.exe'
 
 $packageArgs = @{
   packageName   = $packageName
   fileType      = 'EXE'
   url           = $url
-  softwareName  = '<PlaceHolderName>*'
+  softwareName  = 'Floppy Warriors*'
   checksum      = '0000000000000000000000000000000000000000000000000000000000000000'
   checksumType  = 'sha256'
   silentArgs    = "/S"

@@ -1,7 +1,7 @@
 [Desktop Entry] (TEMP FILE - WILL NOT BE USED)
-Name=<PlaceHolderName>
+Name=Floppy Warriors
 Comment=<PlaceholderShortDesc>
-Exec=<placeholdername> %F
+Exec=floppy-warriors %F
 Icon=${SNAP}/meta/gui/icon.png
 Terminal=false
 Type=Application

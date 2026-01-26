@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
-$packageName = '<placeholdername>'
-$softwareName = '<PlaceHolderName>*'
+$packageName = 'floppy-warriors'
+$softwareName = 'Floppy Warriors*'
 $installDir = Join-Path $env:ProgramFiles $packageName
 
 # Remove the application files
@@ -18,4 +18,4 @@ if (Test-Path $shortcutFile) {
   Write-Host "Removed Start Menu shortcut"
 }
 
-Write-Host "<PlaceHolderName> has been uninstalled"
+Write-Host "Floppy Warriors has been uninstalled"
