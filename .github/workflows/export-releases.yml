@@ -76,7 +76,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Commit Previous Version Code
+            - name: Commit Previous Version Code
         run: |
           echo "Previous version code: ${{ steps.prev_version.outputs.prev_code }}"
           echo "New version code: ${{ steps.prev_version.outputs.new_code }}"
@@ -90,12 +90,16 @@ jobs:
           sed -i "0,/version\/code=[0-9]*/! {0,/version\/code=[0-9]*/s//version\/code=$((VERSION_CODE+1))/}" export_presets.cfg
           sed -i "$(grep -n 'version/code=' export_presets.cfg | tail -n1 | cut -d: -f1),\$s/version\/code=[0-9]*/version\/code=$((VERSION_CODE+2))/" export_presets.cfg
 
+          # Update project.godot version
+          sed -i "s|config/version=\".*\"|config/version=\"${{ inputs.version_name }}\"|" project.godot
+
       - name: Commit Changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Actions"
           git pull
           git add export_presets.cfg
+          git add project.godot
           git add ./fastlane/metadata/android/en-US/changelogs/${{ steps.prev_version.outputs.new_code }}.txt
           git commit -m "Update version to ${{ inputs.version_name }} (${{ steps.prev_version.outputs.new_code }})"
           git push
