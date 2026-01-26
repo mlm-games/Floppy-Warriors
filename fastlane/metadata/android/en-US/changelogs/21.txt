@@ -1,0 +1,1 @@
+- Fix YAML boolean default values in export-releases.yml
