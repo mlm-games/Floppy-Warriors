@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="ArrowData" load_steps=2 format=3 uid="uid://cutbot3ne5uq3"]
+[gd_resource type="Resource" script_class="ArrowData" format=3 uid="uid://cutbot3ne5uq3"]
 
 [ext_resource type="Script" uid="uid://bs32px1a41yhi" path="res://scripts/arrow_data.gd" id="1_7lxr1"]
 

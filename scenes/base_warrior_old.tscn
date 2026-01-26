@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://b0c1v2d3e4f5g"]
+[gd_scene format=3 uid="uid://b0c1v2d3e4f5g"]
 
 [ext_resource type="Script" uid="uid://cyeqivtl4t374" path="res://scenes/base_warrior.gd" id="1_base_script"]
 
@@ -33,10 +33,10 @@ bg_color = Color(0.2, 0.2, 0.2, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_healthfill_default"]
 bg_color = Color(0.262745, 0.870588, 0.392157, 1)
 
-[node name="BaseWarrior" type="Node2D"]
+[node name="BaseWarrior" type="Node2D" unique_id=1635817217]
 script = ExtResource("1_base_script")
 
-[node name="Torso" type="RigidBody2D" parent="."]
+[node name="Torso" type="RigidBody2D" parent="." unique_id=207505120]
 unique_name_in_owner = true
 mass = 1.5
 sleeping = true
@@ -45,29 +45,29 @@ linear_damp = 1.5
 angular_damp_mode = 1
 angular_damp = 3.0
 
-[node name="Visual" type="Polygon2D" parent="Torso"]
+[node name="Visual" type="Polygon2D" parent="Torso" unique_id=1130414575]
 color = Color(0.3, 0.5, 0.8, 1)
 polygon = PackedVector2Array(-10, -20, 10, -20, 10, 20, -10, 20)
 
-[node name="Collision" type="CollisionShape2D" parent="Torso"]
+[node name="Collision" type="CollisionShape2D" parent="Torso" unique_id=1726747918]
 shape = SubResource("RectangleShape2D_torso")
 
-[node name="BowPivot" type="Node2D" parent="Torso"]
+[node name="BowPivot" type="Node2D" parent="Torso" unique_id=42172795]
 unique_name_in_owner = true
 position = Vector2(0, -10)
 
-[node name="BowVisual" type="Polygon2D" parent="Torso/BowPivot"]
+[node name="BowVisual" type="Polygon2D" parent="Torso/BowPivot" unique_id=1735210618]
 unique_name_in_owner = true
 position = Vector2(34, 10)
 color = Color(0.5, 0.3, 0.1, 1)
 polygon = PackedVector2Array(0, -15, 5, 0, 0, 15, -2, 15, -3, 0, -2, -15)
 
-[node name="ArrowSpawnPoint" type="Marker2D" parent="Torso/BowPivot"]
+[node name="ArrowSpawnPoint" type="Marker2D" parent="Torso/BowPivot" unique_id=1232737756]
 unique_name_in_owner = true
 position = Vector2(39, 10)
 metadata/_edit_group_ = true
 
-[node name="Head" type="RigidBody2D" parent="."]
+[node name="Head" type="RigidBody2D" parent="." unique_id=738024861]
 position = Vector2(0, -30)
 collision_mask = 13
 mass = 0.8
@@ -78,14 +78,14 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="Head"]
+[node name="Visual" type="Polygon2D" parent="Head" unique_id=1936702851]
 color = Color(0.9, 0.7, 0.5, 1)
 polygon = PackedVector2Array(-9, -9, 9, -9, 9, 9, -9, 9)
 
-[node name="Collision" type="CollisionShape2D" parent="Head"]
+[node name="Collision" type="CollisionShape2D" parent="Head" unique_id=1323460741]
 shape = SubResource("RectangleShape2D_head")
 
-[node name="UpperArmL" type="RigidBody2D" parent="."]
+[node name="UpperArmL" type="RigidBody2D" parent="." unique_id=559100793]
 position = Vector2(-15, -15)
 collision_mask = 13
 mass = 0.5
@@ -96,15 +96,15 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="UpperArmL"]
+[node name="Visual" type="Polygon2D" parent="UpperArmL" unique_id=945288658]
 rotation = 1.5708
 color = Color(0.3, 0.5, 0.8, 1)
 polygon = PackedVector2Array(-14, -4, 14, -4, 14, 4, -14, 4)
 
-[node name="Collision" type="CollisionShape2D" parent="UpperArmL"]
+[node name="Collision" type="CollisionShape2D" parent="UpperArmL" unique_id=1096180434]
 shape = SubResource("CapsuleShape2D_upperarm")
 
-[node name="LowerArmL" type="RigidBody2D" parent="."]
+[node name="LowerArmL" type="RigidBody2D" parent="." unique_id=1000423312]
 position = Vector2(-15, 12)
 collision_mask = 13
 mass = 0.4
@@ -115,15 +115,15 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="LowerArmL"]
+[node name="Visual" type="Polygon2D" parent="LowerArmL" unique_id=259987086]
 rotation = 1.5708
 color = Color(0.9, 0.7, 0.5, 1)
 polygon = PackedVector2Array(-13, -3.5, 13, -3.5, 13, 3.5, -13, 3.5)
 
-[node name="Collision" type="CollisionShape2D" parent="LowerArmL"]
+[node name="Collision" type="CollisionShape2D" parent="LowerArmL" unique_id=483128712]
 shape = SubResource("CapsuleShape2D_lowerarm")
 
-[node name="UpperArmR" type="RigidBody2D" parent="."]
+[node name="UpperArmR" type="RigidBody2D" parent="." unique_id=1460081290]
 position = Vector2(15, -15)
 collision_mask = 13
 mass = 0.5
@@ -134,15 +134,15 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="UpperArmR"]
+[node name="Visual" type="Polygon2D" parent="UpperArmR" unique_id=1839817188]
 rotation = 1.5708
 color = Color(0.3, 0.5, 0.8, 1)
 polygon = PackedVector2Array(-14, -4, 14, -4, 14, 4, -14, 4)
 
-[node name="Collision" type="CollisionShape2D" parent="UpperArmR"]
+[node name="Collision" type="CollisionShape2D" parent="UpperArmR" unique_id=296727707]
 shape = SubResource("CapsuleShape2D_upperarm")
 
-[node name="LowerArmR" type="RigidBody2D" parent="."]
+[node name="LowerArmR" type="RigidBody2D" parent="." unique_id=767773081]
 position = Vector2(15, 12)
 collision_mask = 13
 mass = 0.4
@@ -154,15 +154,15 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="LowerArmR"]
+[node name="Visual" type="Polygon2D" parent="LowerArmR" unique_id=55740757]
 rotation = 1.5708
 color = Color(0.9, 0.7, 0.5, 1)
 polygon = PackedVector2Array(-13, -3.5, 13, -3.5, 13, 3.5, -13, 3.5)
 
-[node name="Collision" type="CollisionShape2D" parent="LowerArmR"]
+[node name="Collision" type="CollisionShape2D" parent="LowerArmR" unique_id=1244120422]
 shape = SubResource("CapsuleShape2D_lowerarm")
 
-[node name="UpperLegL" type="RigidBody2D" parent="."]
+[node name="UpperLegL" type="RigidBody2D" parent="." unique_id=1547663344]
 position = Vector2(-7, 35)
 collision_mask = 13
 mass = 0.6
@@ -173,15 +173,15 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="UpperLegL"]
+[node name="Visual" type="Polygon2D" parent="UpperLegL" unique_id=1337354672]
 rotation = 1.5708
 color = Color(0.2, 0.2, 0.4, 1)
 polygon = PackedVector2Array(-15, -4.5, 15, -4.5, 15, 4.5, -15, 4.5)
 
-[node name="Collision" type="CollisionShape2D" parent="UpperLegL"]
+[node name="Collision" type="CollisionShape2D" parent="UpperLegL" unique_id=763178375]
 shape = SubResource("CapsuleShape2D_upperleg")
 
-[node name="LowerLegL" type="RigidBody2D" parent="."]
+[node name="LowerLegL" type="RigidBody2D" parent="." unique_id=1917878628]
 position = Vector2(-7, 65)
 collision_mask = 13
 mass = 0.5
@@ -192,15 +192,15 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="LowerLegL"]
+[node name="Visual" type="Polygon2D" parent="LowerLegL" unique_id=8705349]
 rotation = 1.5708
 color = Color(0.9, 0.7, 0.5, 1)
 polygon = PackedVector2Array(-14, -4, 14, -4, 14, 4, -14, 4)
 
-[node name="Collision" type="CollisionShape2D" parent="LowerLegL"]
+[node name="Collision" type="CollisionShape2D" parent="LowerLegL" unique_id=730098385]
 shape = SubResource("CapsuleShape2D_lowerleg")
 
-[node name="UpperLegR" type="RigidBody2D" parent="."]
+[node name="UpperLegR" type="RigidBody2D" parent="." unique_id=925718367]
 position = Vector2(7, 35)
 collision_mask = 13
 mass = 0.6
@@ -211,15 +211,15 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="UpperLegR"]
+[node name="Visual" type="Polygon2D" parent="UpperLegR" unique_id=187745499]
 rotation = 1.5708
 color = Color(0.2, 0.2, 0.4, 1)
 polygon = PackedVector2Array(-15, -4.5, 15, -4.5, 15, 4.5, -15, 4.5)
 
-[node name="Collision" type="CollisionShape2D" parent="UpperLegR"]
+[node name="Collision" type="CollisionShape2D" parent="UpperLegR" unique_id=633809771]
 shape = SubResource("CapsuleShape2D_upperleg")
 
-[node name="LowerLegR" type="RigidBody2D" parent="."]
+[node name="LowerLegR" type="RigidBody2D" parent="." unique_id=1058293370]
 position = Vector2(7, 65)
 collision_mask = 13
 mass = 0.5
@@ -230,15 +230,15 @@ angular_damp_mode = 1
 angular_damp = 2.0
 metadata/_edit_group_ = true
 
-[node name="Visual" type="Polygon2D" parent="LowerLegR"]
+[node name="Visual" type="Polygon2D" parent="LowerLegR" unique_id=1600478782]
 rotation = 1.5708
 color = Color(0.9, 0.7, 0.5, 1)
 polygon = PackedVector2Array(-14, -4, 14, -4, 14, 4, -14, 4)
 
-[node name="Collision" type="CollisionShape2D" parent="LowerLegR"]
+[node name="Collision" type="CollisionShape2D" parent="LowerLegR" unique_id=2047645274]
 shape = SubResource("CapsuleShape2D_lowerleg")
 
-[node name="Joint_Torso_Head" type="PinJoint2D" parent="."]
+[node name="Joint_Torso_Head" type="PinJoint2D" parent="." unique_id=1129875072]
 position = Vector2(0, -20)
 node_a = NodePath("../Torso")
 node_b = NodePath("../Head")
@@ -246,7 +246,7 @@ angular_limit_enabled = true
 angular_limit_lower = -0.785398
 angular_limit_upper = 0.785398
 
-[node name="Joint_Torso_UpperArmL" type="PinJoint2D" parent="."]
+[node name="Joint_Torso_UpperArmL" type="PinJoint2D" parent="." unique_id=1404872995]
 position = Vector2(-10, -18)
 node_a = NodePath("../Torso")
 node_b = NodePath("../UpperArmL")
@@ -254,7 +254,7 @@ angular_limit_enabled = true
 angular_limit_lower = -1.5708
 angular_limit_upper = 1.5708
 
-[node name="Joint_UpperArmL_LowerArmL" type="PinJoint2D" parent="."]
+[node name="Joint_UpperArmL_LowerArmL" type="PinJoint2D" parent="." unique_id=2112136834]
 position = Vector2(-15, 0)
 node_a = NodePath("../UpperArmL")
 node_b = NodePath("../LowerArmL")
@@ -262,7 +262,7 @@ angular_limit_enabled = true
 angular_limit_lower = -0.174533
 angular_limit_upper = 2.61799
 
-[node name="Joint_Torso_UpperArmR" type="PinJoint2D" parent="."]
+[node name="Joint_Torso_UpperArmR" type="PinJoint2D" parent="." unique_id=1314306656]
 position = Vector2(10, -18)
 node_a = NodePath("../Torso")
 node_b = NodePath("../UpperArmR")
@@ -270,7 +270,7 @@ angular_limit_enabled = true
 angular_limit_lower = -1.5708
 angular_limit_upper = 1.5708
 
-[node name="Joint_UpperArmR_LowerArmR" type="PinJoint2D" parent="."]
+[node name="Joint_UpperArmR_LowerArmR" type="PinJoint2D" parent="." unique_id=1484739824]
 position = Vector2(15, -1)
 node_a = NodePath("../UpperArmR")
 node_b = NodePath("../LowerArmR")
@@ -278,7 +278,7 @@ angular_limit_enabled = true
 angular_limit_lower = -0.174533
 angular_limit_upper = 2.61799
 
-[node name="Joint_Torso_UpperLegL" type="PinJoint2D" parent="."]
+[node name="Joint_Torso_UpperLegL" type="PinJoint2D" parent="." unique_id=796972743]
 position = Vector2(-7, 20)
 node_a = NodePath("../Torso")
 node_b = NodePath("../UpperLegL")
@@ -286,7 +286,7 @@ angular_limit_enabled = true
 angular_limit_lower = -0.174533
 angular_limit_upper = 0.174533
 
-[node name="Joint_UpperLegL_LowerLegL" type="PinJoint2D" parent="."]
+[node name="Joint_UpperLegL_LowerLegL" type="PinJoint2D" parent="." unique_id=417773789]
 position = Vector2(-7, 50)
 node_a = NodePath("../UpperLegL")
 node_b = NodePath("../LowerLegL")
@@ -294,7 +294,7 @@ angular_limit_enabled = true
 angular_limit_lower = -0.174533
 angular_limit_upper = 0.174533
 
-[node name="Joint_Torso_UpperLegR" type="PinJoint2D" parent="."]
+[node name="Joint_Torso_UpperLegR" type="PinJoint2D" parent="." unique_id=1684320559]
 position = Vector2(7, 20)
 node_a = NodePath("../Torso")
 node_b = NodePath("../UpperLegR")
@@ -302,7 +302,7 @@ angular_limit_enabled = true
 angular_limit_lower = -0.174533
 angular_limit_upper = 0.174533
 
-[node name="Joint_UpperLegR_LowerLegR" type="PinJoint2D" parent="."]
+[node name="Joint_UpperLegR_LowerLegR" type="PinJoint2D" parent="." unique_id=508535994]
 position = Vector2(7, 50)
 node_a = NodePath("../UpperLegR")
 node_b = NodePath("../LowerLegR")
@@ -310,7 +310,7 @@ angular_limit_enabled = true
 angular_limit_lower = -0.174533
 angular_limit_upper = 0.174533
 
-[node name="HealthBar" type="ProgressBar" parent="."]
+[node name="HealthBar" type="ProgressBar" parent="." unique_id=1474492230]
 unique_name_in_owner = true
 offset_left = -12.0
 offset_top = -53.0

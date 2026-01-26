@@ -12,14 +12,14 @@ config_version=5
 
 config/name="Floppy Warriors"
 run/main_scene="uid://m3mdfmp7nyrx"
-config/features=PackedStringArray("4.5", "Forward Plus")
+config/features=PackedStringArray("4.6", "Forward Plus")
 boot_splash/bg_color=Color(0.0924416, 0.147392, 0.187741, 1)
 config/icon="res://icon.svg"
 
 [autoload]
 
 WindowManager="res://autoloads/window_manager.gd"
-SettingsData="*res://addons/basic_settings_menu/settings_data.gd"
+SettingsData="*uid://cm7tj20jlgtlh"
 Transitions="*res://addons/my-ecosystem-template/transitions/transitions.tscn"
 CommonGlobals="*res://autoloads/common_globals.gd"
 
@@ -87,4 +87,4 @@ locale/translations=PackedStringArray("res://locales/translations.ar.translation
 [rendering]
 
 textures/vram_compression/import_etc2_astc=true
-environment/defaults/default_clear_color=Color(0.0823529, 0.0941176, 0.160784, 1)
+environment/defaults/default_clear_color=Color(0.08235294, 0.16078432, 0.16078432, 1)

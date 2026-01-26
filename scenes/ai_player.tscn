@@ -1,23 +1,23 @@
-[gd_scene load_steps=4 format=3 uid="uid://bu2vv8eojvcvj"]
+[gd_scene format=3 uid="uid://bu2vv8eojvcvj"]
 
 [ext_resource type="PackedScene" uid="uid://707wjyjp2s4q" path="res://scenes/base_warrior_body.tscn" id="1_8ludx"]
 [ext_resource type="Script" uid="uid://ctmn1m1kdrxag" path="res://scenes/enemy_ai.gd" id="2_k31j7"]
 [ext_resource type="PackedScene" uid="uid://rhnn0sni11dp" path="res://scenes/arrow.tscn" id="3_0mxs4"]
 
-[node name="AIPlayer" instance=ExtResource("1_8ludx")]
+[node name="AIPlayer" unique_id=2088796401 instance=ExtResource("1_8ludx")]
 script = ExtResource("2_k31j7")
 arrow_scene = ExtResource("3_0mxs4")
 
-[node name="AiDrawCompleteTimer" type="Timer" parent="." index="12"]
+[node name="AiDrawCompleteTimer" type="Timer" parent="." index="12" unique_id=591760317]
 unique_name_in_owner = true
 one_shot = true
 
-[node name="AiAimTimer" type="Timer" parent="." index="13"]
+[node name="AiAimTimer" type="Timer" parent="." index="13" unique_id=1808411611]
 unique_name_in_owner = true
 wait_time = 0.1
 one_shot = true
 autostart = true
 
-[node name="DecisionTimer" type="Timer" parent="." index="14"]
+[node name="DecisionTimer" type="Timer" parent="." index="14" unique_id=478160004]
 unique_name_in_owner = true
 autostart = true

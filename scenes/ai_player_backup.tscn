@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://dc7kopkiuu5vm"]
+[gd_scene format=3 uid="uid://dc7kopkiuu5vm"]
 
 [ext_resource type="PackedScene" uid="uid://b0c1v2d3e4f5g" path="res://scenes/base_warrior_old.tscn" id="1_n7gfa"]
 [ext_resource type="Script" uid="uid://ctmn1m1kdrxag" path="res://scenes/enemy_ai.gd" id="2_arq5b"]
 [ext_resource type="PackedScene" uid="uid://rhnn0sni11dp" path="res://scenes/arrow.tscn" id="3_vc1xt"]
 
-[node name="AIPlayer" instance=ExtResource("1_n7gfa")]
+[node name="AIPlayer" unique_id=1518353246 instance=ExtResource("1_n7gfa")]
 script = ExtResource("2_arq5b")
 arrow_scene = ExtResource("3_vc1xt")
 
