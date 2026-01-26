@@ -1,3 +1,8 @@
+## v1.0.4
+
+- Update export-releases.yml
+
+
 ## v1.0.3
 
 - Modify default values and add Snapcraft publishing step
