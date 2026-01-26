@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://707wjyjp2s4q"]
 
-[ext_resource type="Script" path="res://game/scenes/base_warrior.gd" id="1_byylp"]
+[ext_resource type="Script" uid="uid://cyeqivtl4t374" path="res://game/scenes/base_warrior.gd" id="1_byylp"]
 [ext_resource type="Shader" uid="uid://u6t1kq65diyh" path="res://addons/my-ecosystem-template/lighting/rim_light.gdshader" id="1_h4hu1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_grch8"]

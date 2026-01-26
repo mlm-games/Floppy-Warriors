@@ -18,7 +18,7 @@ offset_right = 4.0
 offset_bottom = 4.0
 grow_horizontal = 2
 grow_vertical = 2
-pivot_offset = Vector2(4, 4)
+pivot_offset = Vector2(10, 5)
 size_flags_vertical = 4
 script = ExtResource("1_s85m3")
 

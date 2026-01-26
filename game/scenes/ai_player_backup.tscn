@@ -8,13 +8,13 @@
 script = ExtResource("2_arq5b")
 arrow_scene = ExtResource("3_vc1xt")
 
-[node name="BowPivot" parent="Torso" index="2"]
+[node name="BowPivot" parent="Torso" parent_id_path=PackedInt32Array(207505120) index="2" unique_id=42172795]
 position = Vector2(16, -10)
 metadata/_edit_group_ = true
 
-[node name="BowVisual" parent="Torso/BowPivot" index="0"]
+[node name="BowVisual" parent="Torso/BowPivot" index="0" unique_id=1735210618]
 position = Vector2(16, 10)
 
-[node name="Joint_Torso_Head" parent="." index="10"]
+[node name="Joint_Torso_Head" parent="." index="10" unique_id=1129875072]
 angular_limit_lower = -0.523599
 angular_limit_upper = -0.523599

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://rhnn0sni11dp"]
 
-[ext_resource type="Script" uid="uid://0snxjpslgii6" path="res://game/scripts/arrow.gd" id="1_umosx"]
+[ext_resource type="Script" path="res://game/scripts/arrow.gd" id="1_umosx"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_umosx"]
 radius = 4.0

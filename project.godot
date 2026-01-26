@@ -14,7 +14,7 @@ config/name="Floppy Warriors"
 run/main_scene="uid://m3mdfmp7nyrx"
 config/features=PackedStringArray("4.6", "Forward Plus")
 boot_splash/bg_color=Color(0.0924416, 0.147392, 0.187741, 1)
-config/icon="res://icon.svg"
+config/icon="uid://dgjx66abfarre"
 
 [autoload]
 
