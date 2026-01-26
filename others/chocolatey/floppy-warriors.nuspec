@@ -9,8 +9,8 @@
     <licenseUrl>https://github.com/mlm-games/floppy-warriors/blob/main/LICENSE</licenseUrl>
     <iconUrl>https://cdn.statically.io/gh/mlm-games/floppy-warriors/1.0.0/fastlane/metadata/android/en-US/images/icon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description><PlaceHolderLongDesc></description>
-    <summary><PlaceHolderShortDesc></summary>
+    <description>Battle against AI opponents in physics-based arrow combat. Draw your bow, aim carefully, and fire arrows at floppy ragdoll enemies. Features satisfying ragdoll physics, increasing difficulty, and chaotic gameplay inspired by Ragdoll Archers and Bowmasters.</description>
+    <summary>A janky ragdoll archery battle game</summary>
     <tags><PlaceHolderChocoTags></tags>
   </metadata>
   <files>

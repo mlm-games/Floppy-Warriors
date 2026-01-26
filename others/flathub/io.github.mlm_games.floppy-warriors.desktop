@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=Floppy Warriors
-Comment=<PlaceholderShortDesc>
+Comment=A janky ragdoll archery battle game
 Exec=floppy-warriors %F
 Icon=io.github.mlm_games.floppy-warriors
 Terminal=false
 Type=Application
-Categories=<PlaceholderCategories>
+Categories=Game;ActionGame;ArcadeGame;

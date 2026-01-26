@@ -4,9 +4,9 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <name>Floppy Warriors</name>
-  <summary><PlaceHolderShortDesc></summary>
+  <summary>A janky ragdoll archery battle game</summary>
   <description>
-    <p><PlaceHolderLongDesc></p>
+    <p>Battle against AI opponents in physics-based arrow combat. Draw your bow, aim carefully, and fire arrows at floppy ragdoll enemies. Features satisfying ragdoll physics, increasing difficulty, and chaotic gameplay inspired by Ragdoll Archers and Bowmasters.</p>
   </description>
   <launchable type="desktop-id">io.github.mlm_games.floppy-warriors.desktop</launchable>
   <url type="homepage">https://github.com/mlm-games/floppy-warriors</url>

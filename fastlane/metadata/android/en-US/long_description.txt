@@ -1,0 +1,29 @@
+# Floppy Warriors
+
+A janky ragdoll archery game (scalables later). Battle against AI opponents in physics-based arrow combat!
+
+## How to Play
+
+### Gameplay
+1. Aim with your mouse cursor
+2. Hold left click or touch to charge your shot - the bow glows redder as power increases
+3. Release to fire arrows at the enemy
+4. Hit the enemy to deal damage and apply knockback
+5. Defeat enemies to earn 10 points each (might scale in the future)
+6. Enemies get stronger (more health) as your score increases
+7. If you fall off screen or lose all your health, you'll get sent to heaven!
+
+### Misc. Tips
+- Longer charge = more arrow power and speed
+- Arrows stick to bodies on impact
+- Use air dodge to avoid incoming arrows
+- Watch both health bars in the corners of the screen
+
+### Controls (With a mouse and keyboard)
+- **Left Mouse Button (Hold)**: Draw bow - hold longer for more power
+- **Left Mouse Button (Release)**: Fire arrow
+- **Right Mouse Button / Spacebar**: Air dodge (push your ragdoll upward)
+- **Mouse Movement**: Aim your bow
+- **R**: Restart game after game over
+- **S**: Open settings
+- **F11**: Toggle fullscreen

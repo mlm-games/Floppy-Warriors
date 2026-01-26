@@ -1,9 +1,9 @@
 name: floppy-warriors
 base: core22
 version: '1.0.0'
-summary: <PlaceHolderShortDesc>
+summary: A janky ragdoll archery battle game
 description: |
-  <PlaceHolderLongDesc>
+  Battle against AI opponents in physics-based arrow combat. Draw your bow, aim carefully, and fire arrows at floppy ragdoll enemies. Features satisfying ragdoll physics, increasing difficulty, and chaotic gameplay inspired by Ragdoll Archers and Bowmasters.
 
 grade: stable
 confinement: strict

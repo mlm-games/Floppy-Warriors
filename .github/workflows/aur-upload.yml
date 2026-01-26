@@ -39,7 +39,7 @@ jobs:
           pkgname=floppy-warriors-bin
           pkgver=${{ inputs.version_name }}
           pkgrel=1
-          pkgdesc="<PlaceholderShortDesc>"
+          pkgdesc="A janky ragdoll archery battle game"
           arch=('x86_64' 'aarch64')
           url="https://github.com/mlm-games/floppy-warriors"
           license=('GPL3')
@@ -79,7 +79,7 @@ jobs:
           Terminal=false
           Type=Application
           Icon=floppy-warriors
-          Comment=<PlaceholderShortDesc>
+          Comment=A janky ragdoll archery battle game
           Categories=Games;
           StartupNotify=true
           DESKTOP_EOF
