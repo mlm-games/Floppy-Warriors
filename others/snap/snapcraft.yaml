@@ -31,7 +31,7 @@ parts:
       - libxi6
       - libpulse0
     override-build: |
-      craftctl build
+      craftctl default
       chmod +x $SNAPCRAFT_PART_INSTALL/floppy-warriors
 
 layout:
