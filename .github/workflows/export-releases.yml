@@ -327,7 +327,7 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'snapcraft-upload.yml',
+              workflow_id: 'snap-upload.yml',
               ref: 'main',
               inputs: {
                 version_name: '${{ inputs.version_name }}',
