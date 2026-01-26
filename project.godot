@@ -18,10 +18,10 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-WindowManager="res://autoloads/window_manager.gd"
+WindowManager="res://game/autoloads/window_manager.gd"
 SettingsData="*uid://cm7tj20jlgtlh"
 Transitions="*res://addons/my-ecosystem-template/transitions/transitions.tscn"
-CommonGlobals="*res://autoloads/common_globals.gd"
+CommonGlobals="*res://game/autoloads/common_globals.gd"
 
 [display]
 

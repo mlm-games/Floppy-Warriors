@@ -1,7 +1,0 @@
-[gd_resource type="Resource" script_class="ArrowData" format=3 uid="uid://cutbot3ne5uq3"]
-
-[ext_resource type="Script" uid="uid://bs32px1a41yhi" path="res://scripts/arrow_data.gd" id="1_7lxr1"]
-
-[resource]
-script = ExtResource("1_7lxr1")
-metadata/_custom_type_script = "uid://bs32px1a41yhi"
