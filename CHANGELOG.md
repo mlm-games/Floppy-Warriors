@@ -1,3 +1,8 @@
+## v1.1.0
+
+- Remove GODOT_PREVIEW_BUILDS from export-releases.yml
+
+
 ## v1.0.4
 
 - Update export-releases.yml
