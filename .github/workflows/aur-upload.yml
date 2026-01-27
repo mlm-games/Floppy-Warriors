@@ -74,7 +74,7 @@ jobs:
           
               cat > "${pkgdir}/usr/share/applications/floppy-warriors.desktop" << DESKTOP_EOF
           [Desktop Entry]
-          Name=Floppy Warriors #TODO: Edit when using
+          Name=Floppy Warriors
           Exec=floppy-warriors
           Terminal=false
           Type=Application
