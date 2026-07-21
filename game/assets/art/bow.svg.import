@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/bow.svg-73d5e10884a34761d7b14374f84b1275.dpit
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true

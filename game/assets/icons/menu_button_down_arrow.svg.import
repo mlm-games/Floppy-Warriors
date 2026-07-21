@@ -15,4 +15,6 @@ dest_files=["res://.godot/imported/menu_button_down_arrow.svg-318a80d32fd76481fc
 base_scale=1.0
 saturation=1.0
 color_map={}
+fix_alpha_border=false
+premult_alpha=false
 compress=true
