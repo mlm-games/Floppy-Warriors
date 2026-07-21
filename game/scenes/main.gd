@@ -57,10 +57,10 @@ func spawn_new_ai() -> void:
 	
 	current_ai_player.died.connect(_on_ai_player_died)
 	current_ai_player.set_target(player)
-	current_ai_player.set_initial_health_reference()
 	
 	@warning_ignore("integer_division")
 	current_ai_player.health += score/2 # Increase difficulty slightly for new AI (e.g., more health or faster firing), For now leave at this
+	current_ai_player.set_initial_health_reference()
 
 
 func _on_player_died() -> void:
