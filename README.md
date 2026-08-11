@@ -56,9 +56,11 @@ src/
 │   ├── arena.rs         # Backdrop + ground
 │   ├── arrow.rs         # Manual projectile motion + hit tests
 │   ├── audio_fx.rs      # SFX handles + load-state-gated playback
+│   ├── cleanup_bounds.rs# Safety net for arrows / corpses out of play
 │   ├── components.rs    # Warrior, limbs, arrows, mods, archetypes
+│   ├── debug_invariants.rs # Debug-build run-loop assertions
 │   ├── enemy_ai.rs      # Enemy decision loop + archetype config
-│   ├── hud_sync.rs      # HUD bridge
+│   ├── hud_sync.rs      # HUD bridge (typed reward cards)
 │   ├── meta.rs          # Bone Shop catalog + meta scaling
 │   ├── mod.rs           # GamePlugin, offline bones, cleanup
 │   ├── player.rs        # Mouse aim + bow + airdodge
@@ -66,8 +68,7 @@ src/
 │   └── warrior.rs       # Puppet spawn, joints, active ragdoll, fire
 ├── menus/               # Title, pause, settings, credits, Bone Shop (Repose)
 ├── screens/             # Splash, loading, title state machine
-├── save.rs              # SaveData + meta levels
-├── theme/               # Color constants
+├── save.rs              # SaveData + meta levels + migration
 └── asset_tracking.rs    # Preload tracking
 ```
 

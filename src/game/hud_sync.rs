@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use crate::app::{rarity_accent, RewardCardUi, UiBridge};
 use crate::game::components::{EnemyTag, PlayerTag, WarriorRoot};
-use crate::game::round_manager::{RoundManager, RunPhase};
+use crate::game::round_manager::{FINAL_ROUND, RoundManager, RunPhase};
 
 pub fn sync_run_to_ui(
     bridge: Res<UiBridge>,
@@ -49,6 +49,20 @@ pub fn sync_run_to_ui(
                     .unwrap_or_else(|| "YOU LOSE".into())
             }
         }
+    };
+
+    ui.end_reason = if rm.phase == RunPhase::GameOver {
+        if rm.victory {
+            if rm.round > FINAL_ROUND {
+                format!("Cleared round {} after first victory", rm.round)
+            } else {
+                format!("Cleared round {}", rm.round)
+            }
+        } else {
+            format!("Fell on round {}", rm.round)
+        }
+    } else {
+        String::new()
     };
 
     let mut player: Option<&WarriorRoot> = None;

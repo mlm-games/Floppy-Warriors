@@ -80,7 +80,7 @@ game-utils = { git = "https://github.com/mlm-games/game-utils" }
 game-utils-bevy = { git = "https://github.com/mlm-games/game-utils" }
 rand = "0.10"
 serde = { version = "1", features = ["derive"] }
-bevy_rapier2d = { path = "../../Repos/bevy_rapier/bevy_rapier2d", optional = true, default-features = false, features = [
+bevy_rapier2d = { package = "bevy_rapier2d", git = "https://github.com/mlm-games/bevy_rapier", rev = "192f723fd9a5e1f94da5fbe1a5c20b6e76e13bd2", optional = true, default-features = false, features = [
     "dim2",
 ] }
 # Optional big-game crates (pull in bevy-0.19)

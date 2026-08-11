@@ -5,7 +5,6 @@ mod game;
 mod menus;
 mod save;
 mod screens;
-mod theme;
 
 use app::AppPlugin;
 use bevy::prelude::*;

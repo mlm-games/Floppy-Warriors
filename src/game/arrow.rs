@@ -162,7 +162,7 @@ pub fn update_arrows(
         };
 
         if limb_wins {
-            let Some((_, limb_e, root_e, torso_e, kind, hit_point, limb_angle, limb_center)) =
+            let Some((_, limb_e, root_e, _torso_e, kind, hit_point, limb_angle, limb_center)) =
                 best_limb_hit
             else {
                 continue;
@@ -221,7 +221,7 @@ pub fn update_arrows(
             {
                 let knock = arrow.velocity.normalize_or_zero();
                 // Whole-body impulse on the torso (primary knockback driver).
-                if let Ok(mut impulse) = impulses.get_mut(torso_e) {
+                if let Ok(mut impulse) = impulses.get_mut(_torso_e) {
                     impulse.impulse += knock * damage as f32 * 8.0 * arrow.knockback_mult;
                 }
                 // Smaller local impulse on the hit limb so the limb lags the body.
@@ -289,7 +289,6 @@ pub fn update_arrows(
             hits.write(HitConfirmed {
                 shooter: arrow.shooter,
                 target: root_e,
-                limb: kind,
                 damage,
                 killed,
                 headshot,

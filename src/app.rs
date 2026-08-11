@@ -9,11 +9,10 @@ use repose_ui::overlay::OverlayHandle;
 use crate::asset_tracking::AssetsLoading;
 use crate::dev_tools::DevToolsPlugin;
 use crate::game::GamePlugin;
-use crate::menus::{self, UiAction};
 pub use crate::menus::UiBridge;
+use crate::menus::{self, UiAction};
 use crate::save::SaveData;
 use crate::screens::ScreensPlugin;
-use crate::theme::ThemePlugin;
 use game_utils_bevy::{
     EcosystemPlugin,
     audio::AudioChannels,
@@ -165,6 +164,7 @@ pub struct SharedUi {
     pub reward_cards: Vec<RewardCardUi>,
     pub bones_earned: u32,
     pub victory: bool,
+    pub end_reason: String,
     pub status_line: String,
     pub bone_shop_items: Vec<BoneShopItem>,
     pub offline_bones: u32,
@@ -202,6 +202,7 @@ impl Default for SharedUi {
             reward_cards: Vec::new(),
             bones_earned: 0,
             victory: false,
+            end_reason: String::new(),
             status_line: String::new(),
             bone_shop_items: Vec::new(),
             offline_bones: 0,
@@ -243,7 +244,6 @@ impl Plugin for AppPlugin {
                 },
             ))
             .add_plugins((
-                ThemePlugin,
                 EcosystemPlugin::<AppState>::new(I18nPlugin::new(TRANSLATION_KEYS, LOCALES)),
                 SavePlugin::<SaveData>::new(SaveManager::new(
                     "com",
@@ -273,10 +273,11 @@ impl Plugin for AppPlugin {
     }
 }
 
-fn apply_saved_settings(save: Res<SaveData>, mut locale: ResMut<LocaleResources>) {
+fn apply_saved_settings(mut save: ResMut<SaveData>, mut locale: ResMut<LocaleResources>) {
     if !save.is_added() && !save.is_changed() {
         return;
     }
+    save.migrate();
     if locale
         .available
         .iter()
@@ -479,15 +480,6 @@ fn process_ui_actions(
                     *overlay = OverlayMenu::Pause;
                 } else {
                     *overlay = OverlayMenu::None;
-                }
-            }
-            UiAction::NextLanguage => {
-                let available = locale.available.clone();
-                let current = locale.current.clone();
-                let idx = available.iter().position(|l| *l == current).unwrap_or(0);
-                let next = (idx + 1) % available.len();
-                if let Some(next_locale) = available.get(next) {
-                    locale.set_locale(next_locale);
                 }
             }
             UiAction::SetLanguage(ref lang) => {

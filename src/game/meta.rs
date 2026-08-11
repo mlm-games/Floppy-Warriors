@@ -57,7 +57,7 @@ pub fn apply_meta_to_mods(save: &SaveData, mods: &mut CombatMods) {
     mods.knockback_mult *= 1.0 + l("impact") * 0.08;
     mods.velocity_mult *= 1.0 + l("bowstring") * 0.04;
     mods.airdodge_cd_mult *= (1.0 - l("acrobat") * 0.06).max(0.35);
-    let extra = (save.meta_level("multishot") / 2) as u32;
+    let extra = save.meta_level("multishot") / 2;
     mods.arrow_count = (mods.arrow_count + extra).min(5);
     mods.spread_deg += 4.0 * extra as f32;
 }
@@ -80,4 +80,50 @@ pub fn calculate_run_bones(
         + score / 8
         + if victory { 120 } else { 0 };
     ((raw as f32) * bones_multiplier(save)).round().max(1.0) as u32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::save::SaveData;
+
+    #[test]
+    fn bones_multiplier_scales_with_fortune() {
+        let mut save = SaveData::default();
+        save.meta_levels.insert("fortune".into(), 3);
+        assert!((bones_multiplier(&save) - 1.36).abs() < 0.001);
+    }
+
+    #[test]
+    fn calculate_run_bones_never_zero() {
+        let save = SaveData::default();
+        let bones = calculate_run_bones(&save, false, 1, 0, 0, 0);
+        assert!(bones >= 1);
+    }
+
+    #[test]
+    fn can_buy_respects_cost_and_max_level() {
+        let mut save = SaveData::default();
+        save.bones = 9999;
+        assert!(can_buy(&save, "vitality"));
+
+        save.meta_levels.insert("vitality".into(), 12);
+        assert!(!can_buy(&save, "vitality"));
+
+        save.meta_levels = Default::default();
+        save.bones = 0;
+        assert!(!can_buy(&save, "vitality"));
+    }
+
+    #[test]
+    fn buy_charges_exactly_the_displayed_cost() {
+        let mut save = SaveData::default();
+        save.bones = 100_000;
+        let before = save.bones;
+        let cost = cost_for(&save, "power");
+
+        assert!(buy(&mut save, "power"));
+        assert_eq!(save.bones, before - cost);
+        assert_eq!(save.meta_level("power"), 1);
+    }
 }

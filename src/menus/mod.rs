@@ -41,7 +41,6 @@ pub enum UiAction {
     SetSfxVol(f32),
     SetMusicVol(f32),
     SaveSettings,
-    NextLanguage,
     SetLanguage(String),
     OpenBoneShop,
     CloseBoneShop,
@@ -289,7 +288,7 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                 format!("{}: {}", t(tr, "bones", "Bones"), item.cost)
             };
             let label = format!("{}  ({} {})", cost_label, t(tr, "level", "Lv"), item.level);
-            let row = Row(Modifier::new().gap(12.0).align_items(AlignItems::CENTER)).child((
+            Row(Modifier::new().gap(12.0).align_items(AlignItems::CENTER)).child((
                 Column(Modifier::new().width(300.0)).child((
                     RText(&item.name).size(18.0).color(RColor::WHITE),
                     RText(&item.description).size(13.0).color(col(190, 190, 200)),
@@ -303,8 +302,7 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                     ButtonConfig::default(),
                     move || RText(if item.maxed { "MAX" } else { "Buy" }).size(16.0),
                 ),
-            ));
-            row
+            ))
         })
         .collect();
 
@@ -414,6 +412,7 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             let title = card.title.clone();
             let desc = card.description.clone();
             let category = card.category.clone();
+            let card_id = card.id.clone();
             let accent = col(card.accent_rgb[0], card.accent_rgb[1], card.accent_rgb[2]);
             let stacks = format!("{}/{}", card.current_stacks, card.max_stacks);
             let meta = format!("{}  \u{00b7}  {}", rarity_name(card.rarity), category);
@@ -441,6 +440,7 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                             } else {
                                 col(140, 160, 190)
                             }),
+                        RText(format!("#{}", card_id)).size(9.0).color(col(110, 115, 125)),
                     ))
                 },
             )
@@ -512,7 +512,9 @@ fn game_over_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             RText(title).size(42.0).color(title_col),
             spacer(8.0),
             RText(subtitle).size(16.0).color(col(200, 200, 210)),
-            spacer(16.0),
+            spacer(2.0),
+            RText(&st.end_reason).size(13.0).color(col(160, 165, 175)),
+            spacer(14.0),
             RText(format!(
                 "{}: {}   {}: {}",
                 t(tr, "score", "Score"),

@@ -78,4 +78,46 @@ impl SaveData {
     pub fn meta_level(&self, id: &str) -> u32 {
         *self.meta_levels.get(id).unwrap_or(&0)
     }
+
+    /// Normalize legacy/corrupt saves after load. Future migrations key off
+    /// `self.version` and bump `SAVE_VERSION` here before releasing.
+    pub fn migrate(&mut self) {
+        if self.version < SAVE_VERSION {
+            bevy::log::info!("migrating save {} -> {}", self.version, SAVE_VERSION);
+            self.version = SAVE_VERSION;
+        }
+
+        self.settings.master_volume = self.settings.master_volume.clamp(0.0, 1.0);
+        self.settings.sfx_volume = self.settings.sfx_volume.clamp(0.0, 1.0);
+        self.settings.music_volume = self.settings.music_volume.clamp(0.0, 1.0);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn migrate_clamps_volume_settings() {
+        let mut save = SaveData {
+            settings: SettingsData {
+                master_volume: 2.5,
+                sfx_volume: -1.0,
+                music_volume: 0.5,
+                language: "en".into(),
+            },
+            ..Default::default()
+        };
+        save.migrate();
+        assert_eq!(save.settings.master_volume, 1.0);
+        assert_eq!(save.settings.sfx_volume, 0.0);
+        assert_eq!(save.settings.music_volume, 0.5);
+        assert_eq!(save.version, SAVE_VERSION);
+    }
+
+    #[test]
+    fn migrate_keeps_current_version() {
+        let save = SaveData::default();
+        assert_eq!(save.version, SAVE_VERSION);
+    }
 }

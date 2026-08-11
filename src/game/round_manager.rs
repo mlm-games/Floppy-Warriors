@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use bevy::prelude::*;
-use rand::RngExt;
 use crate::game::components::*;
-use crate::game::enemy_ai::{configure_enemy, EnemySpawnConfig};
+use crate::game::enemy_ai::{EnemySpawnConfig, configure_enemy};
 use crate::game::meta::{self, apply_meta_to_mods};
-use crate::game::warrior::{spawn_warrior, SpawnWarrior};
+use crate::game::warrior::{SpawnWarrior, spawn_warrior};
 use crate::save::SaveData;
+use bevy::prelude::*;
 use game_utils_bevy::save::SaveManager;
+use rand::RngExt;
 
 pub const FINAL_ROUND: u32 = 15;
 
@@ -211,7 +211,6 @@ const REWARD_POOL: &[RewardDef] = &[
 pub struct HitConfirmed {
     pub shooter: Entity,
     pub target: Entity,
-    pub limb: LimbKind,
     pub damage: i32,
     pub killed: bool,
     pub headshot: bool,
@@ -223,11 +222,7 @@ pub struct ChooseReward(pub &'static str);
 #[derive(Component)]
 pub struct DyingFade(pub f32);
 
-pub fn begin_run(
-    mut rm: ResMut<RoundManager>,
-    mut commands: Commands,
-    save: Res<SaveData>,
-) {
+pub fn begin_run(mut rm: ResMut<RoundManager>, mut commands: Commands, save: Res<SaveData>) {
     *rm = RoundManager::default();
     let mut mods = CombatMods::default();
     apply_meta_to_mods(&save, &mut mods);
@@ -247,10 +242,11 @@ pub fn begin_run(
 
 fn start_next_round(rm: &mut RoundManager) {
     rm.round += 1;
-    rm.enemies_total = if rm.round % 5 == 0 {
-        1
+    // Boss pacing: rounds 5-29 = 1 boss, 30-59 = 2, 60+ = 3 bosses.
+    rm.enemies_total = if rm.round.is_multiple_of(5) {
+        1 + rm.round / 30
     } else {
-        (1 + (rm.round - 1) / 3).min(4)
+        (1 + (rm.round - 1) / 3).min(8)
     };
     rm.enemies_remaining = rm.enemies_total;
     rm.enemies_spawned = 0;
@@ -322,8 +318,11 @@ fn build_enemy_config(round: u32, boss: bool) -> EnemySpawnConfig {
         aim_error: aim,
         decision_min: dmin,
         decision_max: dmax,
-        boss,
-        score_value: if boss { 50 + round * 10 } else { 10 + round * 2 },
+        score_value: if boss {
+            50 + round * 10
+        } else {
+            10 + round * 2
+        },
         archetype,
     }
 }
@@ -393,7 +392,7 @@ pub fn spawn_enemies_system(
         return;
     }
 
-    let boss = rm.round > 0 && rm.round % 5 == 0;
+    let boss = rm.round > 0 && rm.round.is_multiple_of(5);
     let cfg = build_enemy_config(rm.round, boss);
     rm.current_enemy_score = cfg.score_value;
 
@@ -482,12 +481,12 @@ pub fn on_hits(
     mut warriors: Query<&mut WarriorRoot>,
 ) {
     for h in hits.read() {
-        if let Some(player) = rm.player_entity {
-            if h.shooter == player {
-                rm.damage_dealt += h.damage as u32;
-                if h.headshot {
-                    rm.headshots += 1;
-                }
+        if let Some(player) = rm.player_entity
+            && h.shooter == player
+        {
+            rm.damage_dealt += h.damage as u32;
+            if h.headshot {
+                rm.headshots += 1;
             }
         }
         if h.killed {
@@ -507,7 +506,7 @@ pub fn on_hits(
                     rm.enemies_remaining = rm.enemies_remaining.saturating_sub(1);
                     rm.active_enemy = None;
                     if rm.enemies_remaining == 0 {
-                        if rm.round >= FINAL_ROUND && rm.round % FINAL_ROUND == 0 {
+                        if rm.round >= FINAL_ROUND && rm.round.is_multiple_of(FINAL_ROUND) {
                             if !rm.victory_claimed {
                                 rm.victory = true;
                                 rm.victory_claimed = true;
@@ -517,10 +516,24 @@ pub fn on_hits(
                             rm.loop_count += 1;
 
                             let player = rm.player_entity;
-                            enter_reward(&mut rm, &mut warriors, player, &mut commands, &asset_server, &sfx);
+                            enter_reward(
+                                &mut rm,
+                                &mut warriors,
+                                player,
+                                &mut commands,
+                                &asset_server,
+                                &sfx,
+                            );
                         } else {
                             let player = rm.player_entity;
-                            enter_reward(&mut rm, &mut warriors, player, &mut commands, &asset_server, &sfx);
+                            enter_reward(
+                                &mut rm,
+                                &mut warriors,
+                                player,
+                                &mut commands,
+                                &asset_server,
+                                &sfx,
+                            );
                         }
                     } else {
                         rm.spawn_cooldown = 1.0;
@@ -547,11 +560,11 @@ fn enter_reward(
 
     super::audio_fx::play_sfx(commands, asset_server, &sfx.reward, 0.5, 0.0);
 
-    if let Some(p) = player {
-        if let Ok(mut w) = warriors.get_mut(p) {
-            let heal = ((w.max_health as f32) * 0.12).round().max(5.0) as i32;
-            w.health = (w.health + heal).min(w.max_health);
-        }
+    if let Some(p) = player
+        && let Ok(mut w) = warriors.get_mut(p)
+    {
+        let heal = ((w.max_health as f32) * 0.12).round().max(5.0) as i32;
+        w.health = (w.health + heal).min(w.max_health);
     }
 
     rm.reward_choices = roll_rewards(rm);
@@ -710,4 +723,90 @@ pub fn finalize_game_over_bones(
         .map(|d| d.as_secs())
         .unwrap_or(0);
     let _ = manager.save(&*save);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn round_at(rm: &mut RoundManager, round: u32) {
+        rm.round = round - 1;
+        start_next_round(rm);
+    }
+
+    #[test]
+    fn roll_rewards_never_exceeds_three() {
+        let rm = RoundManager::default();
+        let rolled = roll_rewards(&rm);
+        assert!(rolled.len() <= 3);
+    }
+
+    #[test]
+    fn roll_rewards_respects_min_round() {
+        let mut rm = RoundManager::default();
+        rm.round = 1;
+        let rolled = roll_rewards(&rm);
+        assert!(rolled.len() <= 3);
+        assert!(rolled.iter().all(|r| r.min_round <= 1));
+    }
+
+    #[test]
+    fn roll_rewards_respects_stack_caps() {
+        let mut rm = RoundManager::default();
+        rm.round = 99;
+        rm.upgrade_counts.insert("second_heart", 1);
+        let rolled = roll_rewards(&rm);
+        assert!(rolled.iter().all(|r| r.id != "second_heart"));
+    }
+
+    #[test]
+    fn end_run_does_not_clear_existing_victory() {
+        let mut rm = RoundManager::default();
+        rm.victory = true;
+        end_run(&mut rm, false);
+        assert!(rm.victory);
+        assert_eq!(rm.phase, RunPhase::GameOver);
+    }
+
+    #[test]
+    fn next_round_increases_round_and_seeds_spawn_counters() {
+        let mut rm = RoundManager::default();
+        start_next_round(&mut rm);
+        assert_eq!(rm.round, 1);
+        assert!(rm.enemies_total >= 1);
+        assert_eq!(rm.enemies_remaining, rm.enemies_total);
+        assert_eq!(rm.enemies_spawned, 0);
+        assert_eq!(rm.phase, RunPhase::Combat);
+    }
+
+    #[test]
+    fn boss_rounds_pace_endless() {
+        let mut rm = RoundManager::default();
+        round_at(&mut rm, 5);
+        assert_eq!(rm.enemies_total, 1);
+        round_at(&mut rm, 30);
+        assert_eq!(rm.enemies_total, 2);
+        round_at(&mut rm, 60);
+        assert_eq!(rm.enemies_total, 3);
+    }
+
+    #[test]
+    fn regular_rounds_cap_at_eight() {
+        let mut rm = RoundManager::default();
+        // Round 24 (non-boss): (1 + 23/3) = 8.
+        round_at(&mut rm, 24);
+        assert_eq!(rm.enemies_total, 8);
+        // Later non-boss round stays capped at 8.
+        round_at(&mut rm, 36);
+        assert_eq!(rm.enemies_total, 8);
+    }
+
+    #[test]
+    fn rewards_carry_full_card_metadata() {
+        let def = REWARD_POOL.iter().find(|r| r.id == "crit").unwrap();
+        assert!(!def.category.is_empty());
+        assert!(def.max_stacks >= 1);
+        assert!(def.min_round >= 1);
+        assert!(def.weight >= 1);
+    }
 }

@@ -1,7 +1,9 @@
 mod arena;
 mod arrow;
 mod audio_fx;
+mod cleanup_bounds;
 mod components;
+mod debug_invariants;
 mod enemy_ai;
 mod hud_sync;
 pub mod meta;
@@ -59,6 +61,9 @@ impl Plugin for GamePlugin {
                     handle_restart_input,
                     process_restart,
                     death_fade,
+                    cleanup_bounds::cleanup_far_entities,
+                    debug_invariants::validate_round_manager,
+                    debug_invariants::validate_warriors,
                 )
                     .run_if(in_state(AppState::InGame))
                     .run_if(|p: Res<Paused>| !p.0)

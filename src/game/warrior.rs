@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 #[cfg(feature = "physics")]
 use bevy_rapier2d::prelude::*;
+#[cfg(feature = "physics")]
+use std::f32::consts::{FRAC_PI_2, FRAC_PI_4};
 use rand::RngExt;
 
 use super::components::*;
@@ -8,6 +10,9 @@ use super::components::*;
 const MAX_DRAW: f32 = 100.0;
 const MIN_FORCE: f32 = 100.0;
 const MAX_FORCE_ADD: f32 = 1000.0;
+/// Hip joints are "locked" (approx ±1°/2°) to keep legs planted.
+#[cfg(feature = "physics")]
+const HIP_LIMIT: f32 = 0.035;
 
 pub struct SpawnWarrior {
     pub translation: Vec2,
@@ -100,11 +105,11 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
     #[cfg(feature = "physics")]
     {
         // Limits ported 1:1 from the original Godot PinJoint2D angular_limit values.
-        joint(commands, torso, head, Vec2::new(0.0, 20.0) * s, Vec2::new(0.0, -9.0) * s, [-0.785398, 0.785398]); // ±45°
-        joint(commands, torso, arm_l, Vec2::new(-10.0, 12.0) * s, Vec2::new(0.0, 10.0) * s, [-1.5708, 1.5708]); // ±90°
-        joint(commands, torso, arm_r, Vec2::new(10.0, 12.0) * s, Vec2::new(0.0, 10.0) * s, [-1.5708, 1.5708]); // ±90°
-        joint(commands, torso, leg_l, Vec2::new(-7.0, -18.0) * s, Vec2::new(0.0, 12.0) * s, [-0.0174533, 0.0349066]); // ~locked
-        joint(commands, torso, leg_r, Vec2::new(7.0, -18.0) * s, Vec2::new(0.0, 12.0) * s, [-0.0349066, 0.0174533]); // ~locked
+        joint(commands, torso, head, Vec2::new(0.0, 20.0) * s, Vec2::new(0.0, -9.0) * s, [-FRAC_PI_4, FRAC_PI_4]); // ±45°
+        joint(commands, torso, arm_l, Vec2::new(-10.0, 12.0) * s, Vec2::new(0.0, 10.0) * s, [-FRAC_PI_2, FRAC_PI_2]); // ±90°
+        joint(commands, torso, arm_r, Vec2::new(10.0, 12.0) * s, Vec2::new(0.0, 10.0) * s, [-FRAC_PI_2, FRAC_PI_2]); // ±90°
+        joint(commands, torso, leg_l, Vec2::new(-7.0, -18.0) * s, Vec2::new(0.0, 12.0) * s, [-HIP_LIMIT, HIP_LIMIT]); // ~locked
+        joint(commands, torso, leg_r, Vec2::new(7.0, -18.0) * s, Vec2::new(0.0, 12.0) * s, [-HIP_LIMIT, HIP_LIMIT]); // ~locked
     }
 
     let bow_pivot = commands
@@ -563,10 +568,10 @@ fn tint_tree(
     sprites: &mut Query<&mut Sprite>,
     limbs: &Query<&WarriorLimb>,
 ) {
-    if limbs.get(e).is_ok() {
-        if let Ok(mut s) = sprites.get_mut(e) {
-            s.color = tint;
-        }
+    if limbs.get(e).is_ok()
+        && let Ok(mut s) = sprites.get_mut(e)
+    {
+        s.color = tint;
     }
     if let Ok(kids) = children.get(e) {
         for c in kids.iter() {

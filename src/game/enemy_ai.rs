@@ -12,7 +12,6 @@ pub struct EnemySpawnConfig {
     pub aim_error: f32,
     pub decision_min: f32,
     pub decision_max: f32,
-    pub boss: bool,
     pub score_value: u32,
     pub archetype: EnemyArchetype,
 }
@@ -93,7 +92,7 @@ pub fn enemy_ai_system(
                     &asset_server,
                     &sfx,
                     enemy_entity,
-                    &*warrior,
+                    &warrior,
                     &bow,
                     spawn_origin,
                     angle,

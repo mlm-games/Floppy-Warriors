@@ -1189,6 +1189,7 @@ source = "git+https://github.com/bevyengine/bevy?rev=fb89a8649d9b359e53ffb6e5492
 [[package]]
 name = "bevy_rapier2d"
 version = "0.35.0"
+source = "git+https://github.com/mlm-games/bevy_rapier?rev=192f723fd9a5e1f94da5fbe1a5c20b6e76e13bd2#192f723fd9a5e1f94da5fbe1a5c20b6e76e13bd2"
 dependencies = [
  "bevy",
  "bitflags 2.13.1",
