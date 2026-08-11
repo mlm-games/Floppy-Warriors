@@ -47,6 +47,8 @@ pub struct RewardDef {
     pub id: &'static str,
     pub title: &'static str,
     pub description: &'static str,
+    pub rarity: u8,
+    pub category: &'static str,
     pub max_stacks: u32,
     pub min_round: u32,
     pub weight: u32,
@@ -57,6 +59,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "power",
         title: "Sharpened Arrows",
         description: "+25% arrow damage.",
+        rarity: 1,
+        category: "damage",
         max_stacks: 8,
         min_round: 1,
         weight: 12,
@@ -65,6 +69,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "vitality",
         title: "Reinforced Body",
         description: "+25 max HP.",
+        rarity: 1,
+        category: "defense",
         max_stacks: 6,
         min_round: 1,
         weight: 10,
@@ -73,6 +79,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "quickdraw",
         title: "Quick Draw",
         description: "+20% draw speed.",
+        rarity: 1,
+        category: "utility",
         max_stacks: 5,
         min_round: 1,
         weight: 9,
@@ -81,6 +89,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "velocity",
         title: "Tighter String",
         description: "+15% arrow velocity.",
+        rarity: 1,
+        category: "utility",
         max_stacks: 5,
         min_round: 1,
         weight: 8,
@@ -89,6 +99,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "head_hunter",
         title: "Head Hunter",
         description: "+25% headshot damage.",
+        rarity: 1,
+        category: "damage",
         max_stacks: 5,
         min_round: 1,
         weight: 8,
@@ -97,6 +109,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "quiver",
         title: "Split Shot",
         description: "+1 arrow with spread.",
+        rarity: 2,
+        category: "utility",
         max_stacks: 4,
         min_round: 2,
         weight: 7,
@@ -105,6 +119,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "knockback",
         title: "Braced Limbs",
         description: "+30% knockback.",
+        rarity: 1,
+        category: "utility",
         max_stacks: 4,
         min_round: 1,
         weight: 7,
@@ -113,6 +129,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "field_dressing",
         title: "Field Dressing",
         description: "Heal 45% max HP.",
+        rarity: 2,
+        category: "defense",
         max_stacks: 999,
         min_round: 1,
         weight: 6,
@@ -121,6 +139,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "crit",
         title: "Lucky Fletching",
         description: "+12% crit chance. Crits deal 2x damage.",
+        rarity: 2,
+        category: "damage",
         max_stacks: 5,
         min_round: 2,
         weight: 7,
@@ -129,6 +149,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "leech",
         title: "Bone Leech",
         description: "Heal 8 HP whenever you kill an enemy.",
+        rarity: 3,
+        category: "defense",
         max_stacks: 5,
         min_round: 3,
         weight: 6,
@@ -137,6 +159,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "glass",
         title: "Glass Cannon",
         description: "+75% damage, but lose 20 max HP.",
+        rarity: 3,
+        category: "damage",
         max_stacks: 2,
         min_round: 4,
         weight: 4,
@@ -145,6 +169,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "second_heart",
         title: "Second Heart",
         description: "Revive once at 50% HP.",
+        rarity: 4,
+        category: "defense",
         max_stacks: 1,
         min_round: 5,
         weight: 3,
@@ -153,6 +179,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "last_stand",
         title: "Last Stand",
         description: "+75% damage while below 35% HP.",
+        rarity: 4,
+        category: "damage",
         max_stacks: 1,
         min_round: 6,
         weight: 4,
@@ -161,6 +189,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "giant_arrows",
         title: "Giant Arrows",
         description: "+45% damage and knockback, -15% velocity.",
+        rarity: 2,
+        category: "damage",
         max_stacks: 3,
         min_round: 3,
         weight: 5,
@@ -169,6 +199,8 @@ const REWARD_POOL: &[RewardDef] = &[
         id: "needlepoint",
         title: "Needlepoint",
         description: "+30% velocity and +20% headshot damage.",
+        rarity: 2,
+        category: "damage",
         max_stacks: 4,
         min_round: 3,
         weight: 6,
@@ -206,6 +238,7 @@ pub fn begin_run(
             team: Team::Player,
             mods,
             base_hp: 100,
+            scale: 1.0,
         },
     );
     rm.player_entity = Some(player);
@@ -399,6 +432,15 @@ pub fn spawn_enemies_system(
         _ => {}
     }
 
+    let (enemy_tint, enemy_scale) = match cfg.archetype {
+        EnemyArchetype::Grunt => (Color::srgb(0.95, 0.95, 0.98), 1.0),
+        EnemyArchetype::Fast => (Color::srgb(0.45, 0.95, 1.0), 0.82),
+        EnemyArchetype::Tank => (Color::srgb(0.85, 0.55, 0.30), 1.35),
+        EnemyArchetype::Sniper => (Color::srgb(0.75, 0.50, 1.0), 0.95),
+        EnemyArchetype::Splitter => (Color::srgb(1.0, 0.55, 0.25), 1.05),
+        EnemyArchetype::Boss => (Color::srgb(1.0, 0.40, 0.35), 1.55),
+    };
+
     let enemy = spawn_warrior(
         &mut commands,
         SpawnWarrior {
@@ -406,35 +448,13 @@ pub fn spawn_enemies_system(
             team: Team::Enemy,
             mods: enemy_mods,
             base_hp: cfg.health,
+            scale: enemy_scale,
         },
     );
     commands.entity(enemy).insert(cfg.archetype);
-    commands.entity(enemy).insert(match cfg.archetype {
-        EnemyArchetype::Grunt => ArchetypeVisual {
-            tint: Color::srgb(0.95, 0.95, 0.98),
-            scale: 1.0,
-        },
-        EnemyArchetype::Fast => ArchetypeVisual {
-            tint: Color::srgb(0.45, 0.95, 1.0),
-            scale: 0.82,
-        },
-        EnemyArchetype::Tank => ArchetypeVisual {
-            tint: Color::srgb(0.85, 0.55, 0.30),
-            scale: 1.35,
-        },
-        EnemyArchetype::Sniper => ArchetypeVisual {
-            tint: Color::srgb(0.75, 0.50, 1.0),
-            scale: 0.95,
-        },
-        EnemyArchetype::Splitter => ArchetypeVisual {
-            tint: Color::srgb(1.0, 0.55, 0.25),
-            scale: 1.05,
-        },
-        EnemyArchetype::Boss => ArchetypeVisual {
-            tint: Color::srgb(1.0, 0.40, 0.35),
-            scale: 1.55,
-        },
-    });
+    commands
+        .entity(enemy)
+        .insert(ArchetypeVisual { tint: enemy_tint });
 
     let mut ai = EnemyAi {
         aim_error: cfg.aim_error,

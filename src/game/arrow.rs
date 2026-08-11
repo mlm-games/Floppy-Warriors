@@ -12,6 +12,7 @@ use super::round_manager::HitConfirmed;
 
 const ARROW_GRAVITY: f32 = 420.0;
 const STUCK_LIFETIME: f32 = 2.0;
+const HITSTUN_SECS: f32 = 0.22;
 
 pub fn spawn_arrow(
     commands: &mut Commands,
@@ -102,7 +103,8 @@ pub fn update_arrows(
 
         let best_limb_hit = {
             let wq = warriors.p0();
-            let mut best_limb_hit: Option<(f32, Entity, Entity, LimbKind, Vec2, f32, Vec2)> = None;
+            let mut best_limb_hit: Option<(f32, Entity, Entity, Entity, LimbKind, Vec2, f32, Vec2)> =
+                None;
 
             for (limb_e, limb, limb_tf) in &limbs {
                 let Ok(warrior) = wq.get(limb.root) else {
@@ -128,6 +130,7 @@ pub fn update_arrows(
                             t,
                             limb_e,
                             limb.root,
+                            warrior.torso,
                             limb.kind,
                             hit_point,
                             limb_angle,
@@ -159,7 +162,8 @@ pub fn update_arrows(
         };
 
         if limb_wins {
-            let Some((_, limb_e, root_e, kind, hit_point, limb_angle, limb_center)) = best_limb_hit
+            let Some((_, limb_e, root_e, torso_e, kind, hit_point, limb_angle, limb_center)) =
+                best_limb_hit
             else {
                 continue;
             };
@@ -215,13 +219,22 @@ pub fn update_arrows(
 
             #[cfg(feature = "physics")]
             {
+                let knock = arrow.velocity.normalize_or_zero();
+                // Whole-body impulse on the torso (primary knockback driver).
+                if let Ok(mut impulse) = impulses.get_mut(torso_e) {
+                    impulse.impulse += knock * damage as f32 * 8.0 * arrow.knockback_mult;
+                }
+                // Smaller local impulse on the hit limb so the limb lags the body.
                 if let Ok(mut impulse) = impulses.get_mut(limb_e) {
-                    impulse.impulse += arrow.velocity.normalize_or_zero()
-                        * damage as f32
-                        * 7.0
-                        * arrow.knockback_mult;
+                    impulse.impulse += knock * damage as f32 * 3.5 * arrow.knockback_mult;
                 }
             }
+
+            // Suppress the puppet motor briefly so the knockback reads instead
+            // of being instantly corrected by hover/upright control.
+            commands.entity(root_e).insert(HitStun {
+                remaining: HITSTUN_SECS,
+            });
 
             VfxSpawner::spawn_damage_number(
                 &mut commands,

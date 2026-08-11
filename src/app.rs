@@ -102,6 +102,38 @@ pub struct BoneShopItem {
     pub maxed: bool,
 }
 
+#[derive(Clone, Debug, Default)]
+pub struct RewardCardUi {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub rarity: u8,
+    pub current_stacks: u32,
+    pub max_stacks: u32,
+    pub category: String,
+    pub accent_rgb: [u8; 3],
+}
+
+pub fn rarity_accent(rarity: u8) -> [u8; 3] {
+    match rarity {
+        5 => [245, 190, 70],
+        4 => [190, 130, 240],
+        3 => [90, 150, 240],
+        2 => [120, 200, 130],
+        _ => [150, 160, 175],
+    }
+}
+
+pub fn rarity_name(rarity: u8) -> &'static str {
+    match rarity {
+        5 => "Legendary",
+        4 => "Epic",
+        3 => "Rare",
+        2 => "Uncommon",
+        _ => "Common",
+    }
+}
+
 #[derive(Resource, Clone)]
 pub struct SharedUi {
     pub phase: AppState,
@@ -130,8 +162,7 @@ pub struct SharedUi {
     pub player_max_hp: i32,
     pub enemy_hp: i32,
     pub enemy_max_hp: i32,
-    pub reward_titles: Vec<String>,
-    pub reward_descs: Vec<String>,
+    pub reward_cards: Vec<RewardCardUi>,
     pub bones_earned: u32,
     pub victory: bool,
     pub status_line: String,
@@ -168,8 +199,7 @@ impl Default for SharedUi {
             player_max_hp: 0,
             enemy_hp: 0,
             enemy_max_hp: 0,
-            reward_titles: Vec::new(),
-            reward_descs: Vec::new(),
+            reward_cards: Vec::new(),
             bones_earned: 0,
             victory: false,
             status_line: String::new(),

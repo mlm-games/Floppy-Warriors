@@ -14,10 +14,12 @@ pub struct SpawnWarrior {
     pub team: Team,
     pub mods: CombatMods,
     pub base_hp: i32,
+    pub scale: f32,
 }
 
 pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
     let hp = (cfg.base_hp + cfg.mods.max_hp_bonus).max(1);
+    let s = cfg.scale.max(0.2);
 
     let root = commands
         .spawn((
@@ -39,76 +41,76 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
         root,
         LimbKind::Torso,
         Vec2::ZERO,
-        Vec2::new(20.0, 40.0),
-        1.5,
-        16.0,
+        Vec2::new(20.0, 40.0) * s,
+        1.5 * s,
+        16.0 * s,
         Color::srgb(0.35, 0.55, 0.85),
     );
     let head = spawn_limb(
         commands,
         root,
         LimbKind::Head,
-        Vec2::new(0.0, 30.0),
-        Vec2::splat(18.0),
-        0.8,
-        11.0,
+        Vec2::new(0.0, 30.0) * s,
+        Vec2::splat(18.0) * s,
+        0.8 * s,
+        11.0 * s,
         Color::srgb(0.9, 0.75, 0.55),
     );
     let arm_l = spawn_limb(
         commands,
         root,
         LimbKind::ArmL,
-        Vec2::new(-13.0, 7.0),
-        Vec2::new(8.0, 26.0),
-        0.4,
-        8.0,
+        Vec2::new(-13.0, 7.0) * s,
+        Vec2::new(8.0, 26.0) * s,
+        0.4 * s,
+        8.0 * s,
         Color::srgb(0.9, 0.7, 0.5),
     );
     let arm_r = spawn_limb(
         commands,
         root,
         LimbKind::ArmR,
-        Vec2::new(14.0, 7.0),
-        Vec2::new(8.0, 26.0),
-        0.4,
-        8.0,
+        Vec2::new(14.0, 7.0) * s,
+        Vec2::new(8.0, 26.0) * s,
+        0.4 * s,
+        8.0 * s,
         Color::srgb(0.9, 0.7, 0.5),
     );
     let leg_l = spawn_limb(
         commands,
         root,
         LimbKind::LegL,
-        Vec2::new(-7.0, -33.0),
-        Vec2::new(8.0, 28.0),
-        0.5,
-        9.0,
+        Vec2::new(-7.0, -33.0) * s,
+        Vec2::new(8.0, 28.0) * s,
+        0.5 * s,
+        9.0 * s,
         Color::srgb(0.45, 0.4, 0.55),
     );
     let leg_r = spawn_limb(
         commands,
         root,
         LimbKind::LegR,
-        Vec2::new(7.0, -33.0),
-        Vec2::new(8.0, 28.0),
-        0.5,
-        9.0,
+        Vec2::new(7.0, -33.0) * s,
+        Vec2::new(8.0, 28.0) * s,
+        0.5 * s,
+        9.0 * s,
         Color::srgb(0.45, 0.4, 0.55),
     );
 
     #[cfg(feature = "physics")]
     {
         // Limits ported 1:1 from the original Godot PinJoint2D angular_limit values.
-        joint(commands, torso, head, Vec2::new(0.0, 20.0), Vec2::new(0.0, -9.0), [-0.785398, 0.785398]); // ±45°
-        joint(commands, torso, arm_l, Vec2::new(-10.0, 12.0), Vec2::new(0.0, 10.0), [-1.5708, 1.5708]); // ±90°
-        joint(commands, torso, arm_r, Vec2::new(10.0, 12.0), Vec2::new(0.0, 10.0), [-1.5708, 1.5708]); // ±90°
-        joint(commands, torso, leg_l, Vec2::new(-7.0, -18.0), Vec2::new(0.0, 12.0), [-0.0174533, 0.0349066]); // ~locked
-        joint(commands, torso, leg_r, Vec2::new(7.0, -18.0), Vec2::new(0.0, 12.0), [-0.0349066, 0.0174533]); // ~locked
+        joint(commands, torso, head, Vec2::new(0.0, 20.0) * s, Vec2::new(0.0, -9.0) * s, [-0.785398, 0.785398]); // ±45°
+        joint(commands, torso, arm_l, Vec2::new(-10.0, 12.0) * s, Vec2::new(0.0, 10.0) * s, [-1.5708, 1.5708]); // ±90°
+        joint(commands, torso, arm_r, Vec2::new(10.0, 12.0) * s, Vec2::new(0.0, 10.0) * s, [-1.5708, 1.5708]); // ±90°
+        joint(commands, torso, leg_l, Vec2::new(-7.0, -18.0) * s, Vec2::new(0.0, 12.0) * s, [-0.0174533, 0.0349066]); // ~locked
+        joint(commands, torso, leg_r, Vec2::new(7.0, -18.0) * s, Vec2::new(0.0, 12.0) * s, [-0.0349066, 0.0174533]); // ~locked
     }
 
     let bow_pivot = commands
         .spawn((
             GameCleanup,
-            Transform::from_xyz(0.0, 10.0, 2.0),
+            Transform::from_xyz(0.0, 10.0 * s, 2.0),
             GlobalTransform::default(),
             Visibility::default(),
             InheritedVisibility::default(),
@@ -119,10 +121,10 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
                 GameCleanup,
                 Sprite {
                     color: Color::srgb(0.55, 0.35, 0.15),
-                    custom_size: Some(Vec2::new(28.0, 8.0)),
+                    custom_size: Some(Vec2::new(28.0, 8.0) * s),
                     ..default()
                 },
-                Transform::from_xyz(18.0, 0.0, 0.1),
+                Transform::from_xyz(18.0 * s, 0.0, 0.1),
             ));
         })
         .id();
@@ -175,7 +177,7 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
         ));
     } else {
         commands.entity(root).insert(EnemyTag);
-        spawn_world_health_bar(commands, root);
+        spawn_world_health_bar(commands, root, s);
     }
 
     root
@@ -248,8 +250,8 @@ fn joint(
     commands.entity(b).insert(ImpulseJoint::new(a, joint));
 }
 
-fn spawn_world_health_bar(commands: &mut Commands, root: Entity) {
-    let width = 42.0;
+fn spawn_world_health_bar(commands: &mut Commands, root: Entity, scale: f32) {
+    let width = 42.0 * scale;
 
     let bg = commands
         .spawn((
@@ -265,7 +267,7 @@ fn spawn_world_health_bar(commands: &mut Commands, root: Entity) {
                 root,
                 fill: Entity::PLACEHOLDER,
                 width,
-                y_offset: 56.0,
+                y_offset: 56.0 * scale,
             },
         ))
         .id();
@@ -288,7 +290,7 @@ fn spawn_world_health_bar(commands: &mut Commands, root: Entity) {
         root,
         fill,
         width,
-        y_offset: 56.0,
+        y_offset: 56.0 * scale,
     });
 }
 
@@ -421,6 +423,8 @@ pub fn apply_ragdoll_on_death(
 
         commands.entity(entity).insert(RagdollApplied);
         commands.entity(entity).remove::<ActivePuppetMotor>();
+        commands.entity(entity).remove::<HitStun>();
+        commands.entity(entity).remove::<Recovery>();
         commands.entity(warrior.torso).remove::<LockedAxes>();
 
         if let Ok(mut impulse) = impulses.get_mut(warrior.torso) {
@@ -445,6 +449,8 @@ pub fn apply_ragdoll_on_death(
         if warrior.is_dead {
             commands.entity(entity).insert(RagdollApplied);
             commands.entity(entity).remove::<ActivePuppetMotor>();
+            commands.entity(entity).remove::<HitStun>();
+            commands.entity(entity).remove::<Recovery>();
         }
     }
 }
@@ -452,16 +458,32 @@ pub fn apply_ragdoll_on_death(
 #[cfg(feature = "physics")]
 pub fn active_puppet_motor(
     time: Res<Time>,
-    warriors: Query<(&WarriorRoot, &ActivePuppetMotor), Without<RagdollApplied>>,
+    warriors: Query<
+        (
+            &WarriorRoot,
+            &ActivePuppetMotor,
+            Option<&HitStun>,
+            Option<&Recovery>,
+        ),
+        Without<RagdollApplied>,
+    >,
     global_tf: Query<&GlobalTransform>,
     mut physics: Query<(&mut ExternalImpulse, &Velocity)>,
 ) {
     let dt = time.delta_secs().clamp(0.001, 0.05);
 
-    for (warrior, motor) in &warriors {
+    for (warrior, motor, hitstun, recovery) in &warriors {
         if warrior.is_dead {
             continue;
         }
+
+        // Knockback hit: suspend all motor control so the impulse reads.
+        if let Some(stun) = hitstun
+            && stun.remaining > 0.0
+        {
+            continue;
+        }
+        let recovering = recovery.is_some_and(|r| r.remaining > 0.0);
 
         let Ok(torso_tf) = global_tf.get(warrior.torso) else {
             continue;
@@ -473,11 +495,15 @@ pub fn active_puppet_motor(
         let torso_pos = torso_tf.translation().truncate();
         let torso_angle = global_z_angle(torso_tf);
 
-        let y_error = motor.stand_y - torso_pos.y;
-        let y_impulse = y_error * motor.hover_strength
-            - velocity.linear.y * motor.hover_damping;
+        // Hover keeps the warrior near stand_y but only ever damps *downward*
+        // velocity, so airdodges / knockback launches are not cancelled mid-air.
+        if !recovering {
+            let y_error = motor.stand_y - torso_pos.y;
+            let downward = velocity.linear.y.min(0.0);
+            let y_impulse = y_error * motor.hover_strength - downward * motor.hover_damping;
 
-        impulse.impulse += Vec2::Y * y_impulse * dt;
+            impulse.impulse += Vec2::Y * y_impulse * dt;
+        }
 
         let angle_error = wrap_angle(torso_angle);
         let torque = -angle_error * motor.upright_strength
@@ -489,6 +515,16 @@ pub fn active_puppet_motor(
 
 #[cfg(not(feature = "physics"))]
 pub fn active_puppet_motor() {}
+
+pub fn tick_motor_state(time: Res<Time>, mut q: Query<&mut HitStun>, mut rq: Query<&mut Recovery>) {
+    let dt = time.delta_secs();
+    for mut stun in &mut q {
+        stun.remaining = (stun.remaining - dt).max(0.0);
+    }
+    for mut recovery in &mut rq {
+        recovery.remaining = (recovery.remaining - dt).max(0.0);
+    }
+}
 
 fn wrap_angle(mut angle: f32) -> f32 {
     while angle > std::f32::consts::PI {
@@ -505,19 +541,16 @@ fn global_z_angle(tf: &GlobalTransform) -> f32 {
     right.y.atan2(right.x)
 }
 
-/// Runs once when ArchetypeVisual is added; tints limbs + scales root.
+/// Runs once when ArchetypeVisual is added; tints limbs. Physics scale is
+/// baked into the body at spawn time (see SpawnWarrior::scale).
 pub fn apply_archetype_visuals(
     mut commands: Commands,
     q: Query<(Entity, &ArchetypeVisual), Added<ArchetypeVisual>>,
     children: Query<&Children>,
     mut sprites: Query<&mut Sprite>,
-    mut transforms: Query<&mut Transform>,
     limbs: Query<&WarriorLimb>,
 ) {
     for (root, vis) in &q {
-        if let Ok(mut tf) = transforms.get_mut(root) {
-            tf.scale = Vec3::splat(vis.scale);
-        }
         tint_tree(root, vis.tint, &children, &mut sprites, &limbs);
         commands.entity(root).remove::<ArchetypeVisual>();
     }

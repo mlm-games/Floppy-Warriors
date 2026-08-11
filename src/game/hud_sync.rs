@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use crate::app::UiBridge;
+use crate::app::{rarity_accent, RewardCardUi, UiBridge};
 use crate::game::components::{EnemyTag, PlayerTag, WarriorRoot};
 use crate::game::round_manager::{RoundManager, RunPhase};
 
@@ -76,6 +76,21 @@ pub fn sync_run_to_ui(
     ui.enemy_hp = enemy.map(|w| w.health).unwrap_or(0);
     ui.enemy_max_hp = enemy.map(|w| w.max_health).unwrap_or(0);
 
-    ui.reward_titles = rm.reward_choices.iter().map(|r| r.title.to_string()).collect();
-    ui.reward_descs = rm.reward_choices.iter().map(|r| r.description.to_string()).collect();
+    ui.reward_cards = rm
+        .reward_choices
+        .iter()
+        .map(|r| {
+            let stacks = *rm.upgrade_counts.get(r.id).unwrap_or(&0);
+            RewardCardUi {
+                id: r.id.to_string(),
+                title: r.title.to_string(),
+                description: r.description.to_string(),
+                rarity: r.rarity,
+                current_stacks: stacks,
+                max_stacks: r.max_stacks,
+                category: r.category.to_string(),
+                accent_rgb: rarity_accent(r.rarity),
+            }
+        })
+        .collect();
 }

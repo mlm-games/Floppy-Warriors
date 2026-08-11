@@ -44,6 +44,7 @@ impl Plugin for GamePlugin {
                 Update,
                 (
                     warrior::active_puppet_motor,
+                    warrior::tick_motor_state,
                     player::player_aim_and_bow,
                     enemy_ai::enemy_ai_system,
                     arrow::update_arrows,
@@ -144,6 +145,9 @@ fn death_fade(
     mut q: Query<(Entity, &mut round_manager::DyingFade)>,
     children_q: Query<&Children>,
     mut sprites: Query<&mut Sprite>,
+    bars: Query<(Entity, &WorldHealthBar)>,
+    arrows: Query<(Entity, &Arrow)>,
+    limbs: Query<&WarriorLimb>,
 ) {
     for (entity, mut fade) in &mut q {
         fade.0 -= time.delta_secs();
@@ -152,7 +156,23 @@ fn death_fade(
         fade_recursive(entity, alpha, &children_q, &mut sprites);
 
         if fade.0 <= 0.0 {
+            // despawn() recursively removes all ChildOf descendants: every
+            // limb body, its joints, the bow pivot + bow sprite.
             commands.entity(entity).despawn();
+            // World-space health bar is not a child; tear it down explicitly.
+            for (bar_e, bar) in &bars {
+                if bar.root == entity {
+                    commands.entity(bar_e).despawn();
+                }
+            }
+            // Arrows stuck into this warrior's limbs die with it.
+            for (arrow_e, arrow) in &arrows {
+                if let Some(parent) = arrow.stuck_to
+                    && limbs.get(parent).is_ok_and(|l| l.root == entity)
+                {
+                    commands.entity(arrow_e).despawn();
+                }
+            }
         }
     }
 }

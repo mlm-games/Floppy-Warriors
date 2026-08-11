@@ -133,10 +133,21 @@ pub struct ActivePuppetMotor {
     pub upright_damping: f32,
 }
 
+#[derive(Component)]
+pub struct HitStun {
+    pub remaining: f32,
+}
+
+/// Short post-airdodge window where hover is suspended (upright torque keeps
+/// acting) so the launch burst is not cancelled by vertical correction.
+#[derive(Component)]
+pub struct Recovery {
+    pub remaining: f32,
+}
+
 #[derive(Component, Clone, Copy)]
 pub struct ArchetypeVisual {
     pub tint: Color,
-    pub scale: f32,
 }
 
 #[derive(Component, Clone, Copy, PartialEq, Eq, Debug)]

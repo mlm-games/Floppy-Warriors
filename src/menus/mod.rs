@@ -19,7 +19,7 @@ use repose_ui::anim_ext::{
 use repose_ui::overlay::OverlayHandle;
 use repose_ui::{Column, Row, Text as RText, TextStyle, ViewExt, ZStack};
 
-use crate::app::{AppState, OverlayMenu, SharedUi};
+use crate::app::{rarity_name, AppState, OverlayMenu, SharedUi};
 
 fn t(translations: &HashMap<String, String>, key: &str, fallback: &str) -> String {
     translations
@@ -406,22 +406,41 @@ fn pause_panel(
 fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let tr = &st.translations;
     let cards: Vec<View> = st
-        .reward_titles
+        .reward_cards
         .iter()
-        .zip(st.reward_descs.iter())
         .enumerate()
-        .map(|(i, (title, desc))| {
+        .map(|(i, card)| {
             let a = actions.clone();
-            let t = title.clone();
-            let d = desc.clone();
+            let title = card.title.clone();
+            let desc = card.description.clone();
+            let category = card.category.clone();
+            let accent = col(card.accent_rgb[0], card.accent_rgb[1], card.accent_rgb[2]);
+            let stacks = format!("{}/{}", card.current_stacks, card.max_stacks);
+            let meta = format!("{}  \u{00b7}  {}", rarity_name(card.rarity), category);
             FilledTonalButton(
-                Modifier::new().width(260.0).height(96.0),
+                Modifier::new().width(260.0).height(112.0),
                 move || push(&a, UiAction::ChooseReward(i)),
                 ButtonConfig::default(),
                 move || {
-                    Column(Modifier::new().align_items(AlignItems::CENTER)).child((
-                        RText(t.clone()).size(18.0).color(RColor::WHITE),
-                        RText(d.clone()).size(13.0).color(col(210, 210, 220)),
+                    Column(
+                        Modifier::new()
+                            .align_items(AlignItems::CENTER)
+                            .padding(8.0),
+                    )
+                    .child((
+                        RText(title.clone()).size(18.0).color(accent),
+                        RText(desc.clone())
+                            .size(13.0)
+                            .color(col(210, 210, 220)),
+                        spacer(4.0),
+                        RText(meta).size(11.0).color(col(170, 170, 180)),
+                        RText(stacks)
+                            .size(11.0)
+                            .color(if card.current_stacks >= card.max_stacks {
+                                col(230, 180, 80)
+                            } else {
+                                col(140, 160, 190)
+                            }),
                     ))
                 },
             )

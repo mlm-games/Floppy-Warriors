@@ -113,6 +113,12 @@ pub fn player_aim_and_bow(
             if dodge_pressed && dodge.remaining <= 0.0 {
                 dodge.remaining = dodge.cooldown;
 
+                // Recovery window: hover is suspended so the launch burst is
+                // not immediately cancelled by vertical motor correction.
+                commands.entity(entity).insert(Recovery {
+                    remaining: 0.35,
+                });
+
                 #[cfg(feature = "physics")]
                 {
                     if let Ok((mut impulse, mut velocity)) = torso_physics.get_mut(warrior.torso) {
