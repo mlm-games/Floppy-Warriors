@@ -34,6 +34,7 @@ impl Plugin for GamePlugin {
                     player::player_aim_and_bow,
                     enemy_ai::enemy_ai_system,
                     arrow::update_arrows,
+                    warrior::apply_ragdoll_on_death,
                     round_manager::spawn_enemies_system,
                     round_manager::on_hits,
                     round_manager::apply_reward_system,

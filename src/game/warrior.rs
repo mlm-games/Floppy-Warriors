@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 #[cfg(feature = "physics")]
 use bevy_rapier2d::prelude::*;
+use rand::RngExt;
 
 use super::components::*;
 
@@ -96,11 +97,15 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
 
     #[cfg(feature = "physics")]
     {
-        joint(commands, torso, head, Vec2::new(0.0, 20.0), Vec2::new(0.0, -9.0));
-        joint(commands, torso, arm_l, Vec2::new(-10.0, 12.0), Vec2::new(0.0, 10.0));
-        joint(commands, torso, arm_r, Vec2::new(10.0, 12.0), Vec2::new(0.0, 10.0));
-        joint(commands, torso, leg_l, Vec2::new(-7.0, -18.0), Vec2::new(0.0, 12.0));
-        joint(commands, torso, leg_r, Vec2::new(7.0, -18.0), Vec2::new(0.0, 12.0));
+        // Limits ported 1:1 from the original Godot PinJoint2D angular_limit values.
+        joint(commands, torso, head, Vec2::new(0.0, 20.0), Vec2::new(0.0, -9.0), [-0.785398, 0.785398]); // ±45°
+        joint(commands, torso, arm_l, Vec2::new(-10.0, 12.0), Vec2::new(0.0, 10.0), [-1.5708, 1.5708]); // ±90°
+        joint(commands, torso, arm_r, Vec2::new(10.0, 12.0), Vec2::new(0.0, 10.0), [-1.5708, 1.5708]); // ±90°
+        joint(commands, torso, leg_l, Vec2::new(-7.0, -18.0), Vec2::new(0.0, 12.0), [-0.0174533, 0.0349066]); // ~locked
+        joint(commands, torso, leg_r, Vec2::new(7.0, -18.0), Vec2::new(0.0, 12.0), [-0.0349066, 0.0174533]); // ~locked
+
+        // Torso stays upright while alive. Unlocked on death for a full ragdoll flop.
+        commands.entity(torso).insert(LockedAxes::ROTATION_LOCKED);
     }
 
     let bow_pivot = commands
@@ -218,10 +223,18 @@ fn spawn_limb(
 }
 
 #[cfg(feature = "physics")]
-fn joint(commands: &mut Commands, a: Entity, b: Entity, anchor_a: Vec2, anchor_b: Vec2) {
+fn joint(
+    commands: &mut Commands,
+    a: Entity,
+    b: Entity,
+    anchor_a: Vec2,
+    anchor_b: Vec2,
+    limits: [f32; 2],
+) {
     let joint = RevoluteJointBuilder::new()
         .local_anchor1(anchor_a)
-        .local_anchor2(anchor_b);
+        .local_anchor2(anchor_b)
+        .limits(limits);
     commands.entity(b).insert(ImpulseJoint::new(a, joint));
 }
 
@@ -374,5 +387,42 @@ pub fn fire_from_bow(
             warrior.headshot_mult,
             warrior.knockback_mult,
         );
+    }
+}
+
+#[cfg(feature = "physics")]
+pub fn apply_ragdoll_on_death(
+    mut commands: Commands,
+    warriors: Query<(Entity, &WarriorRoot), Without<RagdollApplied>>,
+    mut impulses: Query<&mut ExternalImpulse>,
+) {
+    for (entity, warrior) in &warriors {
+        if !warrior.is_dead {
+            continue;
+        }
+
+        commands.entity(entity).insert(RagdollApplied);
+        commands.entity(warrior.torso).remove::<LockedAxes>();
+
+        if let Ok(mut impulse) = impulses.get_mut(warrior.torso) {
+            let mut rng = rand::rng();
+            impulse.impulse += Vec2::new(
+                rng.random_range(-30.0..30.0),
+                rng.random_range(0.0..40.0),
+            );
+            impulse.torque_impulse += rng.random_range(-3.0..3.0);
+        }
+    }
+}
+
+#[cfg(not(feature = "physics"))]
+pub fn apply_ragdoll_on_death(
+    mut commands: Commands,
+    warriors: Query<(Entity, &WarriorRoot), Without<RagdollApplied>>,
+) {
+    for (entity, warrior) in &warriors {
+        if warrior.is_dead {
+            commands.entity(entity).insert(RagdollApplied);
+        }
     }
 }

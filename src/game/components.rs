@@ -112,6 +112,9 @@ pub struct WorldHealthBar {
     pub y_offset: f32,
 }
 
+#[derive(Component)]
+pub struct RagdollApplied;
+
 #[derive(Clone, Copy, Debug)]
 pub struct CombatMods {
     pub damage_mult: f32,
