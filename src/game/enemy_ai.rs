@@ -3,7 +3,6 @@ use rand::RngExt;
 
 use super::components::*;
 use super::round_manager::{RoundManager, RunPhase};
-use super::warrior::fire_from_bow;
 
 #[derive(Clone, Debug)]
 pub struct EnemySpawnConfig {
@@ -15,6 +14,7 @@ pub struct EnemySpawnConfig {
     pub decision_max: f32,
     pub boss: bool,
     pub score_value: u32,
+    pub archetype: EnemyArchetype,
 }
 
 pub fn configure_enemy(ai: &mut EnemyAi, cfg: &EnemySpawnConfig) {
@@ -66,8 +66,15 @@ pub fn enemy_ai_system(
         let target = player_pos + ai.aim_offset;
         let angle = (target - origin).y.atan2((target - origin).x);
 
+        let torso_angle = {
+            let right = (enemy_torso_tf.compute_transform().rotation * Vec3::X).truncate();
+            right.y.atan2(right.x)
+        };
+
+        let local_angle = angle - torso_angle;
+
         if let Ok(mut local_bow_tf) = bow_tf.get_mut(warrior.bow_pivot) {
-            local_bow_tf.rotation = Quat::from_rotation_z(angle);
+            local_bow_tf.rotation = Quat::from_rotation_z(local_angle);
         }
 
         if ai.drawing {
@@ -77,9 +84,16 @@ pub fn enemy_ai_system(
             ai.draw_timer -= time.delta_secs();
 
             if ai.draw_timer <= 0.0 {
-                if let Ok(global_bow_tf) = torso_tf.get(warrior.bow_pivot) {
-                    fire_from_bow(&mut commands, enemy_entity, &*warrior, &bow, global_bow_tf);
-                }
+                let spawn_origin = origin + Vec2::from_angle(angle) * 36.0;
+
+                super::warrior::fire_from_bow_angled(
+                    &mut commands,
+                    enemy_entity,
+                    &*warrior,
+                    &bow,
+                    spawn_origin,
+                    angle,
+                );
                 bow.drawing = false;
                 bow.draw_power = 0.0;
                 ai.drawing = false;

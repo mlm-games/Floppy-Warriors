@@ -31,6 +31,7 @@ impl Plugin for GamePlugin {
             .add_systems(
                 Update,
                 (
+                    warrior::active_puppet_motor,
                     player::player_aim_and_bow,
                     enemy_ai::enemy_ai_system,
                     arrow::update_arrows,

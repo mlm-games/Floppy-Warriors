@@ -46,6 +46,13 @@ pub struct WarriorRoot {
     pub draw_speed_mult: f32,
     pub arrow_count: u32,
     pub spread_deg: f32,
+
+    pub damage_taken_mult: f32,
+    pub crit_chance: f32,
+    pub crit_mult: f32,
+    pub kill_heal: i32,
+    pub revives: u32,
+    pub last_stand: bool,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -93,6 +100,8 @@ pub struct Arrow {
     pub damage_mult: f32,
     pub headshot_mult: f32,
     pub knockback_mult: f32,
+    pub crit_chance: f32,
+    pub crit_mult: f32,
     pub velocity: Vec2,
     pub has_hit: bool,
     pub stuck_life: f32,
@@ -115,6 +124,25 @@ pub struct WorldHealthBar {
 #[derive(Component)]
 pub struct RagdollApplied;
 
+#[derive(Component)]
+pub struct ActivePuppetMotor {
+    pub stand_y: f32,
+    pub hover_strength: f32,
+    pub hover_damping: f32,
+    pub upright_strength: f32,
+    pub upright_damping: f32,
+}
+
+#[derive(Component, Clone, Copy, PartialEq, Eq, Debug)]
+pub enum EnemyArchetype {
+    Grunt,
+    Fast,
+    Tank,
+    Sniper,
+    Splitter,
+    Boss,
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct CombatMods {
     pub damage_mult: f32,
@@ -126,6 +154,9 @@ pub struct CombatMods {
     pub spread_deg: f32,
     pub max_hp_bonus: i32,
     pub airdodge_cd_mult: f32,
+    pub damage_taken_mult: f32,
+    pub crit_chance: f32,
+    pub crit_mult: f32,
 }
 
 impl Default for CombatMods {
@@ -140,6 +171,9 @@ impl Default for CombatMods {
             spread_deg: 10.0,
             max_hp_bonus: 0,
             airdodge_cd_mult: 1.0,
+            damage_taken_mult: 1.0,
+            crit_chance: 0.0,
+            crit_mult: 2.0,
         }
     }
 }

@@ -59,8 +59,16 @@ pub fn player_aim_and_bow(
         };
 
         let angle = (target - origin).y.atan2((target - origin).x);
+
+        let torso_angle = {
+            let right = (torso_global.compute_transform().rotation * Vec3::X).truncate();
+            right.y.atan2(right.x)
+        };
+
+        let local_angle = angle - torso_angle;
+
         if let Ok(mut local_bow_tf) = bow_tf.get_mut(warrior.bow_pivot) {
-            local_bow_tf.rotation = Quat::from_rotation_z(angle);
+            local_bow_tf.rotation = Quat::from_rotation_z(local_angle);
         }
 
         if mouse.just_pressed(MouseButton::Left) || keys.just_pressed(KeyCode::Space) {
@@ -76,9 +84,16 @@ pub fn player_aim_and_bow(
         if (mouse.just_released(MouseButton::Left) || keys.just_released(KeyCode::Space))
             && bow.drawing
         {
-            if let Ok(global_bow_tf) = torso_tf.get(warrior.bow_pivot) {
-                super::warrior::fire_from_bow(&mut commands, entity, warrior, &bow, global_bow_tf);
-            }
+            let spawn_origin = origin + Vec2::from_angle(angle) * 36.0;
+
+            super::warrior::fire_from_bow_angled(
+                &mut commands,
+                entity,
+                warrior,
+                &bow,
+                spawn_origin,
+                angle,
+            );
             bow.drawing = false;
             bow.draw_power = 0.0;
         }

@@ -103,9 +103,6 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
         joint(commands, torso, arm_r, Vec2::new(10.0, 12.0), Vec2::new(0.0, 10.0), [-1.5708, 1.5708]); // ±90°
         joint(commands, torso, leg_l, Vec2::new(-7.0, -18.0), Vec2::new(0.0, 12.0), [-0.0174533, 0.0349066]); // ~locked
         joint(commands, torso, leg_r, Vec2::new(7.0, -18.0), Vec2::new(0.0, 12.0), [-0.0349066, 0.0174533]); // ~locked
-
-        // Torso stays upright while alive. Unlocked on death for a full ragdoll flop.
-        commands.entity(torso).insert(LockedAxes::ROTATION_LOCKED);
     }
 
     let bow_pivot = commands
@@ -144,6 +141,12 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
         draw_speed_mult: cfg.mods.draw_speed_mult,
         arrow_count: cfg.mods.arrow_count,
         spread_deg: cfg.mods.spread_deg,
+        damage_taken_mult: cfg.mods.damage_taken_mult,
+        crit_chance: cfg.mods.crit_chance,
+        crit_mult: cfg.mods.crit_mult,
+        kill_heal: 0,
+        revives: 0,
+        last_stand: false,
     };
 
     commands.entity(root).insert((
@@ -151,6 +154,13 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
         BowState {
             drawing: false,
             draw_power: 0.0,
+        },
+        ActivePuppetMotor {
+            stand_y: cfg.translation.y,
+            hover_strength: 5.0,
+            hover_damping: 1.8,
+            upright_strength: 10.0,
+            upright_damping: 2.4,
         },
     ));
 
@@ -386,6 +396,59 @@ pub fn fire_from_bow(
             warrior.damage_mult,
             warrior.headshot_mult,
             warrior.knockback_mult,
+            warrior.crit_chance,
+            warrior.crit_mult,
+        );
+    }
+}
+
+pub fn fire_from_bow_angled(
+    commands: &mut Commands,
+    warrior_e: Entity,
+    warrior: &WarriorRoot,
+    bow: &BowState,
+    origin: Vec2,
+    base_angle: f32,
+) {
+    if warrior.is_dead || !bow.drawing {
+        return;
+    }
+
+    let mut damage_mult = warrior.damage_mult;
+
+    if warrior.last_stand {
+        let hp_pct = warrior.health.max(0) as f32 / warrior.max_health.max(1) as f32;
+        if hp_pct <= 0.35 {
+            damage_mult *= 1.75;
+        }
+    }
+
+    let force = MIN_FORCE + (bow.draw_power / MAX_DRAW) * MAX_FORCE_ADD;
+    let n = warrior.arrow_count.max(1);
+
+    for i in 0..n {
+        let mut angle = base_angle;
+
+        if n > 1 {
+            let step = warrior.spread_deg / (n - 1) as f32;
+            let off = -warrior.spread_deg * 0.5 + step * i as f32;
+            angle += off.to_radians();
+        }
+
+        let dir = Vec2::from_angle(angle);
+
+        super::arrow::spawn_arrow(
+            commands,
+            origin,
+            dir * force * warrior.velocity_mult,
+            warrior_e,
+            warrior.team,
+            20.0,
+            damage_mult,
+            warrior.headshot_mult,
+            warrior.knockback_mult,
+            warrior.crit_chance,
+            warrior.crit_mult,
         );
     }
 }
@@ -402,15 +465,18 @@ pub fn apply_ragdoll_on_death(
         }
 
         commands.entity(entity).insert(RagdollApplied);
+        commands.entity(entity).remove::<ActivePuppetMotor>();
         commands.entity(warrior.torso).remove::<LockedAxes>();
 
         if let Ok(mut impulse) = impulses.get_mut(warrior.torso) {
             let mut rng = rand::rng();
+
             impulse.impulse += Vec2::new(
-                rng.random_range(-30.0..30.0),
-                rng.random_range(0.0..40.0),
+                rng.random_range(-90.0..90.0),
+                rng.random_range(40.0..140.0),
             );
-            impulse.torque_impulse += rng.random_range(-3.0..3.0);
+
+            impulse.torque_impulse += rng.random_range(-12.0..12.0);
         }
     }
 }
@@ -423,6 +489,63 @@ pub fn apply_ragdoll_on_death(
     for (entity, warrior) in &warriors {
         if warrior.is_dead {
             commands.entity(entity).insert(RagdollApplied);
+            commands.entity(entity).remove::<ActivePuppetMotor>();
         }
     }
+}
+
+#[cfg(feature = "physics")]
+pub fn active_puppet_motor(
+    time: Res<Time>,
+    warriors: Query<(&WarriorRoot, &ActivePuppetMotor), Without<RagdollApplied>>,
+    global_tf: Query<&GlobalTransform>,
+    mut physics: Query<(&mut ExternalImpulse, &Velocity)>,
+) {
+    let dt = time.delta_secs().clamp(0.001, 0.05);
+
+    for (warrior, motor) in &warriors {
+        if warrior.is_dead {
+            continue;
+        }
+
+        let Ok(torso_tf) = global_tf.get(warrior.torso) else {
+            continue;
+        };
+        let Ok((mut impulse, velocity)) = physics.get_mut(warrior.torso) else {
+            continue;
+        };
+
+        let torso_pos = torso_tf.translation().truncate();
+        let torso_angle = global_z_angle(torso_tf);
+
+        let y_error = motor.stand_y - torso_pos.y;
+        let y_impulse = y_error * motor.hover_strength
+            - velocity.linear.y * motor.hover_damping;
+
+        impulse.impulse += Vec2::Y * y_impulse * dt;
+
+        let angle_error = wrap_angle(torso_angle);
+        let torque = -angle_error * motor.upright_strength
+            - velocity.angular * motor.upright_damping;
+
+        impulse.torque_impulse += torque * dt;
+    }
+}
+
+#[cfg(not(feature = "physics"))]
+pub fn active_puppet_motor() {}
+
+fn wrap_angle(mut angle: f32) -> f32 {
+    while angle > std::f32::consts::PI {
+        angle -= std::f32::consts::TAU;
+    }
+    while angle < -std::f32::consts::PI {
+        angle += std::f32::consts::TAU;
+    }
+    angle
+}
+
+fn global_z_angle(tf: &GlobalTransform) -> f32 {
+    let right = (tf.compute_transform().rotation * Vec3::X).truncate();
+    right.y.atan2(right.x)
 }

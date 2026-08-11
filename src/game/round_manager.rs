@@ -1,5 +1,6 @@
+use std::collections::HashMap;
+
 use bevy::prelude::*;
-use rand::seq::SliceRandom;
 use rand::RngExt;
 use crate::game::components::*;
 use crate::game::enemy_ai::{configure_enemy, EnemySpawnConfig};
@@ -36,6 +37,9 @@ pub struct RoundManager {
     pub spawn_cooldown: f32,
     pub player_entity: Option<Entity>,
     pub active_enemy: Option<Entity>,
+    pub loop_count: u32,
+    pub upgrade_counts: HashMap<&'static str, u32>,
+    pub victory_claimed: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -43,18 +47,132 @@ pub struct RewardDef {
     pub id: &'static str,
     pub title: &'static str,
     pub description: &'static str,
+    pub max_stacks: u32,
+    pub min_round: u32,
+    pub weight: u32,
 }
 
 const REWARD_POOL: &[RewardDef] = &[
-    RewardDef { id: "power", title: "Sharpened Arrows", description: "+25% arrow damage." },
-    RewardDef { id: "vitality", title: "Reinforced Body", description: "+25 max HP." },
-    RewardDef { id: "quickdraw", title: "Quick Draw", description: "+20% draw speed." },
-    RewardDef { id: "velocity", title: "Tighter String", description: "+15% arrow velocity." },
-    RewardDef { id: "head_hunter", title: "Head Hunter", description: "+25% headshot damage." },
-    RewardDef { id: "quiver", title: "Split Shot", description: "+1 arrow with spread." },
-    RewardDef { id: "knockback", title: "Braced Limbs", description: "+30% knockback." },
-    RewardDef { id: "field_dressing", title: "Field Dressing", description: "Heal 45% max HP." },
-    RewardDef { id: "acrobatics", title: "Acrobatics", description: "-15% airdodge CD." },
+    RewardDef {
+        id: "power",
+        title: "Sharpened Arrows",
+        description: "+25% arrow damage.",
+        max_stacks: 8,
+        min_round: 1,
+        weight: 12,
+    },
+    RewardDef {
+        id: "vitality",
+        title: "Reinforced Body",
+        description: "+25 max HP.",
+        max_stacks: 6,
+        min_round: 1,
+        weight: 10,
+    },
+    RewardDef {
+        id: "quickdraw",
+        title: "Quick Draw",
+        description: "+20% draw speed.",
+        max_stacks: 5,
+        min_round: 1,
+        weight: 9,
+    },
+    RewardDef {
+        id: "velocity",
+        title: "Tighter String",
+        description: "+15% arrow velocity.",
+        max_stacks: 5,
+        min_round: 1,
+        weight: 8,
+    },
+    RewardDef {
+        id: "head_hunter",
+        title: "Head Hunter",
+        description: "+25% headshot damage.",
+        max_stacks: 5,
+        min_round: 1,
+        weight: 8,
+    },
+    RewardDef {
+        id: "quiver",
+        title: "Split Shot",
+        description: "+1 arrow with spread.",
+        max_stacks: 4,
+        min_round: 2,
+        weight: 7,
+    },
+    RewardDef {
+        id: "knockback",
+        title: "Braced Limbs",
+        description: "+30% knockback.",
+        max_stacks: 4,
+        min_round: 1,
+        weight: 7,
+    },
+    RewardDef {
+        id: "field_dressing",
+        title: "Field Dressing",
+        description: "Heal 45% max HP.",
+        max_stacks: 999,
+        min_round: 1,
+        weight: 6,
+    },
+    RewardDef {
+        id: "crit",
+        title: "Lucky Fletching",
+        description: "+12% crit chance. Crits deal 2x damage.",
+        max_stacks: 5,
+        min_round: 2,
+        weight: 7,
+    },
+    RewardDef {
+        id: "leech",
+        title: "Bone Leech",
+        description: "Heal 8 HP whenever you kill an enemy.",
+        max_stacks: 5,
+        min_round: 3,
+        weight: 6,
+    },
+    RewardDef {
+        id: "glass",
+        title: "Glass Cannon",
+        description: "+75% damage, but lose 20 max HP.",
+        max_stacks: 2,
+        min_round: 4,
+        weight: 4,
+    },
+    RewardDef {
+        id: "second_heart",
+        title: "Second Heart",
+        description: "Revive once at 50% HP.",
+        max_stacks: 1,
+        min_round: 5,
+        weight: 3,
+    },
+    RewardDef {
+        id: "last_stand",
+        title: "Last Stand",
+        description: "+75% damage while below 35% HP.",
+        max_stacks: 1,
+        min_round: 6,
+        weight: 4,
+    },
+    RewardDef {
+        id: "giant_arrows",
+        title: "Giant Arrows",
+        description: "+45% damage and knockback, -15% velocity.",
+        max_stacks: 3,
+        min_round: 3,
+        weight: 5,
+    },
+    RewardDef {
+        id: "needlepoint",
+        title: "Needlepoint",
+        description: "+30% velocity and +20% headshot damage.",
+        max_stacks: 4,
+        min_round: 3,
+        weight: 6,
+    },
 ];
 
 #[derive(Message, Clone, Debug)]
@@ -84,7 +202,7 @@ pub fn begin_run(
     let player = spawn_warrior(
         &mut commands,
         SpawnWarrior {
-            translation: Vec2::new(-350.0, -80.0),
+            translation: Vec2::new(-350.0, -112.0),
             team: Team::Player,
             mods,
             base_hp: 100,
@@ -109,20 +227,61 @@ fn start_next_round(rm: &mut RoundManager) {
 }
 
 fn build_enemy_config(round: u32, boss: bool) -> EnemySpawnConfig {
+    let archetype = choose_enemy_archetype(round, boss);
+
     let mut hp_m = 1.0 + (round - 1) as f32 * 0.14;
     let mut dmg_m = 1.0 + (round - 1) as f32 * 0.055;
-    let mut draw_m = 1.0 + ((round - 1) as f32 * 0.025).min(0.45);
-    let mut aim = (26.0 - round as f32 * 1.2).max(7.0);
-    let mut dmin = (1.6 - round as f32 * 0.04).max(0.75);
-    let mut dmax = (3.2 - round as f32 * 0.06).max(1.5);
-    if boss {
-        hp_m *= 2.25;
-        dmg_m *= 1.15;
-        draw_m *= 1.1;
-        aim *= 0.65;
-        dmin *= 0.85;
-        dmax *= 0.85;
+    let mut draw_m = 1.0 + ((round - 1) as f32 * 0.025).min(0.65);
+    let mut aim = (26.0 - round as f32 * 1.2).max(6.0);
+    let mut dmin = (1.6 - round as f32 * 0.04).max(0.55);
+    let mut dmax = (3.2 - round as f32 * 0.06).max(1.15);
+
+    match archetype {
+        EnemyArchetype::Grunt => {}
+
+        EnemyArchetype::Fast => {
+            hp_m *= 0.75;
+            dmg_m *= 0.85;
+            draw_m *= 1.35;
+            dmin *= 0.65;
+            dmax *= 0.65;
+            aim *= 1.15;
+        }
+
+        EnemyArchetype::Tank => {
+            hp_m *= 1.85;
+            dmg_m *= 0.9;
+            draw_m *= 0.75;
+            dmin *= 1.25;
+            dmax *= 1.25;
+        }
+
+        EnemyArchetype::Sniper => {
+            hp_m *= 0.85;
+            dmg_m *= 1.45;
+            draw_m *= 0.95;
+            aim *= 0.45;
+            dmin *= 1.2;
+            dmax *= 1.2;
+        }
+
+        EnemyArchetype::Splitter => {
+            hp_m *= 0.95;
+            dmg_m *= 0.7;
+            draw_m *= 1.05;
+            aim *= 1.05;
+        }
+
+        EnemyArchetype::Boss => {
+            hp_m *= 2.6;
+            dmg_m *= 1.25;
+            draw_m *= 1.15;
+            aim *= 0.6;
+            dmin *= 0.8;
+            dmax *= 0.8;
+        }
     }
+
     EnemySpawnConfig {
         health: (100.0 * hp_m).round() as i32,
         damage_mult: dmg_m,
@@ -132,6 +291,53 @@ fn build_enemy_config(round: u32, boss: bool) -> EnemySpawnConfig {
         decision_max: dmax,
         boss,
         score_value: if boss { 50 + round * 10 } else { 10 + round * 2 },
+        archetype,
+    }
+}
+
+fn choose_enemy_archetype(round: u32, boss: bool) -> EnemyArchetype {
+    if boss {
+        return EnemyArchetype::Boss;
+    }
+
+    if round < 3 {
+        return EnemyArchetype::Grunt;
+    }
+
+    let roll = rand::rng().random_range(0..100);
+
+    match round {
+        0..=4 => {
+            if roll < 70 {
+                EnemyArchetype::Grunt
+            } else {
+                EnemyArchetype::Fast
+            }
+        }
+        5..=9 => {
+            if roll < 35 {
+                EnemyArchetype::Grunt
+            } else if roll < 60 {
+                EnemyArchetype::Fast
+            } else if roll < 82 {
+                EnemyArchetype::Tank
+            } else {
+                EnemyArchetype::Sniper
+            }
+        }
+        _ => {
+            if roll < 22 {
+                EnemyArchetype::Grunt
+            } else if roll < 42 {
+                EnemyArchetype::Fast
+            } else if roll < 62 {
+                EnemyArchetype::Tank
+            } else if roll < 82 {
+                EnemyArchetype::Sniper
+            } else {
+                EnemyArchetype::Splitter
+            }
+        }
     }
 }
 
@@ -171,19 +377,38 @@ pub fn spawn_enemies_system(
         rand::rng().random_range(-480.0..-250.0)
     };
 
+    let mut enemy_mods = CombatMods {
+        damage_mult: cfg.damage_mult,
+        draw_speed_mult: cfg.draw_speed_mult,
+        ..default()
+    };
+
+    match cfg.archetype {
+        EnemyArchetype::Tank => {
+            enemy_mods.damage_taken_mult = 0.85;
+        }
+        EnemyArchetype::Splitter => {
+            enemy_mods.arrow_count = 3;
+            enemy_mods.spread_deg = 20.0;
+        }
+        EnemyArchetype::Boss => {
+            enemy_mods.arrow_count = 3;
+            enemy_mods.spread_deg = 24.0;
+            enemy_mods.crit_chance = 0.15;
+        }
+        _ => {}
+    }
+
     let enemy = spawn_warrior(
         &mut commands,
         SpawnWarrior {
-            translation: Vec2::new(spawn_x, -80.0),
+            translation: Vec2::new(spawn_x, -112.0),
             team: Team::Enemy,
-            mods: CombatMods {
-                damage_mult: cfg.damage_mult,
-                draw_speed_mult: cfg.draw_speed_mult,
-                ..default()
-            },
+            mods: enemy_mods,
             base_hp: cfg.health,
         },
     );
+    commands.entity(enemy).insert(cfg.archetype);
 
     let mut ai = EnemyAi {
         aim_error: cfg.aim_error,
@@ -225,8 +450,17 @@ pub fn on_hits(
                     rm.enemies_remaining = rm.enemies_remaining.saturating_sub(1);
                     rm.active_enemy = None;
                     if rm.enemies_remaining == 0 {
-                        if rm.round >= FINAL_ROUND {
-                            end_run(&mut rm, true);
+                        if rm.round >= FINAL_ROUND && rm.round % FINAL_ROUND == 0 {
+                            if !rm.victory_claimed {
+                                rm.victory = true;
+                                rm.victory_claimed = true;
+                                rm.score += 250;
+                            }
+
+                            rm.loop_count += 1;
+
+                            let player = rm.player_entity;
+                            enter_reward(&mut rm, &mut warriors, player);
                         } else {
                             let player = rm.player_entity;
                             enter_reward(&mut rm, &mut warriors, player);
@@ -249,22 +483,58 @@ fn enter_reward(
     player: Option<Entity>,
 ) {
     rm.phase = RunPhase::Reward;
+
     if let Some(p) = player {
         if let Ok(mut w) = warriors.get_mut(p) {
             let heal = ((w.max_health as f32) * 0.12).round().max(5.0) as i32;
             w.health = (w.health + heal).min(w.max_health);
         }
     }
-    let mut pool: Vec<RewardDef> = REWARD_POOL.to_vec();
-    pool.shuffle(&mut rand::rng());
-    rm.reward_choices = pool.into_iter().take(3).collect();
+
+    rm.reward_choices = roll_rewards(rm);
+}
+
+fn roll_rewards(rm: &RoundManager) -> Vec<RewardDef> {
+    let mut pool: Vec<RewardDef> = REWARD_POOL
+        .iter()
+        .filter(|r| rm.round >= r.min_round)
+        .filter(|r| {
+            let count = *rm.upgrade_counts.get(r.id).unwrap_or(&0);
+            count < r.max_stacks
+        })
+        .cloned()
+        .collect();
+
+    let mut result = Vec::new();
+
+    while result.len() < 3 && !pool.is_empty() {
+        let total_weight: u32 = pool.iter().map(|r| r.weight).sum();
+        let mut roll = rand::rng().random_range(0..total_weight);
+
+        let mut chosen_index = 0;
+
+        for (i, reward) in pool.iter().enumerate() {
+            if roll < reward.weight {
+                chosen_index = i;
+                break;
+            }
+            roll -= reward.weight;
+        }
+
+        result.push(pool.remove(chosen_index));
+    }
+
+    result
 }
 
 fn end_run(rm: &mut RoundManager, victory: bool) {
     rm.phase = RunPhase::GameOver;
-    rm.victory = victory;
     if victory {
-        rm.score += 250;
+        rm.victory = true;
+        if !rm.victory_claimed {
+            rm.score += 250;
+            rm.victory_claimed = true;
+        }
     }
 }
 
@@ -281,6 +551,8 @@ pub fn apply_reward_system(
             continue;
         }
         if let Ok((mut w, ad)) = warriors.single_mut() {
+            *rm.upgrade_counts.entry(*id).or_insert(0) += 1;
+
             match *id {
                 "power" => w.damage_mult *= 1.25,
                 "vitality" => {
@@ -298,6 +570,33 @@ pub fn apply_reward_system(
                 "field_dressing" => {
                     let h = ((w.max_health as f32) * 0.45).round() as i32;
                     w.health = (w.health + h).min(w.max_health);
+                }
+                "crit" => {
+                    w.crit_chance = (w.crit_chance + 0.12).min(0.75);
+                    w.crit_mult = w.crit_mult.max(2.0);
+                }
+                "leech" => {
+                    w.kill_heal += 8;
+                }
+                "glass" => {
+                    w.damage_mult *= 1.75;
+                    w.max_health = (w.max_health - 20).max(1);
+                    w.health = w.health.min(w.max_health);
+                }
+                "second_heart" => {
+                    w.revives += 1;
+                }
+                "last_stand" => {
+                    w.last_stand = true;
+                }
+                "giant_arrows" => {
+                    w.damage_mult *= 1.45;
+                    w.knockback_mult *= 1.45;
+                    w.velocity_mult *= 0.85;
+                }
+                "needlepoint" => {
+                    w.velocity_mult *= 1.30;
+                    w.headshot_mult *= 1.20;
                 }
                 "acrobatics" => {
                     if let Some(mut a) = ad {

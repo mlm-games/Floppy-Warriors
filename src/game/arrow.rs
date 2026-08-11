@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::ExternalImpulse;
 use game_utils_bevy::screen_effects::{ScreenEffects, Trauma};
 use game_utils_bevy::vfx::VfxSpawner;
+use rand::RngExt;
 
 use super::components::*;
 use super::round_manager::HitConfirmed;
@@ -20,6 +21,8 @@ pub fn spawn_arrow(
     damage_mult: f32,
     headshot_mult: f32,
     knockback_mult: f32,
+    crit_chance: f32,
+    crit_mult: f32,
 ) {
     let angle = velocity.y.atan2(velocity.x);
 
@@ -32,6 +35,8 @@ pub fn spawn_arrow(
             damage_mult,
             headshot_mult,
             knockback_mult,
+            crit_chance,
+            crit_mult,
             velocity,
             has_hit: false,
             stuck_life: STUCK_LIFETIME,
@@ -160,8 +165,26 @@ pub fn update_arrows(
                     1.0
                 };
 
-            let damage = (arrow.damage * arrow.damage_mult * mult).round().max(1.0) as i32;
             let headshot = kind == LimbKind::Head;
+
+            let target_damage_taken_mult = {
+                warriors
+                    .p0()
+                    .get(root_e)
+                    .map(|w| w.damage_taken_mult)
+                    .unwrap_or(1.0)
+            };
+
+            let crit = rand::rng().random::<f32>() < arrow.crit_chance;
+
+            let mut damage_f =
+                arrow.damage * arrow.damage_mult * mult * target_damage_taken_mult;
+
+            if crit {
+                damage_f *= arrow.crit_mult;
+            }
+
+            let damage = damage_f.round().max(1.0) as i32;
 
             let mut killed = false;
             if let Ok(mut warrior) = warriors.p1().get_mut(root_e)
@@ -169,8 +192,18 @@ pub fn update_arrows(
             {
                 warrior.health = (warrior.health - damage).max(0);
                 killed = warrior.health <= 0;
+
                 if killed {
-                    warrior.is_dead = true;
+                    if warrior.team == Team::Player && warrior.revives > 0 {
+                        warrior.revives -= 1;
+                        warrior.health = (warrior.max_health / 2).max(1);
+                        warrior.is_dead = false;
+                        killed = false;
+
+                        ScreenEffects::add_trauma(&mut trauma, 0.65);
+                    } else {
+                        warrior.is_dead = true;
+                    }
                 }
             }
 
