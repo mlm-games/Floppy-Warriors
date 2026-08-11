@@ -9,7 +9,8 @@ enum BusNames { # Use get string from enum fn
 const SCREENS = {
 	CREDITS = "uid://bq0gelfcjnqvg",
 	SETTINGS = "uid://dp42fom7cc3n0",
-	MENU = "uid://ddl5roo03rvdl",
+	MENU = "uid://m3mdfmp7nyrx",
+	GAME = "uid://bcyg1w7ev5m1i",
 	END = "uid://o7bist5hmyv6",
 }
 

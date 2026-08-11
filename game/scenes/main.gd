@@ -329,53 +329,53 @@ func _on_run_ended(
 	var kills := int(stats.get("kills", 0))
 	var headshots := int(stats.get("headshots", 0))
 	var damage := int(stats.get("damage_dealt", 0))
+	var bones_earned := int(stats.get("bones_earned", 0))
+	var bones_total := int(stats.get("bones_total", Meta.bones))
 
-	if victory:
-		status_label.text = (
-			"RUN COMPLETE!\n"
-			+ "Score: %d | Kills: %d\n"
-			+ "Headshots: %d | Damage: %d\n"
-			+ "Press R or Click to Restart"
-		) % [
-			final_score,
-			kills,
-			headshots,
-			damage
-		]
-	else:
-		status_label.text = (
-			"YOU LOSE!\n"
-			+ "Reached round %d/%d\n"
-			+ "Score: %d | Kills: %d\n"
-			+ "Headshots: %d | Damage: %d\n"
-			+ "Press R or Click to Restart"
-		) % [
-			round_reached,
-			RoundManager.FINAL_ROUND,
-			final_score,
-			kills,
-			headshots,
-			damage
-		]
+	var header := "RUN COMPLETE!" if victory else "YOU LOSE!"
+	status_label.text = (
+		"%s\n"
+		+ "Round %d/%d | Score %d\n"
+		+ "Kills %d | Headshots %d | Dmg %d\n"
+		+ "+%d Bones  (total %d)\n"
+		+ "R / Click = Retry   |   Esc/M = Menu"
+	) % [
+		header,
+		round_reached,
+		RoundManager.FINAL_ROUND,
+		final_score,
+		kills,
+		headshots,
+		damage,
+		bones_earned,
+		bones_total,
+	]
 
 	update_health_labels()
 
 
 func _input(event: InputEvent) -> void:
-	if (
-		game_over
-		and (
+	if game_over:
+		if (
 			event.is_action_pressed("restart_game")
 			or event.is_action_pressed("fire_bow")
-		)
-	):
-		get_tree().reload_current_scene()
-		return
+		):
+			get_tree().reload_current_scene()
+			return
+		if (
+			event.is_action_pressed("ui_cancel")
+			or (
+				event is InputEventKey
+				and event.pressed
+				and not event.echo
+				and event.keycode == KEY_M
+			)
+		):
+			STransitions.change_scene_with_transition(C.SCREENS.MENU)
+			return
 
 	if event.is_action_pressed("settings"):
-		STransitions.change_scene_with_transition(
-			"uid://dp42fom7cc3n0"
-		)
+		STransitions.change_scene_with_transition(C.SCREENS.SETTINGS)
 
 
 func tween_camera_on_player_death() -> void:

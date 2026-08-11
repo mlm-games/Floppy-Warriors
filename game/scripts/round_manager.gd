@@ -131,6 +131,10 @@ func begin_run(player_reference: Player) -> void:
 	):
 		player.hit_confirmed.connect(_on_player_hit_confirmed)
 
+	# Apply permanent meta bonuses at the start of every run.
+	if is_instance_valid(player):
+		Meta.apply_to_player(player)
+
 	start_next_round()
 
 
@@ -406,6 +410,15 @@ func end_run(victory: bool = false) -> void:
 	var final_stats := stats.duplicate(true)
 	final_stats["round"] = round_number
 	final_stats["score"] = ranking_points
+
+	var bones_earned := Meta.award_run(
+		victory,
+		round_number,
+		ranking_points,
+		final_stats
+	)
+	final_stats["bones_earned"] = bones_earned
+	final_stats["bones_total"] = Meta.bones
 
 	run_ended.emit(
 		victory,

@@ -20,6 +20,7 @@ config/icon="uid://dgjx66abfarre"
 
 WindowManager="*res://game/scripts/autoloads/window_manager.gd"
 CommonGlobals="*res://game/scripts/autoloads/common_globals.gd"
+Meta="*res://game/scripts/autoloads/meta_save.gd"
 STransitions="*res://addons/my-ecosystem-template/transitions/screen_transitions.tscn"
 UiAudioM="*res://addons/my-ecosystem-template/managers/audio/ui_audio_manager.gd"
 AudioM="*res://addons/my-ecosystem-template/managers/audio/autoload_audio_manager.gd"
