@@ -2,8 +2,9 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 #[cfg(feature = "physics")]
 use bevy_rapier2d::prelude::*;
+
 use super::components::*;
-use super::round_manager::{RunPhase, RoundManager};
+use super::round_manager::{RoundManager, RunPhase};
 
 pub fn player_aim_and_bow(
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -13,83 +14,96 @@ pub fn player_aim_and_bow(
     time: Res<Time>,
     phase: Res<RoundManager>,
     mut commands: Commands,
-    mut players: Query<(
-        Entity,
-        &mut WarriorRoot,
-        &mut BowState,
-        Option<&mut Airdodge>,
-    ), With<PlayerTag>>,
+    mut players: Query<(Entity, &WarriorRoot, &mut BowState, Option<&mut Airdodge>), With<PlayerTag>>,
     torso_tf: Query<&GlobalTransform>,
     mut bow_tf: Query<&mut Transform>,
-    #[cfg(feature = "physics")] mut impulses: Query<&mut ExternalImpulse>,
+    #[cfg(feature = "physics")] mut torso_physics: Query<(&mut ExternalImpulse, &mut Velocity)>,
+    #[cfg(not(feature = "physics"))] mut root_tf: Query<&mut Transform>,
 ) {
     if phase.phase != RunPhase::Combat {
         return;
     }
-    let Ok((cam, cam_tf)) = camera_q.single() else {
+
+    let Ok((camera, camera_tf)) = camera_q.single() else {
         return;
     };
     let Ok(window) = windows.single() else {
         return;
     };
-    for (e, w, mut bow, airdodge) in &mut players {
-        if w.is_dead {
+
+    for (entity, warrior, mut bow, airdodge) in &mut players {
+        if warrior.is_dead {
             continue;
         }
-        // Aim
-        let Ok(torso_gt) = torso_tf.get(w.torso) else {
+
+        let Ok(torso_global) = torso_tf.get(warrior.torso) else {
             continue;
         };
-        let origin = torso_gt.translation().truncate();
-        let mut aim = None;
-        if let Some(cursor) = window.cursor_position() {
-            if let Ok(world) = cam.viewport_to_world_2d(cam_tf, cursor) {
-                aim = Some(world);
-            }
-        }
-        // stick fallback
+        let origin = torso_global.translation().truncate();
+
+        let mouse_target = window
+            .cursor_position()
+            .and_then(|cursor| camera.viewport_to_world_2d(camera_tf, cursor).ok());
+
         let stick = Vec2::new(
             keys.pressed(KeyCode::ArrowRight) as i32 as f32
                 - keys.pressed(KeyCode::ArrowLeft) as i32 as f32,
             keys.pressed(KeyCode::ArrowUp) as i32 as f32
                 - keys.pressed(KeyCode::ArrowDown) as i32 as f32,
         );
-        let target = if stick.length() > 0.2 {
-            origin + stick.normalize() * 100.0
+
+        let target = if stick.length_squared() > 0.04 {
+            origin + stick.normalize() * 120.0
         } else {
-            aim.unwrap_or(origin + Vec2::X * 100.0)
+            mouse_target.unwrap_or(origin + Vec2::X * 100.0)
         };
+
         let angle = (target - origin).y.atan2((target - origin).x);
-        if let Ok(mut bt) = bow_tf.get_mut(w.bow_pivot) {
-            bt.rotation = Quat::from_rotation_z(angle);
+        if let Ok(mut local_bow_tf) = bow_tf.get_mut(warrior.bow_pivot) {
+            local_bow_tf.rotation = Quat::from_rotation_z(angle);
         }
-        // Draw / release
+
         if mouse.just_pressed(MouseButton::Left) || keys.just_pressed(KeyCode::Space) {
             bow.drawing = true;
             bow.draw_power = 0.0;
         }
+
         if bow.drawing {
-            let speed = 160.0 * w.draw_speed_mult.max(0.1);
+            let speed = 160.0 * warrior.draw_speed_mult.max(0.1);
             bow.draw_power = (bow.draw_power + speed * time.delta_secs()).min(100.0);
         }
+
         if (mouse.just_released(MouseButton::Left) || keys.just_released(KeyCode::Space))
             && bow.drawing
         {
-            if let Ok(gt) = torso_tf.get(w.bow_pivot) {
-                super::warrior::fire_from_bow(&mut commands, e, &w, &bow, gt);
+            if let Ok(global_bow_tf) = torso_tf.get(warrior.bow_pivot) {
+                super::warrior::fire_from_bow(&mut commands, entity, warrior, &bow, global_bow_tf);
             }
             bow.drawing = false;
             bow.draw_power = 0.0;
         }
-        // Airdodge
-        if let Some(mut ad) = airdodge {
-            ad.remaining = (ad.remaining - time.delta_secs()).max(0.0);
-            if keys.just_pressed(KeyCode::ShiftLeft) && ad.remaining <= 0.0 {
-                ad.remaining = ad.cooldown;
+
+        if let Some(mut dodge) = airdodge {
+            dodge.remaining = (dodge.remaining - time.delta_secs()).max(0.0);
+
+            let dodge_pressed =
+                keys.just_pressed(KeyCode::ShiftLeft) || keys.just_pressed(KeyCode::ShiftRight);
+
+            if dodge_pressed && dodge.remaining <= 0.0 {
+                dodge.remaining = dodge.cooldown;
+
                 #[cfg(feature = "physics")]
                 {
-                    if let Ok(mut imp) = impulses.get_mut(w.torso) {
-                        imp.impulse += Vec2::Y * ad.impulse;
+                    if let Ok((mut impulse, mut velocity)) = torso_physics.get_mut(warrior.torso) {
+                        impulse.impulse += Vec2::Y * dodge.impulse;
+                        velocity.linear.y = velocity.linear.y.max(dodge.impulse * 0.9);
+                    }
+                }
+
+                #[cfg(not(feature = "physics"))]
+                {
+                    if let Ok(mut tf) = root_tf.get_mut(entity) {
+                        tf.translation.y += 18.0;
                     }
                 }
             }

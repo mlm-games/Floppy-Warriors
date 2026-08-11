@@ -139,7 +139,8 @@ pub fn spawn_enemies_system(
     time: Res<Time>,
     mut rm: ResMut<RoundManager>,
     mut commands: Commands,
-    player_q: Query<&Transform, With<PlayerTag>>,
+    players: Query<&WarriorRoot, With<PlayerTag>>,
+    torso_tf: Query<&GlobalTransform>,
 ) {
     if rm.phase != RunPhase::Combat || rm.active_enemy.is_some() {
         return;
@@ -147,22 +148,29 @@ pub fn spawn_enemies_system(
     if rm.enemies_spawned >= rm.enemies_total {
         return;
     }
+
     rm.spawn_cooldown -= time.delta_secs();
     if rm.spawn_cooldown > 0.0 {
         return;
     }
+
     let boss = rm.round > 0 && rm.round % 5 == 0;
     let cfg = build_enemy_config(rm.round, boss);
     rm.current_enemy_score = cfg.score_value;
-    let player_x = player_q
+
+    let player_x = players
         .single()
-        .map(|t| t.translation.x)
+        .ok()
+        .and_then(|w| torso_tf.get(w.torso).ok())
+        .map(|tf| tf.translation().x)
         .unwrap_or(-350.0);
+
     let spawn_x = if player_x < 0.0 {
         rand::rng().random_range(250.0..480.0)
     } else {
         rand::rng().random_range(-480.0..-250.0)
     };
+
     let enemy = spawn_warrior(
         &mut commands,
         SpawnWarrior {
@@ -176,6 +184,7 @@ pub fn spawn_enemies_system(
             base_hp: cfg.health,
         },
     );
+
     let mut ai = EnemyAi {
         aim_error: cfg.aim_error,
         decision_min: cfg.decision_min,
@@ -188,6 +197,7 @@ pub fn spawn_enemies_system(
     };
     configure_enemy(&mut ai, &cfg);
     commands.entity(enemy).insert(ai);
+
     rm.enemies_spawned += 1;
     rm.active_enemy = Some(enemy);
 }

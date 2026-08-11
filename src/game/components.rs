@@ -24,11 +24,11 @@ impl LimbKind {
     }
 }
 
-/// Marks a limb collider as belonging to a warrior root.
 #[derive(Component)]
 pub struct WarriorLimb {
     pub root: Entity,
     pub kind: LimbKind,
+    pub hit_radius: f32,
 }
 
 #[derive(Component)]
@@ -39,7 +39,6 @@ pub struct WarriorRoot {
     pub is_dead: bool,
     pub torso: Entity,
     pub bow_pivot: Entity,
-    /// Combat mods (in-run + meta).
     pub damage_mult: f32,
     pub velocity_mult: f32,
     pub knockback_mult: f32,
@@ -64,7 +63,7 @@ pub struct EnemyTag;
 #[derive(Component)]
 pub struct BowState {
     pub drawing: bool,
-    pub draw_power: f32, // 0..100
+    pub draw_power: f32,
 }
 
 #[derive(Component)]
@@ -94,12 +93,24 @@ pub struct Arrow {
     pub damage_mult: f32,
     pub headshot_mult: f32,
     pub knockback_mult: f32,
+    pub velocity: Vec2,
     pub has_hit: bool,
     pub stuck_life: f32,
+    pub stuck_to: Option<Entity>,
+    pub stuck_local_offset: Vec2,
+    pub stuck_angle_offset: f32,
 }
 
 #[derive(Component)]
 pub struct Ground;
+
+#[derive(Component)]
+pub struct WorldHealthBar {
+    pub root: Entity,
+    pub fill: Entity,
+    pub width: f32,
+    pub y_offset: f32,
+}
 
 #[derive(Clone, Copy, Debug)]
 pub struct CombatMods {

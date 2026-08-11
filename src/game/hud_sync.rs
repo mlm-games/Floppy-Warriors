@@ -6,11 +6,12 @@ use crate::game::round_manager::{RoundManager, RunPhase};
 pub fn sync_run_to_ui(
     bridge: Res<UiBridge>,
     rm: Res<RoundManager>,
-    warriors: Query<(&WarriorRoot, Option<&PlayerTag>, Option<&EnemyTag>)>,
+    warriors: Query<(Entity, &WarriorRoot, Option<&PlayerTag>, Option<&EnemyTag>)>,
 ) {
     let Ok(mut ui) = bridge.shared.lock() else {
         return;
     };
+
     ui.run_round = rm.round;
     ui.run_score = rm.score;
     ui.run_phase = match rm.phase {
@@ -51,27 +52,30 @@ pub fn sync_run_to_ui(
     };
 
     let mut player: Option<&WarriorRoot> = None;
-    let mut enemy: Option<&WarriorRoot> = None;
-    for (w, is_p, is_e) in &warriors {
-        if is_p.is_some() {
-            player = Some(w);
+    let mut active_enemy: Option<&WarriorRoot> = None;
+    let mut fallback_enemy: Option<&WarriorRoot> = None;
+
+    for (entity, warrior, is_player, is_enemy) in &warriors {
+        if is_player.is_some() {
+            player = Some(warrior);
         }
-        if is_e.is_some() {
-            enemy = Some(w);
+
+        if is_enemy.is_some() && !warrior.is_dead {
+            if Some(entity) == rm.active_enemy {
+                active_enemy = Some(warrior);
+            } else if fallback_enemy.is_none() {
+                fallback_enemy = Some(warrior);
+            }
         }
     }
+
+    let enemy = active_enemy.or(fallback_enemy);
+
     ui.player_hp = player.map(|w| w.health).unwrap_or(0);
     ui.player_max_hp = player.map(|w| w.max_health).unwrap_or(0);
     ui.enemy_hp = enemy.map(|w| w.health).unwrap_or(0);
     ui.enemy_max_hp = enemy.map(|w| w.max_health).unwrap_or(0);
-    ui.reward_titles = rm
-        .reward_choices
-        .iter()
-        .map(|r| r.title.to_string())
-        .collect();
-    ui.reward_descs = rm
-        .reward_choices
-        .iter()
-        .map(|r| r.description.to_string())
-        .collect();
+
+    ui.reward_titles = rm.reward_choices.iter().map(|r| r.title.to_string()).collect();
+    ui.reward_descs = rm.reward_choices.iter().map(|r| r.description.to_string()).collect();
 }
