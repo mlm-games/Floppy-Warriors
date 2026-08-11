@@ -7,9 +7,10 @@ use repose_core::{prelude::Modifier, remember};
 use repose_ui::overlay::OverlayHandle;
 
 use crate::asset_tracking::AssetsLoading;
-use crate::demo::DemoPlugin;
 use crate::dev_tools::DevToolsPlugin;
-use crate::menus::{self, UiAction, UiBridge};
+use crate::game::GamePlugin;
+use crate::menus::{self, UiAction};
+pub use crate::menus::UiBridge;
 use crate::save::SaveData;
 use crate::screens::ScreensPlugin;
 use crate::theme::ThemePlugin;
@@ -42,6 +43,17 @@ const TRANSLATION_KEYS: &[&str] = &[
     "best",
     "controls-hint",
     "loading",
+    "bones",
+    "best-round",
+    "bone-shop",
+    "round",
+    "boss-round",
+    "choose-reward",
+    "you-lose",
+    "run-complete",
+    "retry-hint",
+    "hp",
+    "enemy",
 ];
 
 const LOCALES: &[(&str, &str)] = &[
@@ -73,10 +85,21 @@ pub enum OverlayMenu {
     Settings,
     Credits,
     Pause,
+    BoneShop,
 }
 
 #[derive(Resource, Default)]
 pub struct PendingUnpause(pub Option<Timer>);
+
+#[derive(Clone, Debug)]
+pub struct BoneShopItem {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub level: u32,
+    pub cost: u32,
+    pub maxed: bool,
+}
 
 #[derive(Resource, Clone)]
 pub struct SharedUi {
@@ -95,6 +118,23 @@ pub struct SharedUi {
     pub saved_language: String,
     pub available_languages: Vec<String>,
     pub translations: HashMap<String, String>,
+    pub bones: u32,
+    pub best_round: u32,
+    pub total_runs: u32,
+    pub total_victories: u32,
+    pub run_round: u32,
+    pub run_score: u32,
+    pub run_phase: u8, // 0 combat 1 reward 2 over
+    pub player_hp: i32,
+    pub player_max_hp: i32,
+    pub enemy_hp: i32,
+    pub enemy_max_hp: i32,
+    pub reward_titles: Vec<String>,
+    pub reward_descs: Vec<String>,
+    pub bones_earned: u32,
+    pub victory: bool,
+    pub status_line: String,
+    pub bone_shop_items: Vec<BoneShopItem>,
 }
 
 impl Default for SharedUi {
@@ -115,6 +155,23 @@ impl Default for SharedUi {
             saved_language: "en".to_string(),
             available_languages: vec!["en".to_string()],
             translations: HashMap::new(),
+            bones: 0,
+            best_round: 0,
+            total_runs: 0,
+            total_victories: 0,
+            run_round: 0,
+            run_score: 0,
+            run_phase: 0,
+            player_hp: 0,
+            player_max_hp: 0,
+            enemy_hp: 0,
+            enemy_max_hp: 0,
+            reward_titles: Vec::new(),
+            reward_descs: Vec::new(),
+            bones_earned: 0,
+            victory: false,
+            status_line: String::new(),
+            bone_shop_items: Vec::new(),
         }
     }
 }
@@ -158,12 +215,12 @@ impl Plugin for AppPlugin {
                 SavePlugin::<SaveData>::new(SaveManager::new(
                     "com",
                     "mlm-games",
-                    "my-ecosystem-bevy",
+                    "floppy-warriors",
                     "save.ron",
-                    1,
+                    2,
                 )),
                 ScreensPlugin,
-                DemoPlugin,
+                GamePlugin,
                 DevToolsPlugin,
             ))
             .add_systems(Startup, setup_camera)
@@ -214,7 +271,7 @@ fn sync_shared_ui(
     overlay: Res<OverlayMenu>,
     bridge: Res<UiBridge>,
     save: Res<SaveData>,
-    score: Option<Res<crate::demo::Score>>,
+    rm: Res<crate::game::RoundManager>,
     transition: Res<Transition<AppState>>,
     flash: Res<game_utils_bevy::screen_effects::FlashWhite>,
     locale: Res<LocaleResources>,
@@ -229,7 +286,29 @@ fn sync_shared_ui(
     ui.paused = paused.0;
     ui.overlay = *overlay;
     ui.high_score = save.high_score;
-    ui.score = score.map(|s| s.0).unwrap_or(0);
+    ui.bones = save.bones;
+    ui.best_round = save.best_round;
+    ui.total_runs = save.total_runs;
+    ui.total_victories = save.total_victories;
+    ui.score = rm.score;
+    ui.bone_shop_items = crate::game::meta::CATALOG
+        .iter()
+        .map(|d| {
+            let lvl = save.meta_level(d.id);
+            BoneShopItem {
+                id: d.id.to_string(),
+                name: d.name.to_string(),
+                description: d.description.to_string(),
+                level: lvl,
+                cost: if lvl >= d.max_level {
+                    0
+                } else {
+                    crate::game::meta::cost_for(&save, d.id)
+                },
+                maxed: lvl >= d.max_level,
+            }
+        })
+        .collect();
     if *overlay != OverlayMenu::Settings {
         ui.master_vol = save.settings.master_volume;
         ui.sfx_vol = save.settings.sfx_volume;
@@ -287,6 +366,8 @@ fn process_ui_actions(
     mut virtual_time: ResMut<Time<Virtual>>,
     mut pending_unpause: ResMut<PendingUnpause>,
     mut locale: ResMut<LocaleResources>,
+    rm: Res<crate::game::RoundManager>,
+    mut rewards: MessageWriter<crate::game::ChooseReward>,
 ) {
     let Ok(mut q) = bridge.actions.lock() else {
         return;
@@ -368,6 +449,21 @@ fn process_ui_actions(
             UiAction::SetLanguage(ref lang) => {
                 if locale.available.contains(lang) {
                     locale.set_locale(lang);
+                }
+            }
+            UiAction::OpenBoneShop => *overlay = OverlayMenu::BoneShop,
+            UiAction::CloseBoneShop => *overlay = OverlayMenu::None,
+            UiAction::BuyMeta(id) => {
+                if crate::game::meta::buy(&mut save, &id) {
+                    let _ = manager.save(&*save);
+                    if let Ok(mut ui) = bridge.shared.lock() {
+                        ui.bones = save.bones;
+                    }
+                }
+            }
+            UiAction::ChooseReward(i) => {
+                if let Some(r) = rm.reward_choices.get(i) {
+                    rewards.write(crate::game::ChooseReward(r.id));
                 }
             }
         }

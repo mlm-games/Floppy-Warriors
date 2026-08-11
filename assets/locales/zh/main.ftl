@@ -1,4 +1,4 @@
-app-title = My Ecosystem Bevy
+app-title = Floppy Warriors
 start-game = 开始游戏
 settings = 设置
 credits = 致谢
@@ -16,3 +16,18 @@ score = 分数
 best = 最高分
 controls-hint = WASD移动 | 点击/空格射击 | Esc暂停
 loading = 加载中...
+bones = Bones
+best-round = Best Round
+bone-shop = Bone Shop
+round = Round
+boss-round = BOSS ROUND
+choose-reward = Choose a Reward
+you-lose = YOU LOSE
+run-complete = RUN COMPLETE
+retry-hint = R / Click = Retry
+hp = HP
+enemy = Enemy
+level = Lv
+runs = Runs
+wins = Wins
+victory-bonus = 15 rounds cleared!

@@ -43,6 +43,10 @@ pub enum UiAction {
     SaveSettings,
     NextLanguage,
     SetLanguage(String),
+    OpenBoneShop,
+    CloseBoneShop,
+    BuyMeta(String),
+    ChooseReward(usize),
 }
 
 #[derive(bevy::prelude::Resource, Clone)]
@@ -87,11 +91,28 @@ pub fn compose_root(
                 credits_ui(&st, actions.clone()),
                 popup_anim_config("title_credits"),
             ),
+            AnimatedVisibility(
+                st.overlay == OverlayMenu::BoneShop,
+                bone_shop_ui(&st, actions.clone()),
+                popup_anim_config("title_boneshop"),
+            ),
         )),
         AppState::InGame => {
             let hud = ingame_hud(&st);
+            let reward = reward_ui(&st, actions.clone());
+            let game_over = game_over_ui(&st, actions.clone());
             ZStack(Modifier::new().fill_max_size()).child((
                 hud,
+                AnimatedVisibility(
+                    st.run_phase == 1,
+                    reward,
+                    popup_anim_config("reward"),
+                ),
+                AnimatedVisibility(
+                    st.run_phase == 2,
+                    game_over,
+                    popup_anim_config("game_over"),
+                ),
                 AnimatedVisibility(
                     st.overlay == OverlayMenu::Pause,
                     pause_overlay(&st, actions.clone()),
@@ -140,7 +161,7 @@ fn splash_ui() -> View {
             .align_items(AlignItems::CENTER)
             .background(col(8, 8, 12)),
     )
-    .child(RText("My Ecosystem").size(48.0).color(RColor::WHITE))
+    .child(RText("Floppy Warriors").size(48.0).color(RColor::WHITE))
 }
 
 fn loading_ui(st: &SharedUi) -> View {
@@ -152,7 +173,7 @@ fn loading_ui(st: &SharedUi) -> View {
             .align_items(AlignItems::CENTER)
             .background(col(8, 8, 12)),
     )
-    .child(RText("Loading...").size(32.0).color(RColor::WHITE))
+    .child(RText(t(&st.translations, "loading", "Loading...")).size(32.0).color(RColor::WHITE))
     .child(spacer(16.0))
     .child(
         RText(format!("{:.0}%", pct * 100.0))
@@ -184,6 +205,7 @@ fn title_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let a2 = actions.clone();
     let a3 = actions.clone();
     let a4 = actions.clone();
+    let a5 = actions.clone();
     let tr = &st.translations;
 
     Column(
@@ -193,26 +215,122 @@ fn title_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             .align_items(AlignItems::CENTER)
             .background(col(8, 8, 12)),
     )
-    .child((
-        RText(t(tr, "app-title", "My Ecosystem Bevy"))
+    .child([
+        RText(t(tr, "app-title", "Floppy Warriors"))
             .size(56.0)
             .color(RColor::WHITE),
+        spacer(12.0),
+        RText(format!(
+            "{}: {}   {}: {}",
+            t(tr, "bones", "Bones"),
+            st.bones,
+            t(tr, "best-round", "Best Round"),
+            st.best_round,
+        ))
+        .size(18.0)
+        .color(col(200, 200, 200)),
         spacer(24.0),
         mk_button(
-            &t(tr, "start-game", "Start Game"),
+            &t(tr, "start-game", "Play!"),
             col(60, 120, 200),
             move || push(&a1, UiAction::StartGame),
         ),
+        mk_button(&t(tr, "bone-shop", "Bone Shop"), col(150, 130, 60), move || {
+            push(&a2, UiAction::OpenBoneShop)
+        }),
         mk_button(&t(tr, "settings", "Settings"), col(70, 70, 90), move || {
-            push(&a2, UiAction::OpenSettings)
+            push(&a3, UiAction::OpenSettings)
         }),
         mk_button(&t(tr, "credits", "Credits"), col(70, 70, 90), move || {
-            push(&a3, UiAction::OpenCredits)
+            push(&a4, UiAction::OpenCredits)
         }),
         mk_button(&t(tr, "quit", "Quit"), col(180, 60, 60), move || {
-            push(&a4, UiAction::QuitApp)
+            push(&a5, UiAction::QuitApp)
         }),
-    ))
+    ])
+}
+
+fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
+    let a_close = actions.clone();
+    let tr = &st.translations;
+    let bones = st.bones;
+
+    let rows: Vec<View> = st
+        .bone_shop_items
+        .iter()
+        .map(|item| {
+            let a_buy = actions.clone();
+            let id = item.id.clone();
+            let afford = bones >= item.cost;
+            let cost_label = if item.maxed {
+                "MAX".to_string()
+            } else {
+                format!("{}: {}", t(tr, "bones", "Bones"), item.cost)
+            };
+            let label = format!("{}  ({} {})", cost_label, t(tr, "level", "Lv"), item.level);
+            let row = Row(Modifier::new().gap(12.0).align_items(AlignItems::CENTER)).child((
+                Column(Modifier::new().width(300.0)).child((
+                    RText(&item.name).size(18.0).color(RColor::WHITE),
+                    RText(&item.description).size(13.0).color(col(190, 190, 200)),
+                )),
+                RText(label)
+                    .size(15.0)
+                    .color(if afford && !item.maxed { col(120, 220, 140) } else { col(140, 140, 150) }),
+                FilledTonalButton(
+                    Modifier::new().width(110.0).height(40.0),
+                    move || push(&a_buy, UiAction::BuyMeta(id.clone())),
+                    ButtonConfig::default(),
+                    move || RText(if item.maxed { "MAX" } else { "Buy" }).size(16.0),
+                ),
+            ));
+            row
+        })
+        .collect();
+
+    let inner = Column(
+        Modifier::new()
+            .width(620.0)
+            .padding(24.0)
+            .background(col(20, 20, 28))
+            .clip_rounded(12.0)
+            .align_items(AlignItems::CENTER),
+    )
+    .child([
+        RText(t(tr, "bone-shop", "Bone Shop")).size(36.0).color(RColor::WHITE),
+        spacer(6.0),
+        RText(format!("{}: {}", t(tr, "bones", "Bones"), bones))
+            .size(18.0)
+            .color(col(230, 200, 120)),
+        spacer(12.0),
+        RText(format!(
+            "{}: {} | {}: {} | {}: {}",
+            t(tr, "best-round", "Best Round"),
+            st.best_round,
+            t(tr, "runs", "Runs"),
+            st.total_runs,
+            t(tr, "wins", "Wins"),
+            st.total_victories,
+        ))
+        .size(14.0)
+        .color(col(180, 180, 190)),
+        spacer(16.0),
+        Column(Modifier::new().gap(8.0).align_items(AlignItems::FLEX_START)).child(rows),
+        spacer(20.0),
+        mk_button(
+            &t(tr, "back", "Back"),
+            col(70, 70, 90),
+            move || push(&a_close, UiAction::CloseBoneShop),
+        ),
+    ]);
+
+    Column(
+        Modifier::new()
+            .fill_max_size()
+            .justify_content(JustifyContent::CENTER)
+            .align_items(AlignItems::CENTER)
+            .background(RColor::from_rgba(0, 0, 0, 180)),
+    )
+    .child(inner)
 }
 
 fn pause_overlay(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
@@ -262,6 +380,123 @@ fn pause_panel(
             move || push(&a3, UiAction::QuitToTitle),
         ),
     ))
+}
+
+fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
+    let tr = &st.translations;
+    let cards: Vec<View> = st
+        .reward_titles
+        .iter()
+        .zip(st.reward_descs.iter())
+        .enumerate()
+        .map(|(i, (title, desc))| {
+            let a = actions.clone();
+            let t = title.clone();
+            let d = desc.clone();
+            FilledTonalButton(
+                Modifier::new().width(260.0).height(96.0),
+                move || push(&a, UiAction::ChooseReward(i)),
+                ButtonConfig::default(),
+                move || {
+                    Column(Modifier::new().align_items(AlignItems::CENTER)).child((
+                        RText(t.clone()).size(18.0).color(RColor::WHITE),
+                        RText(d.clone()).size(13.0).color(col(210, 210, 220)),
+                    ))
+                },
+            )
+        })
+        .collect();
+
+    Column(
+        Modifier::new()
+            .fill_max_size()
+            .justify_content(JustifyContent::CENTER)
+            .align_items(AlignItems::CENTER)
+            .background(RColor::from_rgba(0, 0, 0, 160)),
+    )
+    .child(
+        Column(
+            Modifier::new()
+                .width(640.0)
+                .padding(24.0)
+                .background(col(24, 26, 34))
+                .clip_rounded(14.0)
+                .align_items(AlignItems::CENTER),
+        )
+        .child((
+            RText(t(tr, "choose-reward", "Choose a Reward"))
+                .size(30.0)
+                .color(col(255, 210, 120)),
+            spacer(16.0),
+            Row(Modifier::new().gap(14.0)).child(cards),
+        )),
+    )
+}
+
+fn game_over_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
+    let a = actions.clone();
+    let tr = &st.translations;
+    let title = if st.victory {
+        t(tr, "run-complete", "RUN COMPLETE")
+    } else {
+        t(tr, "you-lose", "YOU LOSE")
+    };
+    let title_col = if st.victory {
+        col(120, 220, 140)
+    } else {
+        col(220, 90, 90)
+    };
+    let subtitle = if st.victory {
+        t(tr, "victory-bonus", "15 rounds cleared!")
+    } else {
+        format!("{} {}", t(tr, "round", "Round"), st.run_round)
+    };
+
+    Column(
+        Modifier::new()
+            .fill_max_size()
+            .justify_content(JustifyContent::CENTER)
+            .align_items(AlignItems::CENTER)
+            .background(RColor::from_rgba(0, 0, 0, 170)),
+    )
+    .child(
+        Column(
+            Modifier::new()
+                .width(460.0)
+                .padding(28.0)
+                .background(col(22, 22, 30))
+                .clip_rounded(14.0)
+                .align_items(AlignItems::CENTER),
+        )
+        .child([
+            RText(title).size(42.0).color(title_col),
+            spacer(8.0),
+            RText(subtitle).size(16.0).color(col(200, 200, 210)),
+            spacer(16.0),
+            RText(format!(
+                "{}: {}   {}: {}",
+                t(tr, "score", "Score"),
+                st.run_score,
+                t(tr, "round", "Round"),
+                st.run_round,
+            ))
+            .size(18.0)
+            .color(RColor::WHITE),
+            RText(format!("{}: +{}", t(tr, "bones", "Bones"), st.bones_earned))
+                .size(22.0)
+                .color(col(230, 200, 120)),
+            spacer(18.0),
+            RText(t(tr, "retry-hint", "R / Click = Retry"))
+                .size(15.0)
+                .color(col(170, 170, 180)),
+            spacer(12.0),
+            mk_button(
+                &t(tr, "quit-to-title", "Quit to Title"),
+                col(180, 60, 60),
+                move || push(&a, UiAction::QuitToTitle),
+            ),
+        ]),
+    )
 }
 
 fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
@@ -426,13 +661,13 @@ fn credits_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             .size(36.0)
             .color(RColor::WHITE),
         spacer(12.0),
-        RText("Original Godot template: mlm-games")
+        RText("Floppy Warriors — a janky ragdoll archery roguelite")
             .size(16.0)
             .color(RColor::WHITE),
-        RText("Bevy + Repose port: mlm-games")
+        RText("Port of the Godot slice to Bevy + Repose")
             .size(16.0)
             .color(RColor::WHITE),
-        RText("Engine: Bevy  UI: Repose")
+        RText("Engine: Bevy  Physics: bevy_rapier2d  UI: Repose")
             .size(16.0)
             .color(RColor::WHITE),
         spacer(16.0),
@@ -461,16 +696,53 @@ fn ingame_hud(st: &SharedUi) -> View {
             .justify_content(JustifyContent::FLEX_START),
     )
     .child((
-        RText(format!("{}: {}", t(tr, "score", "Score"), st.score))
+        Row(Modifier::new().gap(18.0).align_items(AlignItems::CENTER)).child((
+            RText(format!(
+                "{}: {}",
+                t(tr, "round", "Round"),
+                st.run_round
+            ))
+            .size(22.0)
+            .color(col(255, 210, 120)),
+            RText(format!(
+                "{}: {}",
+                t(tr, "score", "Score"),
+                st.run_score
+            ))
             .size(22.0)
             .color(RColor::WHITE),
-        RText(format!("{}: {}", t(tr, "best", "Best"), st.high_score))
+            RText(format!(
+                "{}: {}",
+                t(tr, "best", "Best"),
+                st.high_score
+            ))
             .size(16.0)
             .color(col(200, 200, 200)),
+        )),
+        RText(format!(
+            "{}: {}/{}",
+            t(tr, "hp", "HP"),
+            st.player_hp,
+            st.player_max_hp
+        ))
+        .size(16.0)
+        .color(col(220, 120, 120)),
+        RText(format!(
+            "{}: {}/{}",
+            t(tr, "enemy", "Enemy"),
+            st.enemy_hp,
+            st.enemy_max_hp
+        ))
+        .size(16.0)
+        .color(col(120, 170, 220)),
+        RText(&st.status_line)
+            .size(16.0)
+            .color(col(220, 220, 230)),
+        spacer(4.0),
         RText(t(
             tr,
             "controls-hint",
-            "WASD move  Click/Space shoot  Esc pause",
+            "Mouse aim  Hold click draw  Release shoot  Shift airdodge  Esc pause",
         ))
         .size(14.0)
         .color(col(180, 180, 180)),

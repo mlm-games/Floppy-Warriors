@@ -1,4 +1,4 @@
-app-title = My Ecosystem Bevy
+app-title = Floppy Warriors
 start-game = Lancer le Jeu
 settings = Paramètres
 credits = Crédits
@@ -16,3 +16,18 @@ score = Score
 best = Meilleur
 controls-hint = WASD bouger | Clic/Espace tirer | Esc pause
 loading = Chargement...
+bones = Bones
+best-round = Best Round
+bone-shop = Bone Shop
+round = Round
+boss-round = BOSS ROUND
+choose-reward = Choose a Reward
+you-lose = YOU LOSE
+run-complete = RUN COMPLETE
+retry-hint = R / Click = Retry
+hp = HP
+enemy = Enemy
+level = Lv
+runs = Runs
+wins = Wins
+victory-bonus = 15 rounds cleared!
