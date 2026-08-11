@@ -1,14 +1,14 @@
-id: com.mlm-games.my-ecosystem-bevy
+id: com.mlm-games.floppy-warriors
 runtime: org.freedesktop.Platform
 runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
-command: my-ecosystem-bevy
+command: floppy-warriors
 modules:
-  - name: my-ecosystem-bevy
+  - name: floppy-warriors
     buildsystem: simple
     build-commands:
       - cargo build --release
-      - install -Dm755 target/release/my-ecosystem-bevy /app/bin/my-ecosystem-bevy
+      - install -Dm755 target/release/floppy-warriors /app/bin/floppy-warriors
     sources:
       - type: dir
         path: .

@@ -3,6 +3,7 @@ use bevy::window::PrimaryWindow;
 #[cfg(feature = "physics")]
 use bevy_rapier2d::prelude::*;
 
+use super::audio_fx::{self, CombatSfx};
 use super::components::*;
 use super::round_manager::{RoundManager, RunPhase};
 
@@ -13,6 +14,8 @@ pub fn player_aim_and_bow(
     mouse: Res<ButtonInput<MouseButton>>,
     time: Res<Time>,
     phase: Res<RoundManager>,
+    asset_server: Res<AssetServer>,
+    sfx: Res<CombatSfx>,
     mut commands: Commands,
     mut players: Query<(Entity, &WarriorRoot, &mut BowState, Option<&mut Airdodge>), With<PlayerTag>>,
     torso_tf: Query<&GlobalTransform>,
@@ -74,6 +77,7 @@ pub fn player_aim_and_bow(
         if mouse.just_pressed(MouseButton::Left) || keys.just_pressed(KeyCode::Space) {
             bow.drawing = true;
             bow.draw_power = 0.0;
+            audio_fx::play_sfx(&mut commands, &asset_server, &sfx.bow_draw, 0.3, 0.05);
         }
 
         if bow.drawing {
@@ -88,6 +92,8 @@ pub fn player_aim_and_bow(
 
             super::warrior::fire_from_bow_angled(
                 &mut commands,
+                &asset_server,
+                &sfx,
                 entity,
                 warrior,
                 &bow,

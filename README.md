@@ -1,81 +1,80 @@
-# My Ecosystem Bevy
+# Floppy Warriors
 
-A WIP Bevy 2D game template with ecosystem plugins ported from [my-ecosystem-template](https://github.com/mlm-games/my-ecosystem-template) (Godot).
+> Janky ragdoll archery roguelite. Draw, flop, headshot. Die, spend Bones, go again. Endless after the first clear.
+
+A Bevy 2D game built on top of the [mlm-games ecosystem](https://github.com/mlm-games/game-utils) plugins (transitions, screen effects, vfx, save, i18n, audio).
+
+## Gameplay
+
+- Aim with the mouse, hold **Left Click** (or **Space**) to draw your bow, release to fire.
+- **Shift** (either) is an airdodge.
+- **Esc** pauses.
+- Enemies come in 6 archetypes: **Grunt, Fast, Tank, Sniper, Splitter, Boss** — each with distinct visuals, health, fire rate, and behavior.
+- Headshots hurt harder, crits double damage, and killing shots trigger slow-mo.
+- Between rounds pick one of three weighted rewards from a draft deck (stacks, gating, crits, lifesteal, revive, glass cannon, last stand).
+- Spend **Bones** in the Bone Shop on meta upgrades. Offline time also drips Bones while you're away.
+
+## Controls
+
+| Input | Action |
+|-------|--------|
+| Mouse | Aim |
+| Hold Left Click / Space | Draw bow |
+| Release | Fire |
+| Shift (L or R) | Airdodge |
+| Esc | Pause / Settings |
+| R / Click (game over) | Retry |
+
+## Running
+
+```bash
+# Full physics build (default)
+cargo run --features physics
+
+# Physics-free build
+cargo run --no-default-features
+
+# Web (WASM)
+# cargo build --release --target wasm32-unknown-unknown
+```
 
 ## Features
 
-- **Game Feel** - recoil, knockback, slow-motion, rumble (gamepad)
-- **Screen Effects** - trauma shake, freeze frame, flash white, chromatic aberration pulse + decay
-- **Transitions** - fade to black, circle wipe scene transitions with input blocking
-- **Audio** - channel-based SFX/Music/UI buses with independent volume control via `AudioSink`, pitch variation (uses Bevy built-in audio, no external dep)
-- **Localization** - Fluent-based i18n with 7 bundled locales (en, es, fr, de, ja, zh, pt), language switcher in settings, `LocaleResources` resource
-- **Save System** - persistent RON save + backup via `directories`
-- **Object Pooling** - generic entity pool with acquire/release
-- **Juice** - pop-in, squash & stretch, bounce scale, shake, particles with gravity/fade
-- **VFX** - damage numbers, particle bursts, trail emitters
-- **UI Effects** - hover scale, typewriter text, number counter
-- **Math Utils** - smooth_damp, approach, wave (f32, Vec2, Vec3)
-- **Center Pivot** - sprite origin centering component
-- **UI** - animated buttons, popup system, pause/settings/credits with localized text (Repose)
-- **States** - Splash -> Loading -> Title -> InGame with pause overlay
-- **Theme** - centralized color constants
-- **Dev Tools** - FPS overlay, state logging (dev feature)
-- **Demo Scene** - player with shooting, enemies, trauma, recoil, burst effects, damage numbers, gamepad rumble
-
-## Quick Start
-
-```bash
-cargo run
-```
-
-With physics (Avian2d, will be switched to rapier soon):
-```bash
-cargo run --features physics
-```
-
-Dev build with hot-reload:
-```bash
-cargo run --features dev
-```
+- Active-ragdoll puppet with force-driven standing (no hard lock) and a full flop on death
+- Manual projectile arrows that stick to limbs and the ground
+- Hitstop / headshot slow-mo, trauma shake, damage numbers, particle bursts
+- Offline bones drip, reward deck with memory, endless post-clear loop
+- 7 locales (en, es, fr, de, ja, zh, pt), channel-based audio, persistent RON save
+- Packaging for AUR, Chocolatey, Flatpak, Snap
 
 ## Structure
 
 ```
 src/
-├── main.rs              # Entry point
-├── app.rs               # AppPlugin, states, system sets
-├── ecosystem/           # Game feel, transitions, audio, save, i18n, vfx, etc.
-│   ├── audio.rs         # Channel-based audio buses (SfxChannel/MusicChannel/UiChannel)
-│   ├── center_pivot.rs  # Sprite origin centering
-│   ├── game_feel.rs     # Recoil, knockback, slow-motion, gamepad rumble
-│   ├── i18n.rs          # Fluent-based localization (7 locales, language switcher)
-│   ├── juice.rs         # Pop-in, squash/stretch, bounce, shake, particles
-│   ├── math_utils.rs    # smooth_damp, approach, wave (f32/Vec2/Vec3)
-│   ├── pooling.rs       # Generic entity pooling
-│   ├── save.rs          # RON save/load with backup
-│   ├── screen_effects.rs# Trauma, freeze frame, flash white, chromatic aberration
-│   ├── transitions.rs   # Fade/circle wipe with input blocking
-│   ├── ui_effects.rs    # Hover scale, typewriter, number counter
-│   └── vfx.rs           # Damage numbers, particle bursts, trail emitters
-├── screens/             # Splash, loading, title
-├── menus/               # Main, pause, settings, credits (localized)
-├── theme/               # Theme resource
-├── demo/                # Sample gameplay with all juice
-├── dev_tools.rs         # FPS overlay, state logging
+├── app.rs               # AppPlugin, states, UI bridge, settings
+├── game/
+│   ├── arena.rs         # Backdrop + ground
+│   ├── arrow.rs         # Manual projectile motion + hit tests
+│   ├── audio_fx.rs      # SFX handles + load-state-gated playback
+│   ├── components.rs    # Warrior, limbs, arrows, mods, archetypes
+│   ├── enemy_ai.rs      # Enemy decision loop + archetype config
+│   ├── hud_sync.rs      # HUD bridge
+│   ├── meta.rs          # Bone Shop catalog + meta scaling
+│   ├── mod.rs           # GamePlugin, offline bones, cleanup
+│   ├── player.rs        # Mouse aim + bow + airdodge
+│   ├── round_manager.rs # Rounds, rewards, endless, scoring
+│   └── warrior.rs       # Puppet spawn, joints, active ragdoll, fire
+├── menus/               # Title, pause, settings, credits, Bone Shop (Repose)
+├── screens/             # Splash, loading, title state machine
+├── save.rs              # SaveData + meta levels
+├── theme/               # Color constants
 └── asset_tracking.rs    # Preload tracking
 ```
 
-## Dependencies
+## Roadmap (post-v1)
 
-| Crate | Purpose |
-|-------|---------|
-| `bevy` (git rev) | Engine |
-| `repose-bevy` / `repose-*` | UI framework |
-| `fluent-bundle` + `unic-langid` | Localization (Fluent) |
-| `serde` + `ron` + `directories` | Save system |
-| `rand` | Random variation (audio pitch, VFX) |
-| `avian2d` (optional) | Physics |
+Music loop, a few more SFX variants, controller bindings, Steam page assets, explosive reward.
 
 ## License
 
-GPL-3.0
+GPL-3.0. SFX should come from CC0 packs (e.g. Kenney Impact / UI Audio) for commercial use.

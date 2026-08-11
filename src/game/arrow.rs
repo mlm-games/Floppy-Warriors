@@ -1,10 +1,12 @@
 use bevy::prelude::*;
 #[cfg(feature = "physics")]
 use bevy_rapier2d::prelude::ExternalImpulse;
+use game_utils_bevy::game_feel::{GameFeel, SlowMotion};
 use game_utils_bevy::screen_effects::{ScreenEffects, Trauma};
 use game_utils_bevy::vfx::VfxSpawner;
 use rand::RngExt;
 
+use super::audio_fx::{self, CombatSfx};
 use super::components::*;
 use super::round_manager::HitConfirmed;
 
@@ -58,11 +60,15 @@ pub fn update_arrows(
     time: Res<Time>,
     mut commands: Commands,
     mut trauma: ResMut<Trauma>,
+    asset_server: Res<AssetServer>,
+    sfx: Res<CombatSfx>,
+    mut slow_mo: ResMut<SlowMotion>,
     mut hits: MessageWriter<HitConfirmed>,
     mut arrows: Query<(Entity, &mut Arrow, &mut Transform)>,
     limbs: Query<(Entity, &WarriorLimb, &GlobalTransform)>,
     mut warriors: ParamSet<(Query<&WarriorRoot>, Query<&mut WarriorRoot>)>,
     ground: Query<(&GlobalTransform, &Sprite), With<Ground>>,
+    player_tags: Query<(), With<PlayerTag>>,
     #[cfg(feature = "physics")] mut impulses: Query<&mut ExternalImpulse>,
 ) {
     let dt = time.delta_secs();
@@ -238,16 +244,34 @@ pub fn update_arrows(
                 },
                 (50.0, 160.0),
             );
-            ScreenEffects::add_trauma(
-                &mut trauma,
-                if headshot {
-                    0.45
+            let hit_player = player_tags.contains(root_e);
+
+            if !hit_player {
+                if headshot && killed {
+                    ScreenEffects::add_trauma(&mut trauma, 0.7);
+                    GameFeel::slow_motion(&mut slow_mo, 0.25, 0.22);
                 } else if killed {
-                    0.35
+                    ScreenEffects::add_trauma(&mut trauma, 0.45);
+                    GameFeel::slow_motion(&mut slow_mo, 0.4, 0.08);
+                } else if headshot {
+                    ScreenEffects::add_trauma(&mut trauma, 0.35);
+                    GameFeel::slow_motion(&mut slow_mo, 0.05, 0.06);
                 } else {
-                    0.18
-                },
-            );
+                    ScreenEffects::add_trauma(&mut trauma, 0.15);
+                    GameFeel::slow_motion(&mut slow_mo, 0.05, 0.05);
+                }
+            } else {
+                ScreenEffects::add_trauma(&mut trauma, if headshot { 0.35 } else { 0.18 });
+            }
+
+            if headshot {
+                audio_fx::play_sfx(&mut commands, &asset_server, &sfx.headshot, 0.6, 0.08);
+            } else {
+                audio_fx::play_sfx(&mut commands, &asset_server, &sfx.hit, 0.5, 0.1);
+            }
+            if killed {
+                audio_fx::play_sfx(&mut commands, &asset_server, &sfx.kill, 0.55, 0.05);
+            }
 
             hits.write(HitConfirmed {
                 shooter: arrow.shooter,

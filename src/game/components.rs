@@ -133,6 +133,12 @@ pub struct ActivePuppetMotor {
     pub upright_damping: f32,
 }
 
+#[derive(Component, Clone, Copy)]
+pub struct ArchetypeVisual {
+    pub tint: Color,
+    pub scale: f32,
+}
+
 #[derive(Component, Clone, Copy, PartialEq, Eq, Debug)]
 pub enum EnemyArchetype {
     Grunt,

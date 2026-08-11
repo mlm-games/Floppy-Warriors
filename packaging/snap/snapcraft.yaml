@@ -1,18 +1,18 @@
-name: my-ecosystem-bevy
+name: floppy-warriors
 version: '0.1.0'
-summary: Clone of my Godot template for bevy
+summary: Janky ragdoll archery roguelite
 description: |
-  A complete Bevy 2D game template with ecosystem plugins,
-  game feel, transitions, audio, save system, and more.
+  Floppy Warriors - draw, flop, headshot. Die, spend Bones,
+  go again. Endless after the first clear.
 grade: stable
 confinement: strict
 
 apps:
-  my-ecosystem-bevy:
-    command: my-ecosystem-bevy
+  floppy-warriors:
+    command: floppy-warriors
     plugs: [x11, wayland, audio, joystick]
 
 parts:
-  my-ecosystem-bevy:
+  floppy-warriors:
     plugin: rust
     source: .

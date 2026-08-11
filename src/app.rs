@@ -54,6 +54,7 @@ const TRANSLATION_KEYS: &[&str] = &[
     "retry-hint",
     "hp",
     "enemy",
+    "offline-bones",
 ];
 
 const LOCALES: &[(&str, &str)] = &[
@@ -135,6 +136,7 @@ pub struct SharedUi {
     pub victory: bool,
     pub status_line: String,
     pub bone_shop_items: Vec<BoneShopItem>,
+    pub offline_bones: u32,
 }
 
 impl Default for SharedUi {
@@ -172,6 +174,7 @@ impl Default for SharedUi {
             victory: false,
             status_line: String::new(),
             bone_shop_items: Vec::new(),
+            offline_bones: 0,
         }
     }
 }
@@ -275,6 +278,7 @@ fn sync_shared_ui(
     transition: Res<Transition<AppState>>,
     flash: Res<game_utils_bevy::screen_effects::FlashWhite>,
     locale: Res<LocaleResources>,
+    offline: Res<crate::game::OfflineBonesEarned>,
     mut channels: ResMut<AudioChannels>,
     loading: Option<Res<AssetsLoading>>,
     asset_server: Res<AssetServer>,
@@ -319,6 +323,7 @@ fn sync_shared_ui(
     ui.language = locale.current.clone();
     ui.available_languages = locale.available.clone();
     ui.translations = i18n::get_current_translations(&locale);
+    ui.offline_bones = offline.0;
     ui.loading_progress = match loading {
         Some(l) if !l.0.is_empty() => {
             l.0.iter()
@@ -415,6 +420,11 @@ fn process_ui_actions(
                 transition.begin_to_state(AppState::Title);
             }
             UiAction::QuitApp => {
+                save.last_played_unix = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.as_secs())
+                    .unwrap_or(0);
+                let _ = manager.save(&*save);
                 exit.write(AppExit::Success);
             }
             UiAction::SetMasterVol(v) => set_vol(&bridge, |ui| &mut ui.master_vol, v),
@@ -427,6 +437,10 @@ fn process_ui_actions(
                     save.settings.music_volume = ui.music_vol;
                     save.settings.language = locale.current.clone();
                 }
+                save.last_played_unix = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.as_secs())
+                    .unwrap_or(0);
                 let _ = manager.save(&*save);
                 if let Ok(mut ui) = bridge.shared.lock() {
                     ui.saved_language = locale.current.clone();

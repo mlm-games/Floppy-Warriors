@@ -9,14 +9,14 @@ readme = "README.md"
 keywords = ["bevy", "gamedev", "ragdoll", "2d", "repose"]
 categories = ["game-development"]
 rust-version = "1.96"
-default-run = "floppy-warriors-desktop"
+default-run = "floppy-warriors"
 
 [lib]
 name = "floppy_warriors"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "floppy-warriors-desktop"
+name = "floppy-warriors"
 path = "src/main.rs"
 
 [features]

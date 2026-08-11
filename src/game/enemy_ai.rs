@@ -29,6 +29,8 @@ pub fn configure_enemy(ai: &mut EnemyAi, cfg: &EnemySpawnConfig) {
 pub fn enemy_ai_system(
     time: Res<Time>,
     phase: Res<RoundManager>,
+    asset_server: Res<AssetServer>,
+    sfx: Res<super::audio_fx::CombatSfx>,
     mut commands: Commands,
     mut enemies: Query<(Entity, &mut WarriorRoot, &mut BowState, &mut EnemyAi), With<EnemyTag>>,
     players: Query<(Entity, &WarriorRoot, &GlobalTransform), (With<PlayerTag>, Without<EnemyTag>)>,
@@ -88,6 +90,8 @@ pub fn enemy_ai_system(
 
                 super::warrior::fire_from_bow_angled(
                     &mut commands,
+                    &asset_server,
+                    &sfx,
                     enemy_entity,
                     &*warrior,
                     &bow,

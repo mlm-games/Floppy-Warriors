@@ -208,14 +208,7 @@ fn title_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let a5 = actions.clone();
     let tr = &st.translations;
 
-    Column(
-        Modifier::new()
-            .fill_max_size()
-            .justify_content(JustifyContent::CENTER)
-            .align_items(AlignItems::CENTER)
-            .background(col(8, 8, 12)),
-    )
-    .child([
+    let mut children: Vec<View> = vec![
         RText(t(tr, "app-title", "Floppy Warriors"))
             .size(56.0)
             .color(RColor::WHITE),
@@ -229,25 +222,53 @@ fn title_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
         ))
         .size(18.0)
         .color(col(200, 200, 200)),
-        spacer(24.0),
-        mk_button(
-            &t(tr, "start-game", "Play!"),
-            col(60, 120, 200),
-            move || push(&a1, UiAction::StartGame),
-        ),
-        mk_button(&t(tr, "bone-shop", "Bone Shop"), col(150, 130, 60), move || {
-            push(&a2, UiAction::OpenBoneShop)
-        }),
-        mk_button(&t(tr, "settings", "Settings"), col(70, 70, 90), move || {
-            push(&a3, UiAction::OpenSettings)
-        }),
-        mk_button(&t(tr, "credits", "Credits"), col(70, 70, 90), move || {
-            push(&a4, UiAction::OpenCredits)
-        }),
-        mk_button(&t(tr, "quit", "Quit"), col(180, 60, 60), move || {
-            push(&a5, UiAction::QuitApp)
-        }),
-    ])
+    ];
+
+    if st.offline_bones > 0 {
+        children.push(RText(format!(
+            "{}  (+{})",
+            t(tr, "offline-bones", "While you were away"),
+            st.offline_bones,
+        ))
+        .size(15.0)
+        .color(col(230, 200, 120)));
+    }
+
+    children.push(spacer(24.0));
+    children.push(mk_button(
+        &t(tr, "start-game", "Play!"),
+        col(60, 120, 200),
+        move || push(&a1, UiAction::StartGame),
+    ));
+    children.push(mk_button(
+        &t(tr, "bone-shop", "Bone Shop"),
+        col(150, 130, 60),
+        move || push(&a2, UiAction::OpenBoneShop),
+    ));
+    children.push(mk_button(
+        &t(tr, "settings", "Settings"),
+        col(70, 70, 90),
+        move || push(&a3, UiAction::OpenSettings),
+    ));
+    children.push(mk_button(
+        &t(tr, "credits", "Credits"),
+        col(70, 70, 90),
+        move || push(&a4, UiAction::OpenCredits),
+    ));
+    children.push(mk_button(
+        &t(tr, "quit", "Quit"),
+        col(180, 60, 60),
+        move || push(&a5, UiAction::QuitApp),
+    ));
+
+    Column(
+        Modifier::new()
+            .fill_max_size()
+            .justify_content(JustifyContent::CENTER)
+            .align_items(AlignItems::CENTER)
+            .background(col(8, 8, 12)),
+    )
+    .child(children)
 }
 
 fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {

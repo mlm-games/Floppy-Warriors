@@ -230,7 +230,7 @@ fn build_enemy_config(round: u32, boss: bool) -> EnemySpawnConfig {
     let archetype = choose_enemy_archetype(round, boss);
 
     let mut hp_m = 1.0 + (round - 1) as f32 * 0.14;
-    let mut dmg_m = 1.0 + (round - 1) as f32 * 0.055;
+    let mut dmg_m = (1.0 + (round - 1) as f32 * 0.055).min(3.0);
     let mut draw_m = 1.0 + ((round - 1) as f32 * 0.025).min(0.65);
     let mut aim = (26.0 - round as f32 * 1.2).max(6.0);
     let mut dmin = (1.6 - round as f32 * 0.04).max(0.55);
@@ -409,6 +409,32 @@ pub fn spawn_enemies_system(
         },
     );
     commands.entity(enemy).insert(cfg.archetype);
+    commands.entity(enemy).insert(match cfg.archetype {
+        EnemyArchetype::Grunt => ArchetypeVisual {
+            tint: Color::srgb(0.95, 0.95, 0.98),
+            scale: 1.0,
+        },
+        EnemyArchetype::Fast => ArchetypeVisual {
+            tint: Color::srgb(0.45, 0.95, 1.0),
+            scale: 0.82,
+        },
+        EnemyArchetype::Tank => ArchetypeVisual {
+            tint: Color::srgb(0.85, 0.55, 0.30),
+            scale: 1.35,
+        },
+        EnemyArchetype::Sniper => ArchetypeVisual {
+            tint: Color::srgb(0.75, 0.50, 1.0),
+            scale: 0.95,
+        },
+        EnemyArchetype::Splitter => ArchetypeVisual {
+            tint: Color::srgb(1.0, 0.55, 0.25),
+            scale: 1.05,
+        },
+        EnemyArchetype::Boss => ArchetypeVisual {
+            tint: Color::srgb(1.0, 0.40, 0.35),
+            scale: 1.55,
+        },
+    });
 
     let mut ai = EnemyAi {
         aim_error: cfg.aim_error,
@@ -430,6 +456,8 @@ pub fn spawn_enemies_system(
 pub fn on_hits(
     mut hits: MessageReader<HitConfirmed>,
     mut rm: ResMut<RoundManager>,
+    asset_server: Res<AssetServer>,
+    sfx: Res<super::audio_fx::CombatSfx>,
     mut commands: Commands,
     mut warriors: Query<&mut WarriorRoot>,
 ) {
@@ -443,6 +471,15 @@ pub fn on_hits(
             }
         }
         if h.killed {
+            // Bone Leech / Vampirism: heal the player on enemy kills.
+            if let Some(player) = rm.player_entity
+                && h.target != player
+                && let Ok(mut pw) = warriors.get_mut(player)
+                && !pw.is_dead
+                && pw.kill_heal > 0
+            {
+                pw.health = (pw.health + pw.kill_heal).min(pw.max_health);
+            }
             if let Ok(w) = warriors.get(h.target) {
                 if w.team == Team::Enemy {
                     rm.kills += 1;
@@ -460,15 +497,16 @@ pub fn on_hits(
                             rm.loop_count += 1;
 
                             let player = rm.player_entity;
-                            enter_reward(&mut rm, &mut warriors, player);
+                            enter_reward(&mut rm, &mut warriors, player, &mut commands, &asset_server, &sfx);
                         } else {
                             let player = rm.player_entity;
-                            enter_reward(&mut rm, &mut warriors, player);
+                            enter_reward(&mut rm, &mut warriors, player, &mut commands, &asset_server, &sfx);
                         }
                     } else {
                         rm.spawn_cooldown = 1.0;
                     }
                 } else if w.team == Team::Player {
+                    super::audio_fx::play_sfx(&mut commands, &asset_server, &sfx.death, 0.6, 0.0);
                     end_run(&mut rm, false);
                 }
             }
@@ -481,8 +519,13 @@ fn enter_reward(
     rm: &mut RoundManager,
     warriors: &mut Query<&mut WarriorRoot>,
     player: Option<Entity>,
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    sfx: &super::audio_fx::CombatSfx,
 ) {
     rm.phase = RunPhase::Reward;
+
+    super::audio_fx::play_sfx(commands, asset_server, &sfx.reward, 0.5, 0.0);
 
     if let Some(p) = player {
         if let Ok(mut w) = warriors.get_mut(p) {
@@ -563,7 +606,7 @@ pub fn apply_reward_system(
                 "velocity" => w.velocity_mult *= 1.15,
                 "head_hunter" => w.headshot_mult *= 1.25,
                 "quiver" => {
-                    w.arrow_count = (w.arrow_count + 1).min(5);
+                    w.arrow_count = (w.arrow_count + 1).min(4);
                     w.spread_deg += 4.0;
                 }
                 "knockback" => w.knockback_mult *= 1.3,
@@ -572,7 +615,7 @@ pub fn apply_reward_system(
                     w.health = (w.health + h).min(w.max_health);
                 }
                 "crit" => {
-                    w.crit_chance = (w.crit_chance + 0.12).min(0.75);
+                    w.crit_chance = (w.crit_chance + 0.12).min(0.6);
                     w.crit_mult = w.crit_mult.max(2.0);
                 }
                 "leech" => {

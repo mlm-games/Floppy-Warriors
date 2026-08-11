@@ -31,3 +31,6 @@ level = Lv
 runs = Runs
 wins = Wins
 victory-bonus = 15 rounds cleared!
+
+# Title toast shown when offline earnings are granted
+offline-bones = While you were away

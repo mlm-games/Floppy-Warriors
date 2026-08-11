@@ -1,5 +1,6 @@
 mod arena;
 mod arrow;
+mod audio_fx;
 mod components;
 mod enemy_ai;
 mod hud_sync;
@@ -10,10 +11,15 @@ mod warrior;
 
 use bevy::prelude::*;
 use crate::app::{AppState, Paused};
+use crate::save::SaveData;
+use game_utils_bevy::save::SaveManager;
 use game_utils_bevy::transitions::Transition;
 
 pub use components::*;
 pub use round_manager::{ChooseReward, HitConfirmed, RoundManager, RunPhase};
+
+#[derive(Resource, Default)]
+pub struct OfflineBonesEarned(pub u32);
 
 pub struct GamePlugin;
 
@@ -21,8 +27,14 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<RoundManager>()
             .init_resource::<RestartFlag>()
+            .init_resource::<OfflineBonesEarned>()
             .add_message::<HitConfirmed>()
             .add_message::<ChooseReward>()
+            .add_systems(Startup, audio_fx::load_combat_sfx)
+            .add_systems(
+                OnEnter(AppState::Title),
+                grant_offline_bones,
+            )
             .add_systems(
                 OnEnter(AppState::InGame),
                 (arena::spawn_arena, round_manager::begin_run).chain(),
@@ -36,6 +48,7 @@ impl Plugin for GamePlugin {
                     enemy_ai::enemy_ai_system,
                     arrow::update_arrows,
                     warrior::apply_ragdoll_on_death,
+                    warrior::apply_archetype_visuals,
                     round_manager::spawn_enemies_system,
                     round_manager::on_hits,
                     round_manager::apply_reward_system,
@@ -51,6 +64,34 @@ impl Plugin for GamePlugin {
                     .run_if(|t: Res<Transition<AppState>>| !t.block_input),
             );
     }
+}
+
+/// Passive bones while away. Runs on every title entry; self-limits by
+/// bumping `last_played_unix` on grant, so re-entry yields zero.
+fn grant_offline_bones(
+    mut save: ResMut<SaveData>,
+    manager: Res<SaveManager>,
+    mut earned: ResMut<OfflineBonesEarned>,
+) {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+
+    let mut amount: u32 = 0;
+
+    if save.total_runs > 0 && save.last_played_unix > 0 {
+        let elapsed = now.saturating_sub(save.last_played_unix).min(6 * 3600);
+        let per_min = 1 + save.meta_level("fortune");
+        amount = (elapsed / 60) as u32 * per_min;
+        if amount > 0 {
+            save.bones += amount;
+            save.last_played_unix = now;
+            let _ = manager.save(&*save);
+        }
+    }
+
+    earned.0 = amount;
 }
 
 #[derive(Resource, Default)]

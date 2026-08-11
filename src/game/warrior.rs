@@ -353,57 +353,10 @@ pub fn sync_health_fills(
     }
 }
 
-pub fn fire_from_bow(
-    commands: &mut Commands,
-    warrior_e: Entity,
-    warrior: &WarriorRoot,
-    bow: &BowState,
-    bow_tf: &GlobalTransform,
-) {
-    if warrior.is_dead || !bow.drawing {
-        return;
-    }
-
-    let right = (bow_tf.compute_transform().rotation * Vec3::X)
-        .truncate()
-        .normalize_or_zero();
-
-    if right.length_squared() <= 0.0001 {
-        return;
-    }
-
-    let base_angle = right.y.atan2(right.x);
-    let origin = bow_tf.translation().truncate() + right * 24.0;
-    let force = MIN_FORCE + (bow.draw_power / MAX_DRAW) * MAX_FORCE_ADD;
-    let n = warrior.arrow_count.max(1);
-
-    for i in 0..n {
-        let mut angle = base_angle;
-        if n > 1 {
-            let step = warrior.spread_deg / (n - 1) as f32;
-            let off = -warrior.spread_deg * 0.5 + step * i as f32;
-            angle += off.to_radians();
-        }
-
-        let dir = Vec2::from_angle(angle);
-        super::arrow::spawn_arrow(
-            commands,
-            origin,
-            dir * force * warrior.velocity_mult,
-            warrior_e,
-            warrior.team,
-            20.0,
-            warrior.damage_mult,
-            warrior.headshot_mult,
-            warrior.knockback_mult,
-            warrior.crit_chance,
-            warrior.crit_mult,
-        );
-    }
-}
-
 pub fn fire_from_bow_angled(
     commands: &mut Commands,
+    asset_server: &AssetServer,
+    sfx: &super::audio_fx::CombatSfx,
     warrior_e: Entity,
     warrior: &WarriorRoot,
     bow: &BowState,
@@ -413,6 +366,8 @@ pub fn fire_from_bow_angled(
     if warrior.is_dead || !bow.drawing {
         return;
     }
+
+    super::audio_fx::play_sfx(commands, asset_server, &sfx.bow_release, 0.45, 0.08);
 
     let mut damage_mult = warrior.damage_mult;
 
@@ -548,4 +503,41 @@ fn wrap_angle(mut angle: f32) -> f32 {
 fn global_z_angle(tf: &GlobalTransform) -> f32 {
     let right = (tf.compute_transform().rotation * Vec3::X).truncate();
     right.y.atan2(right.x)
+}
+
+/// Runs once when ArchetypeVisual is added; tints limbs + scales root.
+pub fn apply_archetype_visuals(
+    mut commands: Commands,
+    q: Query<(Entity, &ArchetypeVisual), Added<ArchetypeVisual>>,
+    children: Query<&Children>,
+    mut sprites: Query<&mut Sprite>,
+    mut transforms: Query<&mut Transform>,
+    limbs: Query<&WarriorLimb>,
+) {
+    for (root, vis) in &q {
+        if let Ok(mut tf) = transforms.get_mut(root) {
+            tf.scale = Vec3::splat(vis.scale);
+        }
+        tint_tree(root, vis.tint, &children, &mut sprites, &limbs);
+        commands.entity(root).remove::<ArchetypeVisual>();
+    }
+}
+
+fn tint_tree(
+    e: Entity,
+    tint: Color,
+    children: &Query<&Children>,
+    sprites: &mut Query<&mut Sprite>,
+    limbs: &Query<&WarriorLimb>,
+) {
+    if limbs.get(e).is_ok() {
+        if let Ok(mut s) = sprites.get_mut(e) {
+            s.color = tint;
+        }
+    }
+    if let Ok(kids) = children.get(e) {
+        for c in kids.iter() {
+            tint_tree(c, tint, children, sprites, limbs);
+        }
+    }
 }
