@@ -743,8 +743,10 @@ mod tests {
 
     #[test]
     fn roll_rewards_respects_min_round() {
-        let mut rm = RoundManager::default();
-        rm.round = 1;
+        let rm = RoundManager {
+            round: 1,
+            ..Default::default()
+        };
         let rolled = roll_rewards(&rm);
         assert!(rolled.len() <= 3);
         assert!(rolled.iter().all(|r| r.min_round <= 1));
@@ -752,8 +754,10 @@ mod tests {
 
     #[test]
     fn roll_rewards_respects_stack_caps() {
-        let mut rm = RoundManager::default();
-        rm.round = 99;
+        let mut rm = RoundManager {
+            round: 99,
+            ..Default::default()
+        };
         rm.upgrade_counts.insert("second_heart", 1);
         let rolled = roll_rewards(&rm);
         assert!(rolled.iter().all(|r| r.id != "second_heart"));
@@ -761,8 +765,10 @@ mod tests {
 
     #[test]
     fn end_run_does_not_clear_existing_victory() {
-        let mut rm = RoundManager::default();
-        rm.victory = true;
+        let mut rm = RoundManager {
+            victory: true,
+            ..Default::default()
+        };
         end_run(&mut rm, false);
         assert!(rm.victory);
         assert_eq!(rm.phase, RunPhase::GameOver);

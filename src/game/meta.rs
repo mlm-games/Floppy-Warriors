@@ -103,8 +103,10 @@ mod tests {
 
     #[test]
     fn can_buy_respects_cost_and_max_level() {
-        let mut save = SaveData::default();
-        save.bones = 9999;
+        let mut save = SaveData {
+            bones: 9999,
+            ..Default::default()
+        };
         assert!(can_buy(&save, "vitality"));
 
         save.meta_levels.insert("vitality".into(), 12);
@@ -117,8 +119,10 @@ mod tests {
 
     #[test]
     fn buy_charges_exactly_the_displayed_cost() {
-        let mut save = SaveData::default();
-        save.bones = 100_000;
+        let mut save = SaveData {
+            bones: 100_000,
+            ..Default::default()
+        };
         let before = save.bones;
         let cost = cost_for(&save, "power");
 
