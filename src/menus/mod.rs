@@ -19,7 +19,7 @@ use repose_ui::anim_ext::{
 use repose_ui::overlay::OverlayHandle;
 use repose_ui::{Column, Row, Text as RText, TextStyle, ViewExt, ZStack};
 
-use crate::app::{rarity_name, AppState, OverlayMenu, SharedUi};
+use crate::app::{AppState, OverlayMenu, SharedUi, rarity_name};
 
 fn t(translations: &HashMap<String, String>, key: &str, fallback: &str) -> String {
     translations
@@ -102,16 +102,9 @@ pub fn compose_root(
             let game_over = game_over_ui(&st, actions.clone());
             ZStack(Modifier::new().fill_max_size()).child((
                 hud,
-                AnimatedVisibility(
-                    st.run_phase == 1,
-                    reward,
-                    popup_anim_config("reward"),
-                ),
-                AnimatedVisibility(
-                    st.run_phase == 2,
-                    game_over,
-                    popup_anim_config("game_over"),
-                ),
+                boss_banner_ui(&st),
+                AnimatedVisibility(st.run_phase == 1, reward, popup_anim_config("reward")),
+                AnimatedVisibility(st.run_phase == 2, game_over, popup_anim_config("game_over")),
                 AnimatedVisibility(
                     st.overlay == OverlayMenu::Pause,
                     pause_overlay(&st, actions.clone()),
@@ -172,7 +165,11 @@ fn loading_ui(st: &SharedUi) -> View {
             .align_items(AlignItems::CENTER)
             .background(col(8, 8, 12)),
     )
-    .child(RText(t(&st.translations, "loading", "Loading...")).size(32.0).color(RColor::WHITE))
+    .child(
+        RText(t(&st.translations, "loading", "Loading..."))
+            .size(32.0)
+            .color(RColor::WHITE),
+    )
     .child(spacer(16.0))
     .child(
         RText(format!("{:.0}%", pct * 100.0))
@@ -224,13 +221,15 @@ fn title_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     ];
 
     if st.offline_bones > 0 {
-        children.push(RText(format!(
-            "{}  (+{})",
-            t(tr, "offline-bones", "While you were away"),
-            st.offline_bones,
-        ))
-        .size(15.0)
-        .color(col(230, 200, 120)));
+        children.push(
+            RText(format!(
+                "{}  (+{})",
+                t(tr, "offline-bones", "While you were away"),
+                st.offline_bones,
+            ))
+            .size(15.0)
+            .color(col(230, 200, 120)),
+        );
     }
 
     children.push(spacer(24.0));
@@ -291,11 +290,15 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             Row(Modifier::new().gap(12.0).align_items(AlignItems::CENTER)).child((
                 Column(Modifier::new().width(300.0)).child((
                     RText(&item.name).size(18.0).color(RColor::WHITE),
-                    RText(&item.description).size(13.0).color(col(190, 190, 200)),
+                    RText(&item.description)
+                        .size(13.0)
+                        .color(col(190, 190, 200)),
                 )),
-                RText(label)
-                    .size(15.0)
-                    .color(if afford && !item.maxed { col(120, 220, 140) } else { col(140, 140, 150) }),
+                RText(label).size(15.0).color(if afford && !item.maxed {
+                    col(120, 220, 140)
+                } else {
+                    col(140, 140, 150)
+                }),
                 FilledTonalButton(
                     Modifier::new().width(110.0).height(40.0),
                     move || push(&a_buy, UiAction::BuyMeta(id.clone())),
@@ -315,7 +318,9 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             .align_items(AlignItems::CENTER),
     )
     .child([
-        RText(t(tr, "bone-shop", "Bone Shop")).size(36.0).color(RColor::WHITE),
+        RText(t(tr, "bone-shop", "Bone Shop"))
+            .size(36.0)
+            .color(RColor::WHITE),
         spacer(6.0),
         RText(format!("{}: {}", t(tr, "bones", "Bones"), bones))
             .size(18.0)
@@ -335,11 +340,9 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
         spacer(16.0),
         Column(Modifier::new().gap(8.0).align_items(AlignItems::FLEX_START)).child(rows),
         spacer(20.0),
-        mk_button(
-            &t(tr, "back", "Back"),
-            col(70, 70, 90),
-            move || push(&a_close, UiAction::CloseBoneShop),
-        ),
+        mk_button(&t(tr, "back", "Back"), col(70, 70, 90), move || {
+            push(&a_close, UiAction::CloseBoneShop)
+        }),
     ]);
 
     Column(
@@ -421,16 +424,9 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                 move || push(&a, UiAction::ChooseReward(i)),
                 ButtonConfig::default(),
                 move || {
-                    Column(
-                        Modifier::new()
-                            .align_items(AlignItems::CENTER)
-                            .padding(8.0),
-                    )
-                    .child((
+                    Column(Modifier::new().align_items(AlignItems::CENTER).padding(8.0)).child((
                         RText(title.clone()).size(18.0).color(accent),
-                        RText(desc.clone())
-                            .size(13.0)
-                            .color(col(210, 210, 220)),
+                        RText(desc.clone()).size(13.0).color(col(210, 210, 220)),
                         spacer(4.0),
                         RText(meta).size(11.0).color(col(170, 170, 180)),
                         RText(stacks)
@@ -440,7 +436,9 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                             } else {
                                 col(140, 160, 190)
                             }),
-                        RText(format!("#{}", card_id)).size(9.0).color(col(110, 115, 125)),
+                        RText(format!("#{}", card_id))
+                            .size(9.0)
+                            .color(col(110, 115, 125)),
                     ))
                 },
             )
@@ -470,6 +468,33 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             spacer(16.0),
             Row(Modifier::new().gap(14.0)).child(cards),
         )),
+    )
+}
+
+fn boss_banner_ui(st: &SharedUi) -> View {
+    if st.boss_banner_timer <= 0.0 || st.run_phase != 0 {
+        return Column(Modifier::new());
+    }
+    let a = ((st.boss_banner_timer / 1.0).clamp(0.0, 1.0) * 255.0) as u8;
+    Column(
+        Modifier::new()
+            .fill_max_size()
+            .justify_content(JustifyContent::FLEX_START)
+            .align_items(AlignItems::CENTER)
+            .padding(26.0),
+    )
+    .child(
+        Column(
+            Modifier::new()
+                .padding(12.0)
+                .background(RColor::from_rgba(18, 18, 28, a))
+                .clip_rounded(10.0),
+        )
+        .child(
+            RText("BOSS INCOMING")
+                .size(34.0)
+                .color(RColor::from_rgba(200, 120, 255, a)),
+        ),
     )
 }
 
@@ -739,27 +764,15 @@ fn ingame_hud(st: &SharedUi) -> View {
     )
     .child((
         Row(Modifier::new().gap(18.0).align_items(AlignItems::CENTER)).child((
-            RText(format!(
-                "{}: {}",
-                t(tr, "round", "Round"),
-                st.run_round
-            ))
-            .size(22.0)
-            .color(col(255, 210, 120)),
-            RText(format!(
-                "{}: {}",
-                t(tr, "score", "Score"),
-                st.run_score
-            ))
-            .size(22.0)
-            .color(RColor::WHITE),
-            RText(format!(
-                "{}: {}",
-                t(tr, "best", "Best"),
-                st.high_score
-            ))
-            .size(16.0)
-            .color(col(200, 200, 200)),
+            RText(format!("{}: {}", t(tr, "round", "Round"), st.run_round))
+                .size(22.0)
+                .color(col(255, 210, 120)),
+            RText(format!("{}: {}", t(tr, "score", "Score"), st.run_score))
+                .size(22.0)
+                .color(RColor::WHITE),
+            RText(format!("{}: {}", t(tr, "best", "Best"), st.high_score))
+                .size(16.0)
+                .color(col(200, 200, 200)),
         )),
         RText(format!(
             "{}: {}/{}",
@@ -777,9 +790,7 @@ fn ingame_hud(st: &SharedUi) -> View {
         ))
         .size(16.0)
         .color(col(120, 170, 220)),
-        RText(&st.status_line)
-            .size(16.0)
-            .color(col(220, 220, 230)),
+        RText(&st.status_line).size(16.0).color(col(220, 220, 230)),
         spacer(4.0),
         RText(t(
             tr,

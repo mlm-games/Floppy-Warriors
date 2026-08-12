@@ -3,9 +3,13 @@ use crate::app::{rarity_accent, RewardCardUi, UiBridge};
 use crate::game::components::{EnemyTag, PlayerTag, WarriorRoot};
 use crate::game::round_manager::{FINAL_ROUND, RoundManager, RunPhase};
 
+const BOSS_BANNER_SEC: f32 = 2.5;
+
 pub fn sync_run_to_ui(
+    mut last_banner_round: Local<u32>,
     bridge: Res<UiBridge>,
     rm: Res<RoundManager>,
+    time: Res<Time>,
     warriors: Query<(Entity, &WarriorRoot, Option<&PlayerTag>, Option<&EnemyTag>)>,
 ) {
     let Ok(mut ui) = bridge.shared.lock() else {
@@ -64,6 +68,19 @@ pub fn sync_run_to_ui(
     } else {
         String::new()
     };
+
+    // A fresh run rolls the round counter back below the last bannered round,
+    // so reset the tracker before the next identical boss round can fire again.
+    if rm.round < *last_banner_round {
+        *last_banner_round = 0;
+    }
+    if rm.round != 0 && rm.round.is_multiple_of(5) && *last_banner_round != rm.round {
+        *last_banner_round = rm.round;
+        ui.boss_banner_timer = BOSS_BANNER_SEC;
+    }
+    if ui.boss_banner_timer > 0.0 {
+        ui.boss_banner_timer = (ui.boss_banner_timer - time.delta_secs()).max(0.0);
+    }
 
     let mut player: Option<&WarriorRoot> = None;
     let mut active_enemy: Option<&WarriorRoot> = None;
