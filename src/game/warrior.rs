@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 #[cfg(feature = "physics")]
 use bevy_rapier2d::prelude::*;
+use rand::RngExt;
 #[cfg(feature = "physics")]
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4};
-use rand::RngExt;
 
 use super::components::*;
 
@@ -105,11 +105,46 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
     #[cfg(feature = "physics")]
     {
         // Limits ported 1:1 from the original Godot PinJoint2D angular_limit values.
-        joint(commands, torso, head, Vec2::new(0.0, 20.0) * s, Vec2::new(0.0, -9.0) * s, [-FRAC_PI_4, FRAC_PI_4]); // ±45°
-        joint(commands, torso, arm_l, Vec2::new(-10.0, 12.0) * s, Vec2::new(0.0, 10.0) * s, [-FRAC_PI_2, FRAC_PI_2]); // ±90°
-        joint(commands, torso, arm_r, Vec2::new(10.0, 12.0) * s, Vec2::new(0.0, 10.0) * s, [-FRAC_PI_2, FRAC_PI_2]); // ±90°
-        joint(commands, torso, leg_l, Vec2::new(-7.0, -18.0) * s, Vec2::new(0.0, 12.0) * s, [-HIP_LIMIT, HIP_LIMIT]); // ~locked
-        joint(commands, torso, leg_r, Vec2::new(7.0, -18.0) * s, Vec2::new(0.0, 12.0) * s, [-HIP_LIMIT, HIP_LIMIT]); // ~locked
+        joint(
+            commands,
+            torso,
+            head,
+            Vec2::new(0.0, 20.0) * s,
+            Vec2::new(0.0, -9.0) * s,
+            [-FRAC_PI_4, FRAC_PI_4],
+        ); // ±45°
+        joint(
+            commands,
+            torso,
+            arm_l,
+            Vec2::new(-10.0, 12.0) * s,
+            Vec2::new(0.0, 10.0) * s,
+            [-FRAC_PI_2, FRAC_PI_2],
+        ); // ±90°
+        joint(
+            commands,
+            torso,
+            arm_r,
+            Vec2::new(10.0, 12.0) * s,
+            Vec2::new(0.0, 10.0) * s,
+            [-FRAC_PI_2, FRAC_PI_2],
+        ); // ±90°
+        joint(
+            commands,
+            torso,
+            leg_l,
+            Vec2::new(-7.0, -18.0) * s,
+            Vec2::new(0.0, 12.0) * s,
+            [-HIP_LIMIT, HIP_LIMIT],
+        ); // ~locked
+        joint(
+            commands,
+            torso,
+            leg_r,
+            Vec2::new(7.0, -18.0) * s,
+            Vec2::new(0.0, 12.0) * s,
+            [-HIP_LIMIT, HIP_LIMIT],
+        ); // ~locked
     }
 
     let bow_pivot = commands
@@ -229,10 +264,7 @@ fn spawn_limb(
             },
             ExternalImpulse::default(),
             Velocity::default(),
-            CollisionGroups::new(
-                Group::GROUP_2,
-                Group::GROUP_1 | Group::GROUP_3,
-            ),
+            CollisionGroups::new(Group::GROUP_2, Group::GROUP_1 | Group::GROUP_3),
         ));
     }
 
@@ -337,8 +369,7 @@ pub fn sync_health_fills(
             continue;
         };
 
-        let pct = (warrior.health.max(0) as f32 / warrior.max_health.max(1) as f32)
-            .clamp(0.0, 1.0);
+        let pct = (warrior.health.max(0) as f32 / warrior.max_health.max(1) as f32).clamp(0.0, 1.0);
         let fill_width = (bar.width * pct).max(0.001);
 
         if let Ok(mut sprite) = fill_sprites.get_mut(bar.fill) {
@@ -435,10 +466,8 @@ pub fn apply_ragdoll_on_death(
         if let Ok(mut impulse) = impulses.get_mut(warrior.torso) {
             let mut rng = rand::rng();
 
-            impulse.impulse += Vec2::new(
-                rng.random_range(-90.0..90.0),
-                rng.random_range(40.0..140.0),
-            );
+            impulse.impulse +=
+                Vec2::new(rng.random_range(-90.0..90.0), rng.random_range(40.0..140.0));
 
             impulse.torque_impulse += rng.random_range(-12.0..12.0);
         }
@@ -511,8 +540,8 @@ pub fn active_puppet_motor(
         }
 
         let angle_error = wrap_angle(torso_angle);
-        let torque = -angle_error * motor.upright_strength
-            - velocity.angular * motor.upright_damping;
+        let torque =
+            -angle_error * motor.upright_strength - velocity.angular * motor.upright_damping;
 
         impulse.torque_impulse += torque * dt;
     }

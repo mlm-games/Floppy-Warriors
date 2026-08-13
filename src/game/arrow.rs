@@ -52,8 +52,7 @@ pub fn spawn_arrow(
             custom_size: Some(Vec2::new(30.0, 6.0)),
             ..default()
         },
-        Transform::from_translation(origin.extend(5.0))
-            .with_rotation(Quat::from_rotation_z(angle)),
+        Transform::from_translation(origin.extend(5.0)).with_rotation(Quat::from_rotation_z(angle)),
     ));
 }
 
@@ -103,8 +102,16 @@ pub fn update_arrows(
 
         let best_limb_hit = {
             let wq = warriors.p0();
-            let mut best_limb_hit: Option<(f32, Entity, Entity, Entity, LimbKind, Vec2, f32, Vec2)> =
-                None;
+            let mut best_limb_hit: Option<(
+                f32,
+                Entity,
+                Entity,
+                Entity,
+                LimbKind,
+                Vec2,
+                f32,
+                Vec2,
+            )> = None;
 
             for (limb_e, limb, limb_tf) in &limbs {
                 let Ok(warrior) = wq.get(limb.root) else {
@@ -187,8 +194,7 @@ pub fn update_arrows(
 
             let crit = rand::rng().random::<f32>() < arrow.crit_chance;
 
-            let mut damage_f =
-                arrow.damage * arrow.damage_mult * mult * target_damage_taken_mult;
+            let mut damage_f = arrow.damage * arrow.damage_mult * mult * target_damage_taken_mult;
 
             if crit {
                 damage_f *= arrow.crit_mult;

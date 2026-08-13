@@ -12,15 +12,78 @@ pub struct MetaDef {
 }
 
 pub const CATALOG: &[MetaDef] = &[
-    MetaDef { id: "vitality", name: "Vitality", description: "+10 max HP / lvl", base_cost: 40, cost_growth: 1.55, max_level: 12 },
-    MetaDef { id: "power", name: "Power", description: "+6% damage / lvl", base_cost: 55, cost_growth: 1.6, max_level: 10 },
-    MetaDef { id: "quickdraw", name: "Quickdraw Drills", description: "+5% draw speed / lvl", base_cost: 50, cost_growth: 1.58, max_level: 10 },
-    MetaDef { id: "head_hunter", name: "Head Hunter", description: "+8% headshot / lvl", base_cost: 70, cost_growth: 1.7, max_level: 8 },
-    MetaDef { id: "impact", name: "Impact Training", description: "+8% knockback / lvl", base_cost: 45, cost_growth: 1.55, max_level: 8 },
-    MetaDef { id: "bowstring", name: "Bowstring Oil", description: "+4% velocity / lvl", base_cost: 45, cost_growth: 1.55, max_level: 8 },
-    MetaDef { id: "acrobat", name: "Acrobat", description: "-6% airdodge CD / lvl", base_cost: 60, cost_growth: 1.65, max_level: 6 },
-    MetaDef { id: "fortune", name: "Bone Fortune", description: "+12% bones / lvl", base_cost: 80, cost_growth: 1.75, max_level: 5 },
-    MetaDef { id: "multishot", name: "Starting Quiver", description: "+1 arrow every 2 lvls", base_cost: 200, cost_growth: 2.1, max_level: 4 },
+    MetaDef {
+        id: "vitality",
+        name: "Vitality",
+        description: "+10 max HP / lvl",
+        base_cost: 40,
+        cost_growth: 1.55,
+        max_level: 12,
+    },
+    MetaDef {
+        id: "power",
+        name: "Power",
+        description: "+6% damage / lvl",
+        base_cost: 55,
+        cost_growth: 1.6,
+        max_level: 10,
+    },
+    MetaDef {
+        id: "quickdraw",
+        name: "Quickdraw Drills",
+        description: "+5% draw speed / lvl",
+        base_cost: 50,
+        cost_growth: 1.58,
+        max_level: 10,
+    },
+    MetaDef {
+        id: "head_hunter",
+        name: "Head Hunter",
+        description: "+8% headshot / lvl",
+        base_cost: 70,
+        cost_growth: 1.7,
+        max_level: 8,
+    },
+    MetaDef {
+        id: "impact",
+        name: "Impact Training",
+        description: "+8% knockback / lvl",
+        base_cost: 45,
+        cost_growth: 1.55,
+        max_level: 8,
+    },
+    MetaDef {
+        id: "bowstring",
+        name: "Bowstring Oil",
+        description: "+4% velocity / lvl",
+        base_cost: 45,
+        cost_growth: 1.55,
+        max_level: 8,
+    },
+    MetaDef {
+        id: "acrobat",
+        name: "Acrobat",
+        description: "-6% airdodge CD / lvl",
+        base_cost: 60,
+        cost_growth: 1.65,
+        max_level: 6,
+    },
+    MetaDef {
+        id: "fortune",
+        name: "Bone Fortune",
+        description: "+12% bones / lvl",
+        base_cost: 80,
+        cost_growth: 1.75,
+        max_level: 5,
+    },
+    MetaDef {
+        id: "multishot",
+        name: "Starting Quiver",
+        description: "+1 arrow every 2 lvls",
+        base_cost: 200,
+        cost_growth: 2.1,
+        max_level: 4,
+    },
 ];
 
 pub fn cost_for(save: &SaveData, id: &str) -> u32 {
@@ -74,11 +137,8 @@ pub fn calculate_run_bones(
     kills: u32,
     headshots: u32,
 ) -> u32 {
-    let raw = kills * 3
-        + headshots * 4
-        + round_reached * 6
-        + score / 8
-        + if victory { 120 } else { 0 };
+    let raw =
+        kills * 3 + headshots * 4 + round_reached * 6 + score / 8 + if victory { 120 } else { 0 };
     ((raw as f32) * bones_multiplier(save)).round().max(1.0) as u32
 }
 

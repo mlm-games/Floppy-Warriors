@@ -556,6 +556,11 @@ fn enter_reward(
     asset_server: &AssetServer,
     sfx: &super::audio_fx::CombatSfx,
 ) {
+    // Already in reward (e.g. multi-kill same frame): don't re-roll / re-heal.
+    if rm.phase == RunPhase::Reward {
+        return;
+    }
+
     rm.phase = RunPhase::Reward;
 
     super::audio_fx::play_sfx(commands, asset_server, &sfx.reward, 0.5, 0.0);
@@ -568,6 +573,20 @@ fn enter_reward(
     }
 
     rm.reward_choices = roll_rewards(rm);
+
+    // Hard guarantee: reward phase must always have ≥1 selectable card.
+    if rm.reward_choices.is_empty() {
+        rm.reward_choices.push(RewardDef {
+            id: "field_dressing",
+            title: "Field Dressing",
+            description: "Heal 45% max HP.",
+            rarity: 2,
+            category: "defense",
+            max_stacks: 999,
+            min_round: 1,
+            weight: 1,
+        });
+    }
 }
 
 fn roll_rewards(rm: &RoundManager) -> Vec<RewardDef> {
@@ -581,12 +600,17 @@ fn roll_rewards(rm: &RoundManager) -> Vec<RewardDef> {
         .cloned()
         .collect();
 
-    let mut result = Vec::new();
+    let mut result = Vec::with_capacity(3);
 
     while result.len() < 3 && !pool.is_empty() {
         let total_weight: u32 = pool.iter().map(|r| r.weight).sum();
-        let mut roll = rand::rng().random_range(0..total_weight);
+        // random_range(0..0) panics — never allow it.
+        if total_weight == 0 {
+            result.push(pool.remove(0));
+            continue;
+        }
 
+        let mut roll = rand::rng().random_range(0..total_weight);
         let mut chosen_index = 0;
 
         for (i, reward) in pool.iter().enumerate() {

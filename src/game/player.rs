@@ -17,7 +17,10 @@ pub fn player_aim_and_bow(
     asset_server: Res<AssetServer>,
     sfx: Res<CombatSfx>,
     mut commands: Commands,
-    mut players: Query<(Entity, &WarriorRoot, &mut BowState, Option<&mut Airdodge>), With<PlayerTag>>,
+    mut players: Query<
+        (Entity, &WarriorRoot, &mut BowState, Option<&mut Airdodge>),
+        With<PlayerTag>,
+    >,
     torso_tf: Query<&GlobalTransform>,
     mut bow_tf: Query<&mut Transform>,
     #[cfg(feature = "physics")] mut torso_physics: Query<(&mut ExternalImpulse, &mut Velocity)>,
@@ -115,9 +118,7 @@ pub fn player_aim_and_bow(
 
                 // Recovery window: hover is suspended so the launch burst is
                 // not immediately cancelled by vertical motor correction.
-                commands.entity(entity).insert(Recovery {
-                    remaining: 0.35,
-                });
+                commands.entity(entity).insert(Recovery { remaining: 0.35 });
 
                 #[cfg(feature = "physics")]
                 {

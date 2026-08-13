@@ -47,7 +47,10 @@ pub fn validate_round_manager(rm: Res<RoundManager>, warriors: Query<&WarriorRoo
 pub fn validate_warriors(q: Query<(Entity, &WarriorRoot)>) {
     for (e, w) in &q {
         debug_assert!(w.max_health >= 1, "Warrior {e:?} max_health < 1");
-        debug_assert!(w.health <= w.max_health, "Warrior {e:?} health > max_health");
+        debug_assert!(
+            w.health <= w.max_health,
+            "Warrior {e:?} health > max_health"
+        );
         debug_assert!(w.arrow_count >= 1, "Warrior {e:?} arrow_count < 1");
         debug_assert!(w.crit_chance <= 1.0, "Warrior {e:?} crit chance > 1.0");
         debug_assert!(

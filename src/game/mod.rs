@@ -11,9 +11,9 @@ mod player;
 mod round_manager;
 mod warrior;
 
-use bevy::prelude::*;
 use crate::app::{AppState, Paused};
 use crate::save::SaveData;
+use bevy::prelude::*;
 use game_utils_bevy::save::SaveManager;
 use game_utils_bevy::transitions::Transition;
 
@@ -33,10 +33,7 @@ impl Plugin for GamePlugin {
             .add_message::<HitConfirmed>()
             .add_message::<ChooseReward>()
             .add_systems(Startup, audio_fx::load_combat_sfx)
-            .add_systems(
-                OnEnter(AppState::Title),
-                grant_offline_bones,
-            )
+            .add_systems(OnEnter(AppState::Title), grant_offline_bones)
             .add_systems(
                 OnEnter(AppState::InGame),
                 (arena::spawn_arena, round_manager::begin_run).chain(),

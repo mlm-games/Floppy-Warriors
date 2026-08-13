@@ -1,7 +1,7 @@
-use bevy::prelude::*;
-use crate::app::{rarity_accent, RewardCardUi, UiBridge};
+use crate::app::{RewardCardUi, UiBridge, rarity_accent};
 use crate::game::components::{EnemyTag, PlayerTag, WarriorRoot};
 use crate::game::round_manager::{FINAL_ROUND, RoundManager, RunPhase};
+use bevy::prelude::*;
 
 const BOSS_BANNER_SEC: f32 = 2.5;
 
@@ -29,9 +29,15 @@ pub fn sync_run_to_ui(
         RunPhase::Combat => {
             format!(
                 "{}: {}  {}: {}",
-                ui.translations.get("score").cloned().unwrap_or_else(|| "Score".into()),
+                ui.translations
+                    .get("score")
+                    .cloned()
+                    .unwrap_or_else(|| "Score".into()),
                 rm.score,
-                ui.translations.get("round").cloned().unwrap_or_else(|| "Round".into()),
+                ui.translations
+                    .get("round")
+                    .cloned()
+                    .unwrap_or_else(|| "Round".into()),
                 rm.round,
             )
         }

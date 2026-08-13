@@ -1,7 +1,7 @@
+use super::components::*;
 use bevy::prelude::*;
 #[cfg(feature = "physics")]
 use bevy_rapier2d::prelude::*;
-use super::components::*;
 
 pub fn spawn_arena(mut commands: Commands) {
     // Backdrop
