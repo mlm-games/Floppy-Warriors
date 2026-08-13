@@ -10,6 +10,7 @@ use repose_core::prelude::{
     AlignItems, AlignSelf, AnimationSpec, Color as RColor, Easing, JustifyContent, Modifier,
     remember, remember_state_with_key, request_frame,
 };
+use repose_core::scroll::ScrollState;
 use repose_core::{CursorIcon, PaddingValues};
 use repose_material::material3::{
     ButtonConfig, DropdownMenu, DropdownMenuConfig, DropdownMenuEntry, DropdownMenuItem,
@@ -418,6 +419,22 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
         })
         .collect();
 
+    let scroll_state = remember(|| ScrollState::new());
+    let scroll_binding = match scroll_state.to_binding() {
+        repose_core::scroll::ScrollBinding::Vertical(b) => b,
+        _ => unreachable!(),
+    };
+
+    let scroll_grid = Column(
+        Modifier::new()
+            .gap(12.0)
+            .justify_content(JustifyContent::FLEX_START)
+            .align_items(AlignItems::FLEX_START)
+            .vertical_scroll(scroll_binding)
+            .max_height(420.0),
+    )
+    .child(rows);
+
     let inner = Column(
         Modifier::new()
             .width(680.0)
@@ -447,13 +464,8 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
         .size(14.0)
         .color(col(180, 180, 190)),
         spacer(16.0),
-        Column(
-            Modifier::new()
-                .gap(12.0)
-                .align_items(AlignItems::FLEX_START),
-        )
-        .child(rows),
-        spacer(20.0),
+        scroll_grid,
+        spacer(16.0),
         mk_button(&t(tr, "back", "Back"), col(70, 70, 90), move || {
             push(&a_close, UiAction::CloseBoneShop)
         }),
@@ -512,11 +524,9 @@ fn pause_panel(
         mk_button(&t(tr, "settings", "Settings"), col(70, 70, 90), move || {
             push(&a2, UiAction::OpenSettings)
         }),
-        mk_button(
-            &t(tr, "restart", "Restart"),
-            col(90, 90, 60),
-            move || push(&a3, UiAction::Restart),
-        ),
+        mk_button(&t(tr, "restart", "Restart"), col(90, 90, 60), move || {
+            push(&a3, UiAction::Restart)
+        }),
         mk_button(
             &t(tr, "quit-to-title", "Quit to Title"),
             col(180, 60, 60),
@@ -530,7 +540,7 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
 
     let cards: Vec<View> = if st.reward_cards.is_empty() {
         vec![
-            RText("No upgrades left — free heal applied.")
+            RText("No upgrades left - free heal applied.")
                 .size(16.0)
                 .color(col(200, 200, 210)),
         ]
@@ -649,7 +659,7 @@ fn reward_card(card: &RewardCardUi, index: usize, actions: Arc<Mutex<Vec<UiActio
     let inner_w = CARD_W - PAD * 2.0;
     let desc_text_w = inner_w - 20.0;
 
-    // Card: clip_rounded OK — NO graphics_layer / shadow / repaint_boundary
+    // Card: clip_rounded OK - NO graphics_layer / shadow / repaint_boundary
     Column(
         Modifier::new()
             .key(key_of(&format!("reward-card:{}:{}", card.id, index)))
@@ -960,11 +970,9 @@ fn game_over_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                 .size(15.0)
                 .color(col(170, 170, 180)),
             spacer(12.0),
-            mk_button(
-                &t(tr, "restart", "Restart"),
-                col(90, 90, 60),
-                move || push(&a_retry, UiAction::Restart),
-            ),
+            mk_button(&t(tr, "restart", "Restart"), col(90, 90, 60), move || {
+                push(&a_retry, UiAction::Restart)
+            }),
             mk_button(
                 &t(tr, "quit-to-title", "Quit to Title"),
                 col(180, 60, 60),
@@ -1136,7 +1144,7 @@ fn credits_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             .size(36.0)
             .color(RColor::WHITE),
         spacer(12.0),
-        RText("Floppy Warriors — a janky ragdoll archery roguelite")
+        RText("Floppy Warriors - a janky ragdoll archery roguelite")
             .size(16.0)
             .color(RColor::WHITE),
         RText("Port of the Godot slice to Bevy + Repose")
