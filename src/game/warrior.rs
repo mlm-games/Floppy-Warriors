@@ -5,6 +5,7 @@ use rand::RngExt;
 #[cfg(feature = "physics")]
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4};
 
+use super::art::WarriorArt;
 use super::components::*;
 
 const MAX_DRAW: f32 = 100.0;
@@ -22,7 +23,15 @@ pub struct SpawnWarrior {
     pub scale: f32,
 }
 
-pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
+const SKIN: Color = Color::srgb(0.96, 0.82, 0.68);
+const SKIN_DARK: Color = Color::srgb(0.86, 0.7, 0.55);
+const CLOTH: Color = Color::srgb(0.3, 0.42, 0.62);
+
+pub fn spawn_warrior(
+    commands: &mut Commands,
+    art: &WarriorArt,
+    cfg: SpawnWarrior,
+) -> Entity {
     let hp = (cfg.base_hp + cfg.mods.max_hp_bonus).max(1);
     let s = cfg.scale.max(0.2);
 
@@ -45,61 +54,89 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
         commands,
         root,
         LimbKind::Torso,
+        &art.body,
         Vec2::ZERO,
-        Vec2::new(20.0, 40.0) * s,
+        Vec2::new(30.0, 52.0) * s,
         1.5 * s,
         16.0 * s,
-        Color::srgb(0.35, 0.55, 0.85),
+        CLOTH,
     );
     let head = spawn_limb(
         commands,
         root,
         LimbKind::Head,
-        Vec2::new(0.0, 30.0) * s,
-        Vec2::splat(18.0) * s,
+        &art.head,
+        Vec2::new(0.0, 28.0) * s,
+        Vec2::new(24.0, 24.0) * s,
         0.8 * s,
-        11.0 * s,
-        Color::srgb(0.9, 0.75, 0.55),
+        12.0 * s,
+        SKIN,
+    );
+    let up_arm_l = spawn_limb(
+        commands,
+        root,
+        LimbKind::UpperArmL,
+        &art.upper_arm,
+        Vec2::new(-19.0, 15.0) * s,
+        Vec2::new(13.0, 28.0) * s,
+        0.45 * s,
+        8.0 * s,
+        SKIN_DARK,
+    );
+    let up_arm_r = spawn_limb(
+        commands,
+        root,
+        LimbKind::UpperArmR,
+        &art.upper_arm,
+        Vec2::new(19.0, 15.0) * s,
+        Vec2::new(13.0, 28.0) * s,
+        0.45 * s,
+        8.0 * s,
+        SKIN_DARK,
     );
     let arm_l = spawn_limb(
         commands,
         root,
         LimbKind::ArmL,
-        Vec2::new(-13.0, 7.0) * s,
-        Vec2::new(8.0, 26.0) * s,
-        0.4 * s,
+        &art.hand,
+        Vec2::new(-30.0, -8.0) * s,
+        Vec2::new(13.0, 38.0) * s,
+        0.35 * s,
         8.0 * s,
-        Color::srgb(0.9, 0.7, 0.5),
+        SKIN,
     );
     let arm_r = spawn_limb(
         commands,
         root,
         LimbKind::ArmR,
-        Vec2::new(14.0, 7.0) * s,
-        Vec2::new(8.0, 26.0) * s,
-        0.4 * s,
+        &art.hand,
+        Vec2::new(30.0, -8.0) * s,
+        Vec2::new(13.0, 38.0) * s,
+        0.35 * s,
         8.0 * s,
-        Color::srgb(0.9, 0.7, 0.5),
+        SKIN,
     );
     let leg_l = spawn_limb(
         commands,
         root,
         LimbKind::LegL,
-        Vec2::new(-7.0, -33.0) * s,
-        Vec2::new(8.0, 28.0) * s,
+        &art.leg,
+        Vec2::new(-8.0, -41.0) * s,
+        Vec2::new(13.0, 35.0) * s,
         0.5 * s,
         9.0 * s,
-        Color::srgb(0.45, 0.4, 0.55),
+        SKIN_DARK,
     );
     let leg_r = spawn_limb(
         commands,
         root,
         LimbKind::LegR,
-        Vec2::new(7.0, -33.0) * s,
-        Vec2::new(8.0, 28.0) * s,
+        &art.leg,
+        Vec2::new(8.0, -41.0) * s,
+        Vec2::new(13.0, 35.0) * s,
         0.5 * s,
         9.0 * s,
-        Color::srgb(0.45, 0.4, 0.55),
+        SKIN_DARK,
     );
 
     #[cfg(feature = "physics")]
@@ -109,40 +146,56 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
             commands,
             torso,
             head,
-            Vec2::new(0.0, 20.0) * s,
+            Vec2::new(0.0, 24.0) * s,
             Vec2::new(0.0, -9.0) * s,
             [-FRAC_PI_4, FRAC_PI_4],
         ); // ±45°
         joint(
             commands,
             torso,
-            arm_l,
-            Vec2::new(-10.0, 12.0) * s,
-            Vec2::new(0.0, 10.0) * s,
+            up_arm_l,
+            Vec2::new(-14.0, 12.0) * s,
+            Vec2::new(0.0, 13.0) * s,
             [-FRAC_PI_2, FRAC_PI_2],
         ); // ±90°
         joint(
             commands,
             torso,
-            arm_r,
-            Vec2::new(10.0, 12.0) * s,
-            Vec2::new(0.0, 10.0) * s,
+            up_arm_r,
+            Vec2::new(14.0, 12.0) * s,
+            Vec2::new(0.0, 13.0) * s,
             [-FRAC_PI_2, FRAC_PI_2],
         ); // ±90°
+        joint(
+            commands,
+            up_arm_l,
+            arm_l,
+            Vec2::new(0.0, -13.0) * s,
+            Vec2::new(0.0, 15.0) * s,
+            [-1.4, 1.4],
+        ); // elbow ±80°
+        joint(
+            commands,
+            up_arm_r,
+            arm_r,
+            Vec2::new(0.0, -13.0) * s,
+            Vec2::new(0.0, 15.0) * s,
+            [-1.4, 1.4],
+        ); // elbow ±80°
         joint(
             commands,
             torso,
             leg_l,
-            Vec2::new(-7.0, -18.0) * s,
-            Vec2::new(0.0, 12.0) * s,
+            Vec2::new(-8.0, -21.0) * s,
+            Vec2::new(0.0, 15.0) * s,
             [-HIP_LIMIT, HIP_LIMIT],
         ); // ~locked
         joint(
             commands,
             torso,
             leg_r,
-            Vec2::new(7.0, -18.0) * s,
-            Vec2::new(0.0, 12.0) * s,
+            Vec2::new(8.0, -21.0) * s,
+            Vec2::new(0.0, 15.0) * s,
             [-HIP_LIMIT, HIP_LIMIT],
         ); // ~locked
     }
@@ -159,12 +212,21 @@ pub fn spawn_warrior(commands: &mut Commands, cfg: SpawnWarrior) -> Entity {
         .with_children(|b| {
             b.spawn((
                 GameCleanup,
+                SkipTint,
                 Sprite {
-                    color: Color::srgb(0.55, 0.35, 0.15),
-                    custom_size: Some(Vec2::new(28.0, 8.0) * s),
+                    image: art.bow.clone(),
+                    color: Color::WHITE,
+                    custom_size: Some(Vec2::new(12.0, 60.0) * s),
+                    flip_x: true,
                     ..default()
                 },
-                Transform::from_xyz(18.0 * s, 0.0, 0.1),
+                Transform {
+                    translation: Vec3::new(16.0 * s, 0.0, 0.1),
+                    ..default()
+                },
+                GlobalTransform::default(),
+                Visibility::default(),
+                InheritedVisibility::default(),
             ));
         })
         .id();
@@ -227,6 +289,7 @@ fn spawn_limb(
     commands: &mut Commands,
     root: Entity,
     kind: LimbKind,
+    tex: &Handle<Image>,
     local: Vec2,
     size: Vec2,
     mass: f32,
@@ -241,6 +304,7 @@ fn spawn_limb(
             hit_radius,
         },
         Sprite {
+            image: tex.clone(),
             color,
             custom_size: Some(size),
             ..default()
@@ -575,36 +639,39 @@ fn global_z_angle(tf: &GlobalTransform) -> f32 {
     right.y.atan2(right.x)
 }
 
-/// Runs once when ArchetypeVisual is added; tints limbs. Physics scale is
-/// baked into the body at spawn time (see SpawnWarrior::scale).
+/// Runs once when ArchetypeVisual is added; tints all body parts. Physics scale
+/// is baked into the body at spawn time (see SpawnWarrior::scale).
 pub fn apply_archetype_visuals(
     mut commands: Commands,
     q: Query<(Entity, &ArchetypeVisual), Added<ArchetypeVisual>>,
     children: Query<&Children>,
     mut sprites: Query<&mut Sprite>,
-    limbs: Query<&WarriorLimb>,
+    skip: Query<(), With<SkipTint>>,
 ) {
     for (root, vis) in &q {
-        tint_tree(root, vis.tint, &children, &mut sprites, &limbs);
+        tint_warrior_tree(root, vis.tint, &children, &mut sprites, &skip);
         commands.entity(root).remove::<ArchetypeVisual>();
     }
 }
 
-fn tint_tree(
+/// Shared with the title demo so both tints behave identically: every sprite
+/// descendant gets the tint except `SkipTint` subtrees (e.g. the bow).
+pub fn tint_warrior_tree(
     e: Entity,
     tint: Color,
     children: &Query<&Children>,
     sprites: &mut Query<&mut Sprite>,
-    limbs: &Query<&WarriorLimb>,
+    skip: &Query<(), With<SkipTint>>,
 ) {
-    if limbs.get(e).is_ok()
-        && let Ok(mut s) = sprites.get_mut(e)
-    {
+    if skip.contains(e) {
+        return;
+    }
+    if let Ok(mut s) = sprites.get_mut(e) {
         s.color = tint;
     }
     if let Ok(kids) = children.get(e) {
         for c in kids.iter() {
-            tint_tree(c, tint, children, sprites, limbs);
+            tint_warrior_tree(c, tint, children, sprites, skip);
         }
     }
 }

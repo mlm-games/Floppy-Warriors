@@ -29,30 +29,56 @@ pub fn spawn_arrow(
 ) {
     let angle = velocity.y.atan2(velocity.x);
 
-    commands.spawn((
-        GameCleanup,
-        Arrow {
-            shooter,
-            team,
-            damage,
-            damage_mult,
-            headshot_mult,
-            knockback_mult,
-            crit_chance,
-            crit_mult,
-            velocity,
-            has_hit: false,
-            stuck_life: STUCK_LIFETIME,
-            stuck_to: None,
-            stuck_local_offset: Vec2::ZERO,
-            stuck_angle_offset: 0.0,
-        },
+    commands
+        .spawn((
+            GameCleanup,
+            Arrow {
+                shooter,
+                team,
+                damage,
+                damage_mult,
+                headshot_mult,
+                knockback_mult,
+                crit_chance,
+                crit_mult,
+                velocity,
+                has_hit: false,
+                stuck_life: STUCK_LIFETIME,
+                stuck_to: None,
+                stuck_local_offset: Vec2::ZERO,
+                stuck_angle_offset: 0.0,
+            },
+            Transform::from_translation(origin.extend(5.0))
+                .with_rotation(Quat::from_rotation_z(angle)),
+        ))
+        .with_children(|b| arrow_visuals(b, 30.0));
+}
+
+/// Shaft + tip + fletching children of an arrow root, pointing along +X.
+pub fn arrow_visuals(b: &mut ChildSpawnerCommands, len: f32) {
+    b.spawn((
         Sprite {
-            color: Color::srgb(0.47, 0.34, 0.22),
-            custom_size: Some(Vec2::new(30.0, 6.0)),
+            color: Color::srgb(0.5, 0.35, 0.2),
+            custom_size: Some(Vec2::new(len - 6.0, 3.0)),
             ..default()
         },
-        Transform::from_translation(origin.extend(5.0)).with_rotation(Quat::from_rotation_z(angle)),
+        Transform::from_xyz(0.0, 0.0, 0.0),
+    ));
+    b.spawn((
+        Sprite {
+            color: Color::srgb(0.93, 0.93, 0.97),
+            custom_size: Some(Vec2::new(6.0, 4.0)),
+            ..default()
+        },
+        Transform::from_xyz(len * 0.5 - 2.0, 0.0, 0.1),
+    ));
+    b.spawn((
+        Sprite {
+            color: Color::srgb(0.95, 0.85, 0.6),
+            custom_size: Some(Vec2::new(8.0, 6.0)),
+            ..default()
+        },
+        Transform::from_xyz(-len * 0.5 + 2.0, 0.0, 0.1),
     ));
 }
 

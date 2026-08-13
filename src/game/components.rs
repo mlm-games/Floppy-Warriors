@@ -7,6 +7,8 @@ pub struct GameCleanup;
 pub enum LimbKind {
     Torso,
     Head,
+    UpperArmL,
+    UpperArmR,
     ArmL,
     ArmR,
     LegL,
@@ -18,7 +20,7 @@ impl LimbKind {
         match self {
             Self::Head => 2.0,
             Self::Torso => 1.0,
-            Self::ArmL | Self::ArmR => 0.75,
+            Self::UpperArmL | Self::UpperArmR | Self::ArmL | Self::ArmR => 0.75,
             Self::LegL | Self::LegR => 0.65,
         }
     }
@@ -30,6 +32,10 @@ pub struct WarriorLimb {
     pub kind: LimbKind,
     pub hit_radius: f32,
 }
+
+/// Sprite children that must never pick up the archetype tint (e.g. the bow).
+#[derive(Component)]
+pub struct SkipTint;
 
 #[derive(Component)]
 pub struct WarriorRoot {

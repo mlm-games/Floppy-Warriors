@@ -99,6 +99,7 @@ pub struct BoneShopItem {
     pub name: String,
     pub description: String,
     pub level: u32,
+    pub max_level: u32,
     pub cost: u32,
     pub maxed: bool,
 }
@@ -340,6 +341,7 @@ fn sync_shared_ui(
                 name: d.name.to_string(),
                 description: d.description.to_string(),
                 level: lvl,
+                max_level: d.max_level,
                 cost: if lvl >= d.max_level {
                     0
                 } else {
@@ -409,6 +411,7 @@ fn process_ui_actions(
     mut locale: ResMut<LocaleResources>,
     rm: Res<crate::game::RoundManager>,
     mut rewards: MessageWriter<crate::game::ChooseReward>,
+    mut restart_flag: ResMut<crate::game::RestartFlag>,
 ) {
     let Ok(mut q) = bridge.actions.lock() else {
         return;
@@ -447,6 +450,13 @@ fn process_ui_actions(
             UiAction::Resume => {
                 *overlay = OverlayMenu::None;
                 pending_unpause.0 = Some(Timer::from_seconds(0.2, TimerMode::Once));
+            }
+            UiAction::Restart => {
+                paused.0 = false;
+                *overlay = OverlayMenu::None;
+                pending_unpause.0 = None;
+                virtual_time.unpause();
+                restart_flag.0 = true;
             }
             UiAction::QuitToTitle => {
                 paused.0 = false;

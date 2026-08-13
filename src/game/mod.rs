@@ -1,5 +1,6 @@
 mod arena;
 mod arrow;
+mod art;
 mod audio_fx;
 mod cleanup_bounds;
 mod components;
@@ -9,6 +10,7 @@ mod hud_sync;
 pub mod meta;
 mod player;
 mod round_manager;
+mod title_demo;
 mod warrior;
 
 use crate::app::{AppState, Paused};
@@ -32,7 +34,8 @@ impl Plugin for GamePlugin {
             .init_resource::<OfflineBonesEarned>()
             .add_message::<HitConfirmed>()
             .add_message::<ChooseReward>()
-            .add_systems(Startup, audio_fx::load_combat_sfx)
+            .add_plugins(title_demo::TitleDemoPlugin)
+            .add_systems(Startup, (audio_fx::load_combat_sfx, load_warrior_textures))
             .add_systems(OnEnter(AppState::Title), grant_offline_bones)
             .add_systems(
                 OnEnter(AppState::InGame),
@@ -69,6 +72,10 @@ impl Plugin for GamePlugin {
     }
 }
 
+fn load_warrior_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.insert_resource(art::load_warrior_art(&asset_server));
+}
+
 /// Passive bones while away. Runs on every title entry; self-limits by
 /// bumping `last_played_unix` on grant, so re-entry yields zero.
 fn grant_offline_bones(
@@ -98,7 +105,7 @@ fn grant_offline_bones(
 }
 
 #[derive(Resource, Default)]
-struct RestartFlag(bool);
+pub struct RestartFlag(pub bool);
 
 fn cleanup_game(mut commands: Commands, q: Query<Entity, With<GameCleanup>>) {
     for e in &q {
@@ -108,14 +115,13 @@ fn cleanup_game(mut commands: Commands, q: Query<Entity, With<GameCleanup>>) {
 
 fn handle_restart_input(
     keys: Res<ButtonInput<KeyCode>>,
-    mouse: Res<ButtonInput<MouseButton>>,
     rm: Res<RoundManager>,
     mut flag: ResMut<RestartFlag>,
 ) {
     if rm.phase != RunPhase::GameOver {
         return;
     }
-    if keys.just_pressed(KeyCode::KeyR) || mouse.just_pressed(MouseButton::Left) {
+    if keys.just_pressed(KeyCode::KeyR) {
         flag.0 = true;
     }
 }
@@ -126,6 +132,7 @@ fn process_restart(
     cleanup: Query<Entity, With<GameCleanup>>,
     rm: ResMut<RoundManager>,
     save: Res<crate::save::SaveData>,
+    textures: Res<art::WarriorArt>,
 ) {
     if !flag.0 {
         return;
@@ -138,7 +145,7 @@ fn process_restart(
     }
 
     arena::spawn_arena(commands.reborrow());
-    round_manager::begin_run(rm, commands, save);
+    round_manager::begin_run(rm, commands, save, textures);
 }
 
 fn death_fade(

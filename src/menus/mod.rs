@@ -10,7 +10,7 @@ use repose_core::prelude::{
     AlignItems, AlignSelf, AnimationSpec, Color as RColor, Easing, JustifyContent, Modifier,
     remember, remember_state_with_key, request_frame,
 };
-use repose_core::{CursorIcon, Overflow, PaddingValues, StateColors};
+use repose_core::{CursorIcon, PaddingValues};
 use repose_material::material3::{
     ButtonConfig, DropdownMenu, DropdownMenuConfig, DropdownMenuEntry, DropdownMenuItem,
     FilledTonalButton, MenuState,
@@ -38,6 +38,7 @@ pub enum UiAction {
     OpenCredits,
     CloseOverlay,
     Resume,
+    Restart,
     QuitToTitle,
     QuitApp,
     SetMasterVol(f32),
@@ -289,10 +290,20 @@ fn title_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
         Modifier::new()
             .fill_max_size()
             .justify_content(JustifyContent::CENTER)
-            .align_items(AlignItems::CENTER)
-            .background(col(8, 8, 12)),
+            .align_items(AlignItems::CENTER),
     )
-    .child(children)
+    .child(
+        Column(
+            Modifier::new()
+                .width(460.0)
+                .padding(28.0)
+                .background(RColor::from_rgba(8, 8, 14, 150))
+                .clip_rounded(18.0)
+                .border(2.0, col(90, 90, 110), 18.0)
+                .align_items(AlignItems::CENTER),
+        )
+        .child(children),
+    )
 }
 
 fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
@@ -300,47 +311,119 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let tr = &st.translations;
     let bones = st.bones;
 
-    let rows: Vec<View> = st
-        .bone_shop_items
-        .iter()
-        .map(|item| {
-            let a_buy = actions.clone();
-            let id = item.id.clone();
-            let afford = bones >= item.cost;
-            let cost_label = if item.maxed {
-                "MAX".to_string()
-            } else {
-                format!("{}: {}", t(tr, "bones", "Bones"), item.cost)
-            };
-            let label = format!("{}  ({} {})", cost_label, t(tr, "level", "Lv"), item.level);
-            Row(Modifier::new().gap(12.0).align_items(AlignItems::CENTER)).child((
-                Column(Modifier::new().width(300.0)).child((
-                    RText(&item.name).size(18.0).color(RColor::WHITE),
-                    RText(&item.description)
-                        .size(13.0)
-                        .color(col(190, 190, 200)),
-                )),
-                RText(label).size(15.0).color(if afford && !item.maxed {
-                    col(120, 220, 140)
+    let card = |item: &crate::app::BoneShopItem| {
+        let a_buy = actions.clone();
+        let id = item.id.clone();
+        let afford = bones >= item.cost;
+        let frac = if item.maxed {
+            1.0
+        } else {
+            item.level as f32 / item.max_level.max(1) as f32
+        };
+        let card_bg = if item.maxed {
+            col(30, 42, 30)
+        } else if afford {
+            col(26, 30, 44)
+        } else {
+            col(22, 22, 30)
+        };
+        let border_col = if item.maxed {
+            col(90, 160, 90)
+        } else if afford {
+            col(70, 90, 150)
+        } else {
+            col(50, 50, 62)
+        };
+        let badge = if item.maxed {
+            t(tr, "maxed", "MAX")
+        } else {
+            format!("{} {}/{}", t(tr, "level", "Lv"), item.level, item.max_level)
+        };
+        let cost_label = if item.maxed {
+            t(tr, "maxed", "MAX").to_string()
+        } else if afford {
+            format!("{}: {}", t(tr, "bones", "Bones"), item.cost)
+        } else {
+            format!("{}: {}", t(tr, "bones", "Bones"), item.cost)
+        };
+        Column(
+            Modifier::new()
+                .width(300.0)
+                .padding(14.0)
+                .gap(8.0)
+                .background(card_bg)
+                .border(1.5, border_col, 12.0)
+                .clip_rounded(12.0)
+                .align_items(AlignItems::FLEX_START),
+        )
+        .child((
+            Row(Modifier::new()
+                .fill_max_width()
+                .justify_content(JustifyContent::SPACE_BETWEEN)
+                .align_items(AlignItems::CENTER))
+            .child((
+                RText(&item.name).size(17.0).color(RColor::WHITE),
+                RText(badge).size(13.0).color(if item.maxed {
+                    col(140, 220, 140)
                 } else {
-                    col(140, 140, 150)
+                    col(150, 160, 190)
+                }),
+            )),
+            RText(&item.description)
+                .size(12.0)
+                .color(col(180, 180, 190)),
+            progress_bar(
+                272.0,
+                frac,
+                if item.maxed {
+                    col(120, 200, 120)
+                } else {
+                    col(80, 140, 220)
+                },
+            ),
+            Row(Modifier::new()
+                .fill_max_width()
+                .justify_content(JustifyContent::SPACE_BETWEEN)
+                .align_items(AlignItems::CENTER))
+            .child((
+                RText(cost_label).size(15.0).color(if item.maxed {
+                    col(140, 220, 140)
+                } else if afford {
+                    col(230, 200, 120)
+                } else {
+                    col(150, 150, 160)
                 }),
                 FilledTonalButton(
-                    Modifier::new().width(110.0).height(40.0),
+                    Modifier::new().width(88.0).height(38.0),
                     move || push(&a_buy, UiAction::BuyMeta(id.clone())),
                     ButtonConfig::default(),
-                    move || RText(if item.maxed { "MAX" } else { "Buy" }).size(16.0),
+                    move || RText(if item.maxed { "MAX" } else { "Buy" }).size(15.0),
                 ),
-            ))
+            )),
+        ))
+    };
+
+    let rows: Vec<View> = st
+        .bone_shop_items
+        .chunks(2)
+        .map(|pair| {
+            let mut v: Vec<View> = pair.iter().map(&card).collect();
+            if v.len() == 1 {
+                v.push(Column(Modifier::new().width(300.0)));
+            }
+            Row(Modifier::new()
+                .gap(14.0)
+                .justify_content(JustifyContent::CENTER))
+            .child(v)
         })
         .collect();
 
     let inner = Column(
         Modifier::new()
-            .width(620.0)
+            .width(680.0)
             .padding(24.0)
-            .background(col(20, 20, 28))
-            .clip_rounded(12.0)
+            .background(RColor::from_rgba(16, 16, 24, 245))
+            .clip_rounded(14.0)
             .align_items(AlignItems::CENTER),
     )
     .child([
@@ -364,7 +447,12 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
         .size(14.0)
         .color(col(180, 180, 190)),
         spacer(16.0),
-        Column(Modifier::new().gap(8.0).align_items(AlignItems::FLEX_START)).child(rows),
+        Column(
+            Modifier::new()
+                .gap(12.0)
+                .align_items(AlignItems::FLEX_START),
+        )
+        .child(rows),
         spacer(20.0),
         mk_button(&t(tr, "back", "Back"), col(70, 70, 90), move || {
             push(&a_close, UiAction::CloseBoneShop)
@@ -385,6 +473,7 @@ fn pause_overlay(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let a1 = actions.clone();
     let a2 = actions.clone();
     let a3 = actions.clone();
+    let a4 = actions.clone();
     let tr = &st.translations;
 
     Column(
@@ -394,7 +483,7 @@ fn pause_overlay(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             .align_items(AlignItems::CENTER)
             .background(RColor::from_rgba(0, 0, 0, 180)),
     )
-    .child(pause_panel(tr, a1, a2, a3))
+    .child(pause_panel(tr, a1, a2, a3, a4))
 }
 
 fn pause_panel(
@@ -402,6 +491,7 @@ fn pause_panel(
     a1: Arc<Mutex<Vec<UiAction>>>,
     a2: Arc<Mutex<Vec<UiAction>>>,
     a3: Arc<Mutex<Vec<UiAction>>>,
+    a4: Arc<Mutex<Vec<UiAction>>>,
 ) -> View {
     Column(
         Modifier::new()
@@ -423,9 +513,14 @@ fn pause_panel(
             push(&a2, UiAction::OpenSettings)
         }),
         mk_button(
+            &t(tr, "restart", "Restart"),
+            col(90, 90, 60),
+            move || push(&a3, UiAction::Restart),
+        ),
+        mk_button(
             &t(tr, "quit-to-title", "Quit to Title"),
             col(180, 60, 60),
-            move || push(&a3, UiAction::QuitToTitle),
+            move || push(&a4, UiAction::QuitToTitle),
         ),
     ))
 }
@@ -496,7 +591,7 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                     bottom: 14.0,
                 }))
             .child(cards),
-            RText("One upgrade. Caps matter — rares change the run.")
+            RText("Select One upgrade.")
                 .size(13.0)
                 .color(col(145, 150, 162)),
         )),
@@ -806,7 +901,8 @@ fn boss_banner_ui(st: &SharedUi) -> View {
 }
 
 fn game_over_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
-    let a = actions.clone();
+    let a_retry = actions.clone();
+    let a_quit = actions.clone();
     let tr = &st.translations;
     let title = if st.victory {
         t(tr, "run-complete", "RUN COMPLETE")
@@ -860,14 +956,19 @@ fn game_over_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                 .size(22.0)
                 .color(col(230, 200, 120)),
             spacer(18.0),
-            RText(t(tr, "retry-hint", "R / Click = Retry"))
+            RText(t(tr, "retry-hint", "R = Retry"))
                 .size(15.0)
                 .color(col(170, 170, 180)),
             spacer(12.0),
             mk_button(
+                &t(tr, "restart", "Restart"),
+                col(90, 90, 60),
+                move || push(&a_retry, UiAction::Restart),
+            ),
+            mk_button(
                 &t(tr, "quit-to-title", "Quit to Title"),
                 col(180, 60, 60),
-                move || push(&a, UiAction::QuitToTitle),
+                move || push(&a_quit, UiAction::QuitToTitle),
             ),
         ]),
     )
@@ -1125,6 +1226,25 @@ fn mk_button_sm(label: &str, on_click: impl Fn() + 'static) -> View {
         ButtonConfig::default(),
         move || RText(label).size(20.0),
     )
+}
+
+fn progress_bar(width: f32, frac: f32, color: RColor) -> View {
+    let inner_w = (width * frac.clamp(0.0, 1.0)).max(2.0);
+    Column(
+        Modifier::new()
+            .width(width)
+            .height(7.0)
+            .background(col(38, 38, 46))
+            .clip_rounded(3.5),
+    )
+    .child(Column(
+        Modifier::new()
+            .width(inner_w)
+            .height(7.0)
+            .background(color)
+            .clip_rounded(3.5)
+            .align_self(AlignSelf::FLEX_START),
+    ))
 }
 
 fn col(r: u8, g: u8, b: u8) -> RColor {

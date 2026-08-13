@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::game::art::WarriorArt;
 use crate::game::components::*;
 use crate::game::enemy_ai::{EnemySpawnConfig, configure_enemy};
 use crate::game::meta::{self, apply_meta_to_mods};
@@ -222,12 +223,18 @@ pub struct ChooseReward(pub &'static str);
 #[derive(Component)]
 pub struct DyingFade(pub f32);
 
-pub fn begin_run(mut rm: ResMut<RoundManager>, mut commands: Commands, save: Res<SaveData>) {
+pub fn begin_run(
+    mut rm: ResMut<RoundManager>,
+    mut commands: Commands,
+    save: Res<SaveData>,
+    textures: Res<WarriorArt>,
+) {
     *rm = RoundManager::default();
     let mut mods = CombatMods::default();
     apply_meta_to_mods(&save, &mut mods);
     let player = spawn_warrior(
         &mut commands,
+        &textures,
         SpawnWarrior {
             translation: Vec2::new(-350.0, -112.0),
             team: Team::Player,
@@ -377,6 +384,7 @@ pub fn spawn_enemies_system(
     time: Res<Time>,
     mut rm: ResMut<RoundManager>,
     mut commands: Commands,
+    textures: Res<WarriorArt>,
     players: Query<&WarriorRoot, With<PlayerTag>>,
     torso_tf: Query<&GlobalTransform>,
 ) {
@@ -442,6 +450,7 @@ pub fn spawn_enemies_system(
 
     let enemy = spawn_warrior(
         &mut commands,
+        &textures,
         SpawnWarrior {
             translation: Vec2::new(spawn_x, -112.0),
             team: Team::Enemy,
