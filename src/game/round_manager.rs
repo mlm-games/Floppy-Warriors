@@ -613,7 +613,7 @@ fn roll_rewards(rm: &RoundManager) -> Vec<RewardDef> {
 
     while result.len() < 3 && !pool.is_empty() {
         let total_weight: u32 = pool.iter().map(|r| r.weight).sum();
-        // random_range(0..0) panics — never allow it.
+        // random_range(0..0) panics - never allow it.
         if total_weight == 0 {
             result.push(pool.remove(0));
             continue;

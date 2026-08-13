@@ -9,7 +9,7 @@ A Bevy 2D game built on top of the [mlm-games ecosystem](https://github.com/mlm-
 - Aim with the mouse, hold **Left Click** (or **Space**) to draw your bow, release to fire.
 - **Shift** (either) is an airdodge.
 - **Esc** pauses.
-- Enemies come in 6 archetypes: **Grunt, Fast, Tank, Sniper, Splitter, Boss** — each with distinct visuals, health, fire rate, and behavior.
+- Enemies come in 6 archetypes: **Grunt, Fast, Tank, Sniper, Splitter, Boss** - each with distinct visuals, health, fire rate, and behavior.
 - Headshots hurt harder, crits double damage, and killing shots trigger slow-mo.
 - Between rounds pick one of three weighted rewards from a draft deck (stacks, gating, crits, lifesteal, revive, glass cannon, last stand).
 - Spend **Bones** in the Bone Shop on meta upgrades. Offline time also drips Bones while you're away.
