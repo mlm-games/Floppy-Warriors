@@ -2,7 +2,9 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use bevy::prelude::*;
-use repose_bevy::{ReposePlugin, ReposePluginSettings};
+use bevy::window::PrimaryWindow;
+use repose_bevy::{ReposePlugin, ReposePluginSettings, ReposeState};
+use repose_core::Vec2 as ReposeVec2;
 use repose_core::{prelude::Modifier, remember};
 use repose_ui::overlay::OverlayHandle;
 
@@ -245,6 +247,7 @@ impl Plugin for AppPlugin {
                     overlay.host(Modifier::new().fill_max_size(), root)
                 },
             ))
+            .add_systems(PreUpdate, poll_repose_pointer_hover)
             .add_plugins((
                 EcosystemPlugin::<AppState>::new(I18nPlugin::new(TRANSLATION_KEYS, LOCALES)),
                 SavePlugin::<SaveData>::new(SaveManager::new(
@@ -555,5 +558,29 @@ fn sync_virtual_time_with_pause(paused: Res<Paused>, mut virtual_time: ResMut<Ti
         }
     } else if virtual_time.is_paused() {
         virtual_time.unpause();
+    }
+}
+
+//HACK: repose-bevy only updates hover from WindowEvent::CursorMoved
+fn poll_repose_pointer_hover(
+    windows: Query<&Window, With<PrimaryWindow>>,
+    mut state: NonSendMut<ReposeState>,
+) {
+    let Ok(window) = windows.single() else {
+        return;
+    };
+    let Some(cursor) = window.cursor_position() else {
+        return;
+    };
+    let sf = window.resolution.scale_factor();
+    let pos = ReposeVec2 {
+        x: cursor.x * sf,
+        y: cursor.y * sf,
+    };
+    let before = state.runtime.hover_id;
+    state.runtime.pointer_inside = true;
+    let _ = state.runtime.handle_pointer_move(pos);
+    if state.runtime.hover_id != before {
+        state.force_compose = true;
     }
 }

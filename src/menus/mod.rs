@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -7,17 +8,19 @@ use std::rc::Rc;
 use repose_core::View;
 use repose_core::prelude::{
     AlignItems, AlignSelf, AnimationSpec, Color as RColor, Easing, JustifyContent, Modifier,
-    remember,
+    remember, remember_state_with_key, request_frame,
 };
+use repose_core::{CursorIcon, Overflow, PaddingValues, StateColors};
 use repose_material::material3::{
     ButtonConfig, DropdownMenu, DropdownMenuConfig, DropdownMenuEntry, DropdownMenuItem,
     FilledTonalButton, MenuState,
 };
+use repose_ui::anim::animate_f32_from;
 use repose_ui::anim_ext::{
     AnimatedVisibility, AnimatedVisibilityConfig, EnterTransition, ExitTransition,
 };
 use repose_ui::overlay::OverlayHandle;
-use repose_ui::{Column, FlowRow, Row, Spacer, Text as RText, TextStyle, ViewExt, ZStack};
+use repose_ui::{Column, Row, Spacer, Text as RText, TextStyle, ViewExt, ZStack};
 
 use crate::app::{AppState, OverlayMenu, RewardCardUi, SharedUi, rarity_name};
 
@@ -69,15 +72,15 @@ fn popup_anim_config(key: &str) -> AnimatedVisibilityConfig {
 
 fn reward_anim_config() -> AnimatedVisibilityConfig {
     AnimatedVisibilityConfig {
-        key: "reward_overlay".into(),
-        spec: AnimationSpec::tween(Duration::from_millis(220), Easing::EaseOut),
+        key: "reward".into(),
+        spec: AnimationSpec::tween(Duration::from_millis(200), Easing::EaseOut),
         enter: EnterTransition::FadeIn.and(EnterTransition::SlideIn {
             offset_x: 0.0,
-            offset_y: 24.0,
+            offset_y: 18.0,
         }),
         exit: ExitTransition::FadeOut.and(ExitTransition::SlideOut {
             offset_x: 0.0,
-            offset_y: 16.0,
+            offset_y: 12.0,
         }),
     }
 }
@@ -431,160 +434,203 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let tr = &st.translations;
 
     let cards: Vec<View> = if st.reward_cards.is_empty() {
-        vec![RText("No upgrades left — free heal applied.")
-            .size(16.0)
-            .color(col(200, 200, 210))]
+        vec![
+            RText("No upgrades left — free heal applied.")
+                .size(16.0)
+                .color(col(200, 200, 210)),
+        ]
     } else {
         st.reward_cards
             .iter()
             .enumerate()
-            .map(|(i, card)| reward_card(card.clone(), i, actions.clone()))
+            .map(|(i, card)| reward_card(card, i, actions.clone()))
             .collect()
     };
 
-    // Full-screen overlay — NO graphics_layer / shadow / repaint_boundary
-    ZStack(
-        Modifier::new()
-            .fill_max_size()
-            .render_z_index(900.0)
-            .input_blocker(),
-    )
-    .child((
-        // Dark readable backdrop
-        Column(
-            Modifier::new()
-                .fill_max_size()
-                .background(RColor::from_rgba(0, 0, 0, 178)),
-        ),
-        // Center panel
-        Column(
-            Modifier::new()
-                .fill_max_size()
-                .justify_content(JustifyContent::CENTER)
-                .align_items(AlignItems::CENTER)
-                .padding(24.0),
-        )
-        .child(
-            Column(
-                Modifier::new()
-                    .key(key_of(&format!("reward-panel-round-{}", st.run_round)))
-                    .width(930.0)
-                    .max_width(960.0)
-                    .padding(24.0)
-                    .background(RColor::from_rgba(15, 17, 24, 245))
-                    .border(1.0, RColor::from_rgba(255, 210, 120, 70), 22.0)
-                    .clip_rounded(22.0) // OK on surface
-                    .align_items(AlignItems::CENTER)
-                    .gap(18.0),
-            )
-            .child((
-                reward_header(st, t(tr, "choose-reward", "Choose a Reward")),
-                FlowRow(
-                    Modifier::new()
-                        .key(key_of(&format!("reward-card-row-{}", st.run_round)))
-                        .gap(16.0)
-                        .align_items(AlignItems::CENTER)
-                        .justify_content(JustifyContent::CENTER),
-                )
-                .child(cards),
-                reward_footer_hint(),
-            )),
-        ),
-    ))
-}
-
-fn reward_header(st: &SharedUi, title: String) -> View {
     Column(
         Modifier::new()
-            .fill_max_width()
+            .fill_max_size()
+            .justify_content(JustifyContent::CENTER)
             .align_items(AlignItems::CENTER)
-            .gap(6.0),
+            .background(RColor::from_rgba(0, 0, 0, 190))
+            .padding(24.0)
+            .clickable()
+            .input_blocker(),
     )
-    .child((
-        RText(title).size(34.0).color(col(255, 218, 132)),
-        Row(Modifier::new().gap(8.0).align_items(AlignItems::CENTER)).child((
-            reward_chip(
-                format!("ROUND {}", st.run_round),
-                RColor::from_rgba(255, 210, 120, 34),
-                col(255, 220, 150),
-            ),
-            reward_chip(
-                format!("SCORE {}", st.run_score),
-                RColor::from_rgba(120, 170, 255, 30),
-                col(150, 190, 255),
-            ),
+    .child(
+        Column(
+            Modifier::new()
+                .width(920.0)
+                .max_width(980.0)
+                .padding(28.0)
+                .background(RColor::from_rgba(14, 16, 22, 250))
+                .border(1.0, RColor::from_rgba(255, 210, 120, 55), 20.0)
+                .clip_rounded(20.0)
+                .align_items(AlignItems::CENTER)
+                .gap(18.0),
+        )
+        .child((
+            RText(t(tr, "choose-reward", "Choose a Reward"))
+                .size(34.0)
+                .color(col(255, 218, 132)),
+            Row(Modifier::new().gap(10.0).align_items(AlignItems::CENTER)).child((
+                reward_chip(
+                    format!("ROUND {}", st.run_round),
+                    RColor::from_rgba(255, 210, 120, 36),
+                    col(255, 220, 150),
+                ),
+                reward_chip(
+                    format!("SCORE {}", st.run_score),
+                    RColor::from_rgba(120, 170, 255, 32),
+                    col(150, 190, 255),
+                ),
+            )),
+            Row(Modifier::new()
+                .gap(18.0)
+                .align_items(AlignItems::CENTER)
+                .justify_content(JustifyContent::CENTER)
+                .padding_values(PaddingValues {
+                    left: 8.0,
+                    right: 8.0,
+                    top: 14.0,
+                    bottom: 14.0,
+                }))
+            .child(cards),
+            RText("One upgrade. Caps matter — rares change the run.")
+                .size(13.0)
+                .color(col(145, 150, 162)),
         )),
-    ))
+    )
 }
 
-fn reward_footer_hint() -> View {
-    RText("Pick one upgrade. Stacks have caps, so rare choices matter the most.")
-        .size(13.0)
-        .color(col(150, 155, 168))
-}
-
-fn reward_card(card: RewardCardUi, index: usize, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
+fn reward_card(card: &RewardCardUi, index: usize, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let accent = rgb(card.accent_rgb);
-    let soft_accent = rgb_alpha(card.accent_rgb, 34);
-    let dim_accent = rgb_alpha(card.accent_rgb, 90);
-    let dark = RColor::from_rgba(24, 27, 36, 255);
+    let soft = rgb_alpha(card.accent_rgb, 40);
+    let dim_border = rgb_alpha(card.accent_rgb, 110);
+    let hot_border = rgb_alpha(card.accent_rgb, 230);
+
+    let (frame_bg, top_bar_h, title_size) = match card.rarity {
+        5 => (RColor::from_rgba(42, 32, 18, 255), 10.0, 23.0),
+        4 => (RColor::from_rgba(36, 24, 40, 255), 9.0, 22.0),
+        3 => (RColor::from_rgba(22, 28, 42, 255), 8.0, 22.0),
+        2 => (RColor::from_rgba(22, 30, 28, 255), 7.0, 21.0),
+        _ => (RColor::from_rgba(24, 27, 34, 255), 6.0, 21.0),
+    };
 
     let rarity = rarity_name(card.rarity).to_uppercase();
-    let stack_text = stack_label(card.current_stacks, card.max_stacks);
-    let id_text = format!("#{}", card.id);
-    let category_text = card.category.to_uppercase();
-    let glyph = reward_glyph(&card);
+    let cat = card.category.to_uppercase();
     let title = card.title.clone();
-    let description = card.description.clone();
+    let desc = card.description.clone();
+    let glyph = reward_glyph(card);
+    let stack = if card.max_stacks >= 999 {
+        format!("×{}", card.current_stacks)
+    } else {
+        format!("{}/{}", card.current_stacks, card.max_stacks)
+    };
+
+    let hovered: Rc<RefCell<bool>> =
+        remember_state_with_key(format!("reward-hov:{index}:{}", card.id), || false);
+    let is_hovered = *hovered.borrow();
+
+    let scale = animate_f32_from(
+        format!("reward-scale:{index}:{}", card.id),
+        1.0,
+        if is_hovered { 1.05 } else { 1.0 },
+        AnimationSpec::tween(Duration::from_millis(110), Easing::EaseOut),
+    );
+    let lift = animate_f32_from(
+        format!("reward-lift:{index}:{}", card.id),
+        0.0,
+        if is_hovered { -3.0 } else { 0.0 },
+        AnimationSpec::tween(Duration::from_millis(110), Easing::EaseOut),
+    );
+
+    let border_col = if is_hovered { hot_border } else { dim_border };
     let choose_actions = actions.clone();
+
+    const CARD_W: f32 = 276.0;
+    const CARD_H: f32 = 340.0;
+    const PAD: f32 = 16.0;
+    let inner_w = CARD_W - PAD * 2.0;
+    let desc_text_w = inner_w - 20.0;
 
     // Card: clip_rounded OK — NO graphics_layer / shadow / repaint_boundary
     Column(
         Modifier::new()
             .key(key_of(&format!("reward-card:{}:{}", card.id, index)))
-            .width(270.0)
-            .height(336.0)
-            .background(dark)
-            .border(1.0, dim_accent, 18.0)
+            .width(CARD_W)
+            .height(CARD_H)
+            .background(frame_bg)
+            // .state_colors(StateColors {
+            //     default: RColor::from_rgba(0, 0, 0, 0),
+            //     hovered: RColor::from_rgba(255, 255, 255, 36),
+            //     pressed: RColor::from_rgba(255, 255, 255, 56),
+            //     disabled: RColor::from_rgba(0, 0, 0, 0),
+            //     dragged: RColor::from_rgba(0, 0, 0, 0),
+            // })
+            .border(2.5, border_col, 18.0)
             .clip_rounded(18.0)
+            .cursor(CursorIcon::Pointer)
             .clickable()
-            .on_pointer_up(move |_| push(&choose_actions, UiAction::ChooseReward(index))),
+            .hoverable(
+                {
+                    let h = hovered.clone();
+                    move || {
+                        *h.borrow_mut() = true;
+                        request_frame();
+                    }
+                },
+                {
+                    let h = hovered.clone();
+                    move || {
+                        *h.borrow_mut() = false;
+                        request_frame();
+                    }
+                },
+            )
+            .transform_origin(0.5, 0.5)
+            .scale(scale)
+            .translate(0.0, lift)
+            .on_click(move || push(&choose_actions, UiAction::ChooseReward(index))),
     )
     .child((
-        // Accent top rail
+        // Rarity foil strip
         Column(
             Modifier::new()
                 .fill_max_width()
-                .height(8.0)
+                .height(top_bar_h)
                 .background(accent),
         ),
-        Column(Modifier::new().fill_max_size().padding(16.0).gap(12.0)).child((
-            // Top metadata row
+        Column(
+            Modifier::new()
+                .fill_max_size()
+                .padding(PAD)
+                .gap(10.0)
+                .align_items(AlignItems::STRETCH),
+        )
+        .child((
+            // Chips row
             Row(Modifier::new()
                 .fill_max_width()
+                .gap(8.0)
                 .align_items(AlignItems::CENTER)
-                .gap(8.0))
+                .justify_content(JustifyContent::CENTER))
             .child((
-                reward_chip(rarity, soft_accent, accent),
+                reward_chip(rarity, soft, accent),
                 reward_chip(
-                    category_text,
-                    RColor::from_rgba(255, 255, 255, 18),
-                    col(190, 195, 210),
+                    cat,
+                    RColor::from_rgba(255, 255, 255, 16),
+                    col(185, 190, 205),
                 ),
-                Spacer(),
-                RText(id_text)
-                    .size(10.0)
-                    .color(col(92, 98, 112))
-                    .single_line(),
             )),
-            // Rarity glyph badge
+            // Glyph badge
             Column(
                 Modifier::new()
+                    .size(64.0, 64.0)
                     .align_self(AlignSelf::CENTER)
-                    .size(62.0, 62.0)
-                    .background(soft_accent)
-                    .border(1.0, dim_accent, 22.0)
-                    .clip_rounded(22.0)
+                    .background(soft)
+                    .border(1.0, dim_border, 20.0)
+                    .clip_rounded(20.0)
                     .justify_content(JustifyContent::CENTER)
                     .align_items(AlignItems::CENTER),
             )
@@ -593,35 +639,45 @@ fn reward_card(card: RewardCardUi, index: usize, actions: Arc<Mutex<Vec<UiAction
             Column(
                 Modifier::new()
                     .fill_max_width()
-                    .height(56.0)
+                    .height(54.0)
                     .justify_content(JustifyContent::CENTER)
                     .align_items(AlignItems::CENTER),
             )
             .child(
-                RText(card.title.clone())
-                    .size(22.0)
-                    .color(RColor::WHITE)
-                    .max_lines(2)
-                    .overflow_ellipsize(),
+                Column(
+                    Modifier::new()
+                        .width(inner_w)
+                        .align_items(AlignItems::CENTER),
+                )
+                .child(
+                    RText(title)
+                        .size(title_size)
+                        .color(RColor::WHITE)
+                        .max_lines(2)
+                        .overflow_ellipsize(),
+                ),
             ),
-            // Description, bounded so a long one can't grow the card
             Column(
                 Modifier::new()
                     .fill_max_width()
-                    .height(72.0)
+                    .height(88.0)
                     .padding(10.0)
                     .background(RColor::from_rgba(255, 255, 255, 10))
-                    .clip_rounded(12.0),
+                    .clip_rounded(12.0)
+                    .align_items(AlignItems::STRETCH),
             )
             .child(
-                RText(card.description.clone())
-                    .size(13.0)
-                    .color(col(205, 210, 222))
-                    .max_lines(4)
-                    .overflow_ellipsize(),
+                Column(Modifier::new().width(desc_text_w).fill_max_width()).child(
+                    RText(desc)
+                        .size(13.0)
+                        .color(col(205, 210, 222))
+                        .line_height(17.0)
+                        .max_lines(5)
+                        .overflow_ellipsize(),
+                ),
             ),
             Spacer(),
-            // Stack status
+            // Stacks
             Row(Modifier::new()
                 .fill_max_width()
                 .align_items(AlignItems::CENTER)
@@ -629,19 +685,18 @@ fn reward_card(card: RewardCardUi, index: usize, actions: Arc<Mutex<Vec<UiAction
             .child((
                 stack_pips(card.current_stacks, card.max_stacks, accent),
                 Spacer(),
-                reward_chip(stack_text, soft_accent, accent),
+                reward_chip(stack, soft, accent),
             )),
-            // SELECT CTA
             Column(
                 Modifier::new()
                     .fill_max_width()
-                    .height(34.0)
+                    .height(36.0)
                     .background(accent)
                     .clip_rounded(12.0)
                     .justify_content(JustifyContent::CENTER)
                     .align_items(AlignItems::CENTER),
             )
-            .child(RText("SELECT").size(14.0).color(col(18, 18, 22))),
+            .child(RText("SELECT").size(14.0).color(col(16, 16, 20))),
         )),
     ))
 }
@@ -656,7 +711,7 @@ fn key_of(s: &str) -> u64 {
 fn reward_chip(label: impl Into<String>, bg: RColor, fg: RColor) -> View {
     Column(
         Modifier::new()
-            .padding_values(repose_core::PaddingValues {
+            .padding_values(PaddingValues {
                 left: 9.0,
                 right: 9.0,
                 top: 5.0,
@@ -677,53 +732,40 @@ fn reward_chip(label: impl Into<String>, bg: RColor, fg: RColor) -> View {
 }
 
 fn stack_pips(current: u32, max: u32, accent: RColor) -> View {
-    let visible_max = max.min(6);
-    let filled_up_to = current.min(visible_max);
-    let mut pips: Vec<View> = Vec::new();
-
-    for i in 0..visible_max {
+    let n = max.min(6);
+    let filled = current.min(n);
+    let mut pips = Vec::new();
+    for i in 0..n {
         pips.push(Column(
             Modifier::new()
-                .size(10.0, 10.0)
-                .background(if i < filled_up_to {
+                .size(9.0, 9.0)
+                .background(if i < filled {
                     accent
                 } else {
                     RColor::from_rgba(255, 255, 255, 28)
                 })
-                .border(1.0, RColor::from_rgba(255, 255, 255, 36), 5.0)
                 .clip_rounded(5.0),
         ));
     }
-
-    if max > visible_max {
+    if max > n {
         pips.push(RText("+").size(11.0).color(col(150, 155, 168)));
     }
-
-    Row(Modifier::new().gap(5.0).align_items(AlignItems::CENTER)).child(pips)
-}
-
-fn stack_label(current: u32, max: u32) -> String {
-    if max >= 999 {
-        format!("x{}", current)
-    } else if current == 0 {
-        format!("0/{}", max)
-    } else {
-        format!("{}/{}", current, max)
-    }
+    Row(Modifier::new().gap(4.0).align_items(AlignItems::CENTER)).child(pips)
 }
 
 fn reward_glyph(card: &RewardCardUi) -> &'static str {
     match card.category.as_str() {
-        "damage" => "\u{27da}",
-        "crit" => "\u{2726}",
-        "survival" | "defense" => "\u{2665}",
-        "mobility" => "\u{21e7}",
-        "economy" => "\u{25c6}",
-        "utility" => "\u{25c8}",
+        // TODO: placeholders, add better svgs
+        "damage" => "\u{2694}",               // ⚔
+        "crit" => "\u{2726}",                 // ✦
+        "survival" | "defense" => "\u{2665}", // ♥
+        "mobility" => "\u{21E7}",             // ⇧
+        "economy" => "\u{25C6}",              // ◆
+        "utility" => "\u{25C7}",              // ◇
         _ => match card.rarity {
-            4 | 5 => "\u{2739}",
-            3 => "\u{2726}",
-            _ => "\u{2022}",
+            4 | 5 => "\u{2739}", // ✹
+            3 => "\u{2727}",     // ✧
+            _ => "\u{2022}",     // •
         },
     }
 }
