@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   sodipodi:docname="hand.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.57816358"
+     inkscape:cx="396.08168"
+     inkscape:cy="561.25984"
+     inkscape:window-width="1536"
+     inkscape:window-height="902"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       id="hand_base"
+       style="display:inline;fill:#E8D8C8;fill-opacity:1;stroke:#3A2E2A;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       width="60.136288"
+       height="148.45831"
+       x="74.931854"
+       y="74.270844"
+       ry="30.068144" />
+    <path
+       id="finger_l"
+       style="display:inline;fill:#E8D8C8;fill-opacity:1;stroke:#3A2E2A;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       d="M 78,210 C 74,232 80,244 92,244 C 100,244 104,238 104,226 L 104,212 C 102,204 94,198 88,198 C 84,198 80,204 78,210 Z" />
+    <path
+       id="finger_r"
+       style="display:inline;fill:#E8D8C8;fill-opacity:1;stroke:#3A2E2A;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       d="M 132,210 C 136,232 130,244 118,244 C 110,244 106,238 106,226 L 106,212 C 108,204 116,198 122,198 C 126,198 130,204 132,210 Z" />
+  </g>
+</svg>

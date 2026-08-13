@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   sodipodi:docname="foot.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.57816358"
+     inkscape:cx="396.08168"
+     inkscape:cy="561.25984"
+     inkscape:window-width="1536"
+     inkscape:window-height="902"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="foot_base"
+       style="display:inline;fill:#E8D8C8;fill-opacity:1;stroke:#3A2E2A;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       d="M 70,150 C 70,126 84,116 105,116 C 126,116 140,126 140,150 L 144,170 C 146,182 138,188 126,188 L 84,188 C 72,188 64,182 66,170 Z" />
+    <path
+       id="toe_l"
+       style="display:inline;fill:#E8D8C8;fill-opacity:1;stroke:#3A2E2A;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       d="M 84,188 L 78,206 C 76,214 82,218 90,218 L 96,218 L 100,188 Z" />
+    <path
+       id="toe_m"
+       style="display:inline;fill:#E8D8C8;fill-opacity:1;stroke:#3A2E2A;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       d="M 104,188 L 101,206 C 99,214 105,218 113,218 L 114,218 L 118,188 Z" />
+    <path
+       id="toe_r"
+       style="display:inline;fill:#E8D8C8;fill-opacity:1;stroke:#3A2E2A;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       d="M 122,188 L 124,206 C 126,214 132,218 140,218 L 146,218 L 141,188 Z" />
+  </g>
+</svg>
