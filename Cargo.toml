@@ -80,6 +80,14 @@ game-utils = { git = "https://github.com/mlm-games/game-utils" }
 game-utils-bevy = { git = "https://github.com/mlm-games/game-utils" }
 rand = "0.10"
 serde = { version = "1", features = ["derive"] }
+anyhow = "1"
+renamite-io-svg = { git = "https://github.com/mlm-games/renamite", rev = "e516000e0d94659a672ee6ae154f61cba8f528bc" }
+renamite-io-ren = { git = "https://github.com/mlm-games/renamite", rev = "e516000e0d94659a672ee6ae154f61cba8f528bc" }
+renamite-player = { git = "https://github.com/mlm-games/renamite", rev = "e516000e0d94659a672ee6ae154f61cba8f528bc" }
+renamite-render-bridge = { git = "https://github.com/mlm-games/renamite", rev = "e516000e0d94659a672ee6ae154f61cba8f528bc" }
+renamite-render-offscreen = { git = "https://github.com/mlm-games/renamite", rev = "e516000e0d94659a672ee6ae154f61cba8f528bc" }
+renamite-behavior-common = { git = "https://github.com/mlm-games/renamite", rev = "e516000e0d94659a672ee6ae154f61cba8f528bc" }
+renamite-model = { git = "https://github.com/mlm-games/renamite", rev = "e516000e0d94659a672ee6ae154f61cba8f528bc" }
 bevy_rapier2d = { package = "bevy_rapier2d", git = "https://github.com/mlm-games/bevy_rapier", rev = "192f723fd9a5e1f94da5fbe1a5c20b6e76e13bd2", optional = true, default-features = false, features = [
     "dim2",
 ] }

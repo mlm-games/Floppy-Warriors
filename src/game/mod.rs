@@ -73,8 +73,10 @@ impl Plugin for GamePlugin {
     }
 }
 
-fn load_warrior_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.insert_resource(art::load_warrior_art(&asset_server));
+fn load_warrior_textures(mut commands: Commands, mut images: ResMut<Assets<Image>>) {
+    let art = art::bake_warrior_art(&mut images)
+        .expect("failed to rasterize SVG art via renamite/repose");
+    commands.insert_resource(art);
 }
 
 /// Passive bones while away. Runs on every title entry; self-limits by
