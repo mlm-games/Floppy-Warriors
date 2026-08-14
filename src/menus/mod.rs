@@ -1133,7 +1133,7 @@ fn credits_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let tr = &st.translations;
     let inner = Column(
         Modifier::new()
-            .width(400.0)
+            .width(480.0)
             .padding(24.0)
             .background(col(20, 20, 28))
             .clip_rounded(12.0)
