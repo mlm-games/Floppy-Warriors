@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct GameCleanup;
 
 #[derive(Component, Clone, Copy, PartialEq, Eq, Hash, Debug)]
@@ -126,8 +126,32 @@ pub struct Arrow {
     pub stuck_angle_offset: f32,
 }
 
-#[derive(Component)]
-pub struct Ground;
+/// Walkable arena floor. Put this on the *collider* entity only.
+/// Visual tiles must NOT carry this component (arrow queries use `single()`).
+#[derive(Component, Clone, Copy, Debug)]
+pub struct Ground {
+    /// World Y of the top face (where arrows stick / feet meet).
+    pub top: f32,
+    pub half_width: f32,
+    pub half_height: f32,
+}
+
+impl Ground {
+    #[inline]
+    pub fn center_y(self) -> f32 {
+        self.top - self.half_height
+    }
+
+    #[inline]
+    pub fn size(self) -> Vec2 {
+        Vec2::new(self.half_width * 2.0, self.half_height * 2.0)
+    }
+
+    #[inline]
+    pub fn center(self) -> Vec2 {
+        Vec2::new(0.0, self.center_y())
+    }
+}
 
 #[derive(Component)]
 pub struct WorldHealthBar {

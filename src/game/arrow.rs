@@ -93,7 +93,7 @@ pub fn update_arrows(
     mut arrows: Query<(Entity, &mut Arrow, &mut Transform)>,
     limbs: Query<(Entity, &WarriorLimb, &GlobalTransform)>,
     mut warriors: ParamSet<(Query<&WarriorRoot>, Query<&mut WarriorRoot>)>,
-    ground: Query<(&GlobalTransform, &Sprite), With<Ground>>,
+    ground: Query<&Ground>,
     player_tags: Query<(), With<PlayerTag>>,
     #[cfg(feature = "physics")] mut impulses: Query<&mut ExternalImpulse>,
 ) {
@@ -177,11 +177,8 @@ pub fn update_arrows(
         };
 
         let mut best_ground_hit: Option<(f32, Vec2)> = None;
-        if let Ok((ground_tf, ground_sprite)) = ground.single()
-            && let Some(size) = ground_sprite.custom_size
-        {
-            let center = ground_tf.translation().truncate();
-            best_ground_hit = segment_top_rect_hit(prev, next, center, size);
+        if let Ok(g) = ground.single() {
+            best_ground_hit = segment_top_rect_hit(prev, next, g.center(), g.size());
         }
 
         let limb_t = best_limb_hit.as_ref().map(|v| v.0);

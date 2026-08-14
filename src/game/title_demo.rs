@@ -10,7 +10,7 @@ use super::warrior::{SpawnWarrior, spawn_warrior};
 
 pub struct TitleDemoPlugin;
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct TitleDemo;
 
 #[derive(Component)]
@@ -67,6 +67,7 @@ impl Plugin for TitleDemoPlugin {
                     demo_ai,
                     update_demo_arrows,
                     demo_respawn,
+                    #[cfg(feature = "physics")]
                     demos_puppet_motor,
                     demos_tick_motor,
                     demos_ragdoll,
@@ -77,36 +78,10 @@ impl Plugin for TitleDemoPlugin {
 }
 
 fn title_demo_setup(mut commands: Commands, art: Res<WarriorArt>) {
-    // Landscape backdrop (from the committed bg.svg).
-    commands.spawn((
-        TitleDemo,
-        Sprite {
-            image: art.bg.clone(),
-            color: Color::WHITE,
-            custom_size: Some(Vec2::new(2400.0, 1370.0)),
-            ..default()
-        },
-        Transform::from_xyz(0.0, 0.0, -50.0),
-    ));
-    // Ground (visual + static collider so ragdolls land on it)
-    let mut ground = commands.spawn((
-        TitleDemo,
-        Sprite {
-            color: Color::srgb(0.22, 0.32, 0.24),
-            custom_size: Some(Vec2::new(2400.0, 90.0)),
-            ..default()
-        },
-        Transform::from_xyz(0.0, -205.0, -1.0),
-    ));
-    #[cfg(feature = "physics")]
-    ground.insert((
-        RigidBody::Fixed,
-        Collider::cuboid(1200.0, 45.0),
-        CollisionGroups::new(Group::GROUP_3, Group::ALL),
-    ));
+    super::arena::spawn_arena_tagged(&mut commands, &art, TitleDemo);
 
-    let a_pos = Vec2::new(-280.0, -112.0);
-    let b_pos = Vec2::new(280.0, -112.0);
+    let a_pos = Vec2::new(-280.0, super::arena::STAND_Y);
+    let b_pos = Vec2::new(280.0, super::arena::STAND_Y);
 
     let a = spawn_demo_warrior(
         &mut commands,
@@ -418,7 +393,7 @@ fn update_demo_arrows(
         }
 
         // Ground / off-screen despawn.
-        if next.y < -196.0 || next.x.abs() > 1000.0 || next.y > 300.0 {
+        if next.y < super::arena::GROUND_TOP - 4.0 || next.x.abs() > 1000.0 || next.y > 300.0 {
             commands.entity(arrow_e).despawn();
             continue;
         }

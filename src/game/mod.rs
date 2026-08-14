@@ -147,7 +147,7 @@ fn process_restart(
         commands.entity(e).despawn();
     }
 
-    arena::spawn_arena(commands.reborrow());
+    arena::spawn_arena_tagged(&mut commands, &textures, GameCleanup);
     round_manager::begin_run(rm, commands, save, textures);
 }
 

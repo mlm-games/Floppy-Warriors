@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::game::arena::STAND_Y;
 use crate::game::art::WarriorArt;
 use crate::game::components::*;
 use crate::game::enemy_ai::{EnemySpawnConfig, configure_enemy};
@@ -236,7 +237,7 @@ pub fn begin_run(
         &mut commands,
         &textures,
         SpawnWarrior {
-            translation: Vec2::new(-350.0, -112.0),
+            translation: Vec2::new(-350.0, STAND_Y),
             team: Team::Player,
             mods,
             base_hp: 100,
@@ -452,7 +453,7 @@ pub fn spawn_enemies_system(
         &mut commands,
         &textures,
         SpawnWarrior {
-            translation: Vec2::new(spawn_x, -112.0),
+            translation: Vec2::new(spawn_x, STAND_Y),
             team: Team::Enemy,
             mods: enemy_mods,
             base_hp: cfg.health,
