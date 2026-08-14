@@ -1,5 +1,5 @@
 use crate::app::{RewardCardUi, UiBridge, rarity_accent};
-use crate::game::components::{EnemyTag, PlayerTag, WarriorRoot};
+use crate::game::components::{BowState, EnemyTag, PlayerTag, WarriorRoot};
 use crate::game::round_manager::{FINAL_ROUND, RoundManager, RunPhase};
 use bevy::prelude::*;
 
@@ -11,6 +11,7 @@ pub fn sync_run_to_ui(
     rm: Res<RoundManager>,
     time: Res<Time>,
     warriors: Query<(Entity, &WarriorRoot, Option<&PlayerTag>, Option<&EnemyTag>)>,
+    player_bow: Query<&BowState, With<PlayerTag>>,
 ) {
     let Ok(mut ui) = bridge.shared.lock() else {
         return;
@@ -26,21 +27,7 @@ pub fn sync_run_to_ui(
     ui.bones_earned = rm.bones_earned;
     ui.victory = rm.victory;
     ui.status_line = match rm.phase {
-        RunPhase::Combat => {
-            format!(
-                "{}: {}  {}: {}",
-                ui.translations
-                    .get("score")
-                    .cloned()
-                    .unwrap_or_else(|| "Score".into()),
-                rm.score,
-                ui.translations
-                    .get("round")
-                    .cloned()
-                    .unwrap_or_else(|| "Round".into()),
-                rm.round,
-            )
-        }
+        RunPhase::Combat => String::new(),
         RunPhase::Reward => ui
             .translations
             .get("choose-reward")
@@ -112,6 +99,14 @@ pub fn sync_run_to_ui(
     ui.player_max_hp = player.map(|w| w.max_health).unwrap_or(0);
     ui.enemy_hp = enemy.map(|w| w.health).unwrap_or(0);
     ui.enemy_max_hp = enemy.map(|w| w.max_health).unwrap_or(0);
+
+    if let Ok(bow) = player_bow.single() {
+        ui.drawing = bow.drawing && rm.phase == RunPhase::Combat;
+        ui.draw_power = if ui.drawing { bow.draw_power } else { 0.0 };
+    } else {
+        ui.drawing = false;
+        ui.draw_power = 0.0;
+    }
 
     ui.reward_cards = rm
         .reward_choices

@@ -49,6 +49,7 @@ impl Plugin for GamePlugin {
                     warrior::tick_motor_state,
                     player::player_aim_and_bow,
                     enemy_ai::enemy_ai_system,
+                    warrior::sync_bow_draw_visuals,
                     arrow::update_arrows,
                     warrior::apply_ragdoll_on_death,
                     warrior::apply_archetype_visuals,

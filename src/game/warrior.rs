@@ -27,11 +27,7 @@ const SKIN: Color = Color::srgb(0.96, 0.82, 0.68);
 const SKIN_DARK: Color = Color::srgb(0.86, 0.7, 0.55);
 const CLOTH: Color = Color::srgb(0.3, 0.42, 0.62);
 
-pub fn spawn_warrior(
-    commands: &mut Commands,
-    art: &WarriorArt,
-    cfg: SpawnWarrior,
-) -> Entity {
+pub fn spawn_warrior(commands: &mut Commands, art: &WarriorArt, cfg: SpawnWarrior) -> Entity {
     let hp = (cfg.base_hp + cfg.mods.max_hp_bonus).max(1);
     let s = cfg.scale.max(0.2);
 
@@ -200,6 +196,10 @@ pub fn spawn_warrior(
         ); // ~locked
     }
 
+    let bow_base = Vec2::new(12.0, 60.0) * s;
+    let bow_rest_x = 16.0 * s;
+    let bow_pull = 10.0 * s;
+
     let bow_pivot = commands
         .spawn((
             GameCleanup,
@@ -213,15 +213,20 @@ pub fn spawn_warrior(
             b.spawn((
                 GameCleanup,
                 SkipTint,
+                BowVisual {
+                    base_size: bow_base,
+                    rest_x: bow_rest_x,
+                    pull_distance: bow_pull,
+                },
                 Sprite {
                     image: art.bow.clone(),
                     color: Color::WHITE,
-                    custom_size: Some(Vec2::new(12.0, 60.0) * s),
+                    custom_size: Some(bow_base),
                     flip_x: true,
                     ..default()
                 },
                 Transform {
-                    translation: Vec3::new(16.0 * s, 0.0, 0.1),
+                    translation: Vec3::new(bow_rest_x, 0.0, 0.1),
                     ..default()
                 },
                 GlobalTransform::default(),
@@ -451,6 +456,48 @@ pub fn sync_health_fills(
 
         if let Ok(mut tf) = fill_tf.get_mut(bar.fill) {
             tf.translation.x = -0.5 * (bar.width - fill_width);
+        }
+    }
+}
+
+/// Stretch / pull the bow sprite from `BowState.draw_power`.
+/// Safe for player + enemies; resets when not drawing or dead.
+pub fn sync_bow_draw_visuals(
+    warriors: Query<(&WarriorRoot, &BowState)>,
+    children: Query<&Children>,
+    mut visuals: Query<(&BowVisual, &mut Sprite, &mut Transform)>,
+) {
+    const MAX_DRAW: f32 = 100.0;
+
+    for (warrior, bow) in &warriors {
+        let Ok(kids) = children.get(warrior.bow_pivot) else {
+            continue;
+        };
+
+        let raw = if warrior.is_dead || !bow.drawing {
+            0.0
+        } else {
+            (bow.draw_power / MAX_DRAW).clamp(0.0, 1.0)
+        };
+
+        let t = raw * raw * (3.0 - 2.0 * raw);
+
+        for child in kids.iter() {
+            let Ok((vis, mut sprite, mut tf)) = visuals.get_mut(child) else {
+                continue;
+            };
+
+            let size = Vec2::new(
+                vis.base_size.x * (1.0 + 0.12 * t),
+                vis.base_size.y * (1.0 + 0.55 * t),
+            );
+            sprite.custom_size = Some(size);
+
+            tf.translation.x = vis.rest_x - vis.pull_distance * t;
+            tf.translation.y = 0.0;
+
+            let heat = t;
+            sprite.color = Color::srgb(1.0, 1.0 - 0.18 * heat, 1.0 - 0.42 * heat);
         }
     }
 }

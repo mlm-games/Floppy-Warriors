@@ -170,6 +170,9 @@ pub struct SharedUi {
     pub end_reason: String,
     pub boss_banner_timer: f32,
     pub status_line: String,
+    /// 0..100 player bow draw (for HUD, though thread might need more later).
+    pub draw_power: f32,
+    pub drawing: bool,
     pub bone_shop_items: Vec<BoneShopItem>,
     pub offline_bones: u32,
 }
@@ -209,6 +212,8 @@ impl Default for SharedUi {
             end_reason: String::new(),
             boss_banner_timer: 0.0,
             status_line: String::new(),
+            draw_power: 0.0,
+            drawing: false,
             bone_shop_items: Vec::new(),
             offline_bones: 0,
         }

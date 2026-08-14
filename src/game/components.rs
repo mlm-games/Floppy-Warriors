@@ -79,6 +79,16 @@ pub struct BowState {
     pub draw_power: f32,
 }
 
+/// Sprite-side data for draw stretch. Lives on the bow sprite (child of `bow_pivot`).
+#[derive(Component, Clone, Copy)]
+pub struct BowVisual {
+    pub base_size: Vec2,
+    /// Resting local X of the bow sprite under the pivot.
+    pub rest_x: f32,
+    /// How far the grip pulls toward the body at full draw (local X).
+    pub pull_distance: f32,
+}
+
 #[derive(Component)]
 pub struct Airdodge {
     pub impulse: f32,

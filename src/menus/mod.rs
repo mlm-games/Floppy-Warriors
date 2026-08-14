@@ -237,15 +237,18 @@ fn title_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             .size(56.0)
             .color(RColor::WHITE),
         spacer(12.0),
-        RText(format!(
-            "{}: {}   {}: {}",
-            t(tr, "bones", "Bones"),
-            st.bones,
-            t(tr, "best-round", "Best Round"),
-            st.best_round,
-        ))
-        .size(18.0)
-        .color(col(200, 200, 200)),
+        Row(Modifier::new().gap(10.0).align_items(AlignItems::CENTER)).child((
+            reward_chip(
+                format!("◆ {} {}", t(tr, "bones", "Bones"), st.bones),
+                RColor::from_rgba(230, 190, 90, 40),
+                col(240, 210, 130),
+            ),
+            reward_chip(
+                format!("{} {}", t(tr, "best-round", "Best Round"), st.best_round),
+                RColor::from_rgba(255, 255, 255, 16),
+                col(190, 195, 210),
+            ),
+        )),
     ];
 
     if st.offline_bones > 0 {
@@ -1171,50 +1174,216 @@ fn credits_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
 
 fn ingame_hud(st: &SharedUi) -> View {
     let tr = &st.translations;
-    Column(
+    let combat = st.run_phase == 0;
+
+    let player_hp_frac = if st.player_max_hp > 0 {
+        (st.player_hp.max(0) as f32 / st.player_max_hp as f32).clamp(0.0, 1.0)
+    } else {
+        0.0
+    };
+    let enemy_hp_frac = if st.enemy_max_hp > 0 {
+        (st.enemy_hp.max(0) as f32 / st.enemy_max_hp as f32).clamp(0.0, 1.0)
+    } else {
+        0.0
+    };
+    let draw_frac = (st.draw_power / 100.0).clamp(0.0, 1.0);
+
+    let player_panel = Column(
         Modifier::new()
-            .fill_max_size()
-            .padding(16.0)
-            .align_items(AlignItems::FLEX_START)
-            .justify_content(JustifyContent::FLEX_START),
+            .width(268.0)
+            .padding(12.0)
+            .gap(8.0)
+            .background(RColor::from_rgba(10, 12, 18, 215))
+            .border(1.5, RColor::from_rgba(255, 210, 120, 50), 14.0)
+            .clip_rounded(14.0)
+            .align_items(AlignItems::STRETCH),
     )
     .child((
-        Row(Modifier::new().gap(18.0).align_items(AlignItems::CENTER)).child((
-            RText(format!("{}: {}", t(tr, "round", "Round"), st.run_round))
-                .size(22.0)
-                .color(col(255, 210, 120)),
-            RText(format!("{}: {}", t(tr, "score", "Score"), st.run_score))
-                .size(22.0)
-                .color(RColor::WHITE),
-            RText(format!("{}: {}", t(tr, "best", "Best"), st.high_score))
-                .size(16.0)
-                .color(col(200, 200, 200)),
+        Row(Modifier::new()
+            .fill_max_width()
+            .gap(8.0)
+            .align_items(AlignItems::CENTER)
+            .justify_content(JustifyContent::SPACE_BETWEEN))
+        .child((
+            reward_chip(
+                format!(
+                    "{} {}",
+                    t(tr, "round", "Round").to_uppercase(),
+                    st.run_round
+                ),
+                RColor::from_rgba(255, 210, 120, 36),
+                col(255, 220, 150),
+            ),
+            reward_chip(
+                format!("◆ {}", st.bones),
+                RColor::from_rgba(230, 190, 90, 40),
+                col(240, 210, 130),
+            ),
         )),
-        RText(format!(
-            "{}: {}/{}",
-            t(tr, "hp", "HP"),
-            st.player_hp,
-            st.player_max_hp
+        Column(Modifier::new().gap(4.0).align_items(AlignItems::STRETCH)).child((
+            Row(Modifier::new()
+                .fill_max_width()
+                .justify_content(JustifyContent::SPACE_BETWEEN)
+                .align_items(AlignItems::CENTER))
+            .child((
+                RText(t(tr, "hp", "HP").to_uppercase())
+                    .size(11.0)
+                    .color(col(180, 185, 198)),
+                RText(format!(
+                    "{}/{}",
+                    st.player_hp.max(0),
+                    st.player_max_hp.max(0)
+                ))
+                .size(13.0)
+                .color(RColor::WHITE),
+            )),
+            hud_stat_bar(244.0, 12.0, player_hp_frac, hp_fill_color(player_hp_frac)),
+        )),
+        if st.drawing && combat {
+            Column(Modifier::new().gap(4.0).align_items(AlignItems::STRETCH)).child((
+                Row(Modifier::new()
+                    .fill_max_width()
+                    .justify_content(JustifyContent::SPACE_BETWEEN)
+                    .align_items(AlignItems::CENTER))
+                .child((
+                    RText("DRAW").size(11.0).color(col(180, 185, 198)),
+                    RText(format!("{:.0}%", draw_frac * 100.0))
+                        .size(12.0)
+                        .color(col(255, 200, 120)),
+                )),
+                hud_stat_bar(
+                    244.0,
+                    8.0,
+                    draw_frac,
+                    if draw_frac >= 0.99 {
+                        col(255, 210, 100)
+                    } else {
+                        col(120, 170, 255)
+                    },
+                ),
+            ))
+        } else {
+            Column(Modifier::new().width(0.0).height(0.0))
+        },
+    ));
+
+    let score_panel = Column(
+        Modifier::new()
+            .width(168.0)
+            .padding(12.0)
+            .gap(6.0)
+            .background(RColor::from_rgba(10, 12, 18, 215))
+            .border(1.5, RColor::from_rgba(120, 170, 255, 45), 14.0)
+            .clip_rounded(14.0)
+            .align_items(AlignItems::FLEX_END),
+    )
+    .child((
+        RText(t(tr, "score", "Score").to_uppercase())
+            .size(11.0)
+            .color(col(150, 160, 180)),
+        RText(format!("{}", st.run_score))
+            .size(28.0)
+            .color(RColor::WHITE),
+        reward_chip(
+            format!("{} {}", t(tr, "best", "Best"), st.high_score),
+            RColor::from_rgba(255, 255, 255, 14),
+            col(190, 195, 210),
+        ),
+    ));
+
+    let enemy_panel = if combat && st.enemy_max_hp > 0 {
+        Column(
+            Modifier::new()
+                .width(280.0)
+                .padding(10.0)
+                .gap(6.0)
+                .background(RColor::from_rgba(14, 10, 16, 200))
+                .border(1.5, RColor::from_rgba(200, 120, 255, 50), 12.0)
+                .clip_rounded(12.0)
+                .align_items(AlignItems::STRETCH),
+        )
+        .child((
+            Row(Modifier::new()
+                .fill_max_width()
+                .justify_content(JustifyContent::SPACE_BETWEEN)
+                .align_items(AlignItems::CENTER))
+            .child((
+                RText(t(tr, "enemy", "Enemy").to_uppercase())
+                    .size(11.0)
+                    .color(col(200, 160, 230)),
+                RText(format!("{}/{}", st.enemy_hp.max(0), st.enemy_max_hp.max(0)))
+                    .size(12.0)
+                    .color(col(220, 200, 240)),
+            )),
+            hud_stat_bar(260.0, 10.0, enemy_hp_frac, col(200, 110, 255)),
         ))
-        .size(16.0)
-        .color(col(220, 120, 120)),
-        RText(format!(
-            "{}: {}/{}",
-            t(tr, "enemy", "Enemy"),
-            st.enemy_hp,
-            st.enemy_max_hp
-        ))
-        .size(16.0)
-        .color(col(120, 170, 220)),
-        RText(&st.status_line).size(16.0).color(col(220, 220, 230)),
-        spacer(4.0),
-        RText(t(
-            tr,
-            "controls-hint",
-            "Mouse aim  Hold click draw  Release shoot  Shift airdodge  Esc pause",
-        ))
-        .size(14.0)
-        .color(col(180, 180, 180)),
+    } else {
+        Column(Modifier::new().width(0.0).height(0.0))
+    };
+
+    let hint = if combat {
+        Column(
+            Modifier::new()
+                .padding_values(PaddingValues {
+                    left: 14.0,
+                    right: 14.0,
+                    top: 6.0,
+                    bottom: 6.0,
+                })
+                .background(RColor::from_rgba(8, 8, 12, 140))
+                .clip_rounded(999.0),
+        )
+        .child(
+            RText(t(
+                tr,
+                "controls-hint",
+                "Mouse aim | Hold click draw | Release shoot | Shift airdodge | Esc pause",
+            ))
+            .size(12.0)
+            .color(col(150, 155, 168)),
+        )
+    } else {
+        Column(Modifier::new().width(0.0).height(0.0))
+    };
+
+    ZStack(Modifier::new().fill_max_size()).child((
+        Column(
+            Modifier::new()
+                .fill_max_size()
+                .padding(14.0)
+                .align_items(AlignItems::FLEX_START)
+                .justify_content(JustifyContent::FLEX_START),
+        )
+        .child(player_panel),
+        Column(
+            Modifier::new()
+                .fill_max_size()
+                .padding(14.0)
+                .align_items(AlignItems::FLEX_END)
+                .justify_content(JustifyContent::FLEX_START),
+        )
+        .child(score_panel),
+        Column(
+            Modifier::new()
+                .fill_max_size()
+                .padding_values(PaddingValues {
+                    left: 14.0,
+                    right: 14.0,
+                    top: 14.0,
+                    bottom: 0.0,
+                })
+                .align_items(AlignItems::CENTER)
+                .justify_content(JustifyContent::FLEX_START),
+        )
+        .child(enemy_panel),
+        Column(
+            Modifier::new()
+                .fill_max_size()
+                .padding(12.0)
+                .align_items(AlignItems::CENTER)
+                .justify_content(JustifyContent::FLEX_END),
+        )
+        .child(hint),
     ))
 }
 
@@ -1251,6 +1420,44 @@ fn progress_bar(width: f32, frac: f32, color: RColor) -> View {
             .height(7.0)
             .background(color)
             .clip_rounded(3.5)
+            .align_self(AlignSelf::FLEX_START),
+    ))
+}
+
+fn hp_fill_color(frac: f32) -> RColor {
+    if frac > 0.55 {
+        col(72, 210, 120)
+    } else if frac > 0.28 {
+        col(230, 190, 70)
+    } else {
+        col(230, 80, 75)
+    }
+}
+
+/// Pill HP / draw bar — thicker track, soft border (matches reward card chrome).
+fn hud_stat_bar(width: f32, height: f32, frac: f32, fill: RColor) -> View {
+    let f = frac.clamp(0.0, 1.0);
+    let inner_w = if f <= 0.0 {
+        0.001
+    } else {
+        (width * f).max(2.0)
+    };
+    let radius = (height * 0.5).max(2.0);
+
+    Column(
+        Modifier::new()
+            .width(width)
+            .height(height)
+            .background(RColor::from_rgba(0, 0, 0, 170))
+            .border(1.0, RColor::from_rgba(255, 255, 255, 24), radius)
+            .clip_rounded(radius),
+    )
+    .child(Column(
+        Modifier::new()
+            .width(inner_w)
+            .height(height)
+            .background(fill)
+            .clip_rounded(radius)
             .align_self(AlignSelf::FLEX_START),
     ))
 }
