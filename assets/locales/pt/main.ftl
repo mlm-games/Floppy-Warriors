@@ -24,13 +24,20 @@ boss-round = BOSS ROUND
 choose-reward = Choose a Reward
 you-lose = YOU LOSE
 run-complete = RUN COMPLETE
-retry-hint = R / Click Restart = Retry
+retry-hint = R = Retry
 hp = HP
 enemy = Enemy
-level = Lv
-runs = Runs
-wins = Wins
-victory-bonus = 15 rounds cleared!
+level = Nv
+runs = Partidas
+wins = Vitórias
+buy = Comprar
+max = MÁX
+select = ESCOLHER
+retry = Tentar de novo
+victory-bonus = 15 rodadas limpas!
+reward-help = Uma melhoria. Limites importam — recompensas raras podem mudar a run.
+boss-incoming = CHEFE À VISTA
+game-subtitle = Desenha. Voa. Cabeça. Morre. Melhora. De novo.
 
 # Title toast shown when offline earnings are granted
 offline-bones = While you were away

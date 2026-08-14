@@ -24,13 +24,20 @@ boss-round = BOSS ROUND
 choose-reward = Choose a Reward
 you-lose = YOU LOSE
 run-complete = RUN COMPLETE
-retry-hint = R / Click Restart = Retry
+retry-hint = R = Retry
 hp = HP
 enemy = Enemy
-level = Lv
-runs = Runs
-wins = Wins
-victory-bonus = 15 rounds cleared!
+level = 等级
+runs = 局数
+wins = 胜场
+buy = 购买
+max = 已满
+select = 选择
+retry = 重试
+victory-bonus = 已清除15轮！
+reward-help = 一项升级。上限重要 — 稀有奖励可以改变整场冒险。
+boss-incoming = 首领来袭
+game-subtitle = 拉弓。扑腾。爆头。死亡。升级。再来一次。
 
 # Title toast shown when offline earnings are granted
 offline-bones = While you were away

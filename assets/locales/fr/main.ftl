@@ -24,13 +24,20 @@ boss-round = BOSS ROUND
 choose-reward = Choose a Reward
 you-lose = YOU LOSE
 run-complete = RUN COMPLETE
-retry-hint = R / Click Restart = Retry
+retry-hint = R = Retry
 hp = HP
 enemy = Enemy
-level = Lv
-runs = Runs
-wins = Wins
+level = Nv
+runs = Parties
+wins = Victoires
+buy = Acheter
+max = MAX
+select = CHOISIR
+retry = Réessayer
 victory-bonus = 15 rounds cleared!
+reward-help = One upgrade. Caps matter — rare rewards can change the run.
+boss-incoming = BOSS INCOMING
+game-subtitle = Draw. Flop. Headshot. Die. Upgrade. Go again.
 
 # Title toast shown when offline earnings are granted
 offline-bones = While you were away

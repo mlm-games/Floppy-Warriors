@@ -24,13 +24,20 @@ boss-round = BOSS ROUND
 choose-reward = Choose a Reward
 you-lose = YOU LOSE
 run-complete = RUN COMPLETE
-retry-hint = R / Click Restart = Retry
+retry-hint = R = Retry
 hp = HP
 enemy = Enemy
 level = Lv
-runs = Runs
-wins = Wins
-victory-bonus = 15 rounds cleared!
+runs = 走行数
+wins = 勝利数
+buy = 購入
+max = 最大
+select = 選択
+retry = リトライ
+victory-bonus = 15ラウンドクリア！
+reward-help = アップグレードは1つ。上限が重要 — レア報酬はランを変えうる。
+boss-incoming = ボス接近
+game-subtitle = 引く。ばたつく。ヘッドショット。死ぬ。強化。もう一度。
 
 # Title toast shown when offline earnings are granted
 offline-bones = While you were away
