@@ -24,7 +24,7 @@ boss-round = BOSS ROUND
 choose-reward = Choose a Reward
 you-lose = YOU LOSE
 run-complete = RUN COMPLETE
-retry-hint = R / Click = Retry
+retry-hint = R / Click Restart = Retry
 hp = HP
 enemy = Enemy
 level = Lv

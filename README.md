@@ -23,7 +23,7 @@ A Bevy 2D game built on top of the [mlm-games ecosystem](https://github.com/mlm-
 | Release | Fire |
 | Shift (L or R) | Airdodge |
 | Esc | Pause / Settings |
-| R / Click (game over) | Retry |
+| R (on game over) | Retry |
 
 ## Running
 
