@@ -48,6 +48,12 @@ pub fn run() {
             rapier_configuration.gravity = Vec2::new(0.0, -980.0);
         }
         app.insert_resource(init);
+
+        app.insert_resource(TimestepMode::Interpolated {
+            dt: 1.0 / 60.0,
+            time_scale: 1.0,
+            substeps: 1,
+        });
         app.add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(20.0));
     }
 

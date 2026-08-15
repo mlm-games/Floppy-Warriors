@@ -210,8 +210,9 @@ pub fn demos_ragdoll(
     commands: Commands,
     warriors: Query<(Entity, &WarriorRoot), Without<super::components::RagdollApplied>>,
     impulses: Query<&mut ExternalImpulse>,
+    limbs: Query<(Entity, &WarriorLimb, Has<ImpulseJoint>)>,
 ) {
-    super::warrior::apply_ragdoll_on_death(commands, warriors, impulses);
+    super::warrior::apply_ragdoll_on_death(commands, warriors, impulses, limbs);
 }
 
 #[cfg(not(feature = "physics"))]

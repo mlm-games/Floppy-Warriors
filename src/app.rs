@@ -566,13 +566,29 @@ fn handle_pause_input(
     }
 }
 
-fn sync_virtual_time_with_pause(paused: Res<Paused>, mut virtual_time: ResMut<Time<Virtual>>) {
+fn sync_virtual_time_with_pause(
+    paused: Res<Paused>,
+    mut virtual_time: ResMut<Time<Virtual>>,
+    #[cfg(feature = "physics")] mut rapier_config: Query<
+        &mut bevy_rapier2d::plugin::RapierConfiguration,
+    >,
+) {
     if paused.0 {
         if !virtual_time.is_paused() {
             virtual_time.pause();
         }
-    } else if virtual_time.is_paused() {
-        virtual_time.unpause();
+        #[cfg(feature = "physics")]
+        for mut config in &mut rapier_config {
+            config.physics_pipeline_active = false;
+        }
+    } else {
+        if virtual_time.is_paused() {
+            virtual_time.unpause();
+        }
+        #[cfg(feature = "physics")]
+        for mut config in &mut rapier_config {
+            config.physics_pipeline_active = true;
+        }
     }
 }
 

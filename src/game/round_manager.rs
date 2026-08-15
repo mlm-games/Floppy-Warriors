@@ -479,7 +479,9 @@ pub fn spawn_enemies_system(
     commands.entity(enemy).insert(ai);
 
     rm.enemies_spawned += 1;
-    rm.active_enemy = Some(enemy);
+    commands.queue(move |world: &mut World| {
+        world.resource_mut::<RoundManager>().active_enemy = Some(enemy);
+    });
 }
 
 pub fn on_hits(
