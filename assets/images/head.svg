@@ -7,7 +7,7 @@
    viewBox="0 0 210 297"
    version="1.1"
    id="svg1"
-   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
    sodipodi:docname="head.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -48,12 +48,12 @@
        ry="66.044434" />
     <rect
        id="head_trim"
-       style="display:inline;fill:#2B5B84;fill-opacity:0.9;stroke:#3A2E2A;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
-       width="120"
-       height="42"
-       x="45"
-       y="90"
-       rx="21" />
+       style="display:inline;fill:#2b5b84;fill-opacity:0.13829325;stroke:none;stroke-width:2.65245;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       width="120.34756"
+       height="32.737385"
+       x="44.826221"
+       y="99.436394"
+       rx="21.060822" />
     <circle
        id="eye_l"
        style="display:inline;fill:#3A2E2A;fill-opacity:1;stroke:none"

@@ -7,7 +7,7 @@
    viewBox="0 0 210 297"
    version="1.1"
    id="svg1"
-   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
    sodipodi:docname="hand.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -48,11 +48,11 @@
        ry="30.068144" />
     <path
        id="finger_l"
-       style="display:inline;fill:#E8D8C8;fill-opacity:1;stroke:#3A2E2A;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
-       d="M 78,210 C 74,232 80,244 92,244 C 100,244 104,238 104,226 L 104,212 C 102,204 94,198 88,198 C 84,198 80,204 78,210 Z" />
+       style="display:none;fill:#e8d8c8;fill-opacity:1;stroke:#3a2e2a;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       d="m 78,210 c -4,22 2,34 14,34 8,0 12,-6 12,-18 v -14 c -2,-8 -10,-14 -16,-14 -4,0 -8,6 -10,12 z" />
     <path
        id="finger_r"
-       style="display:inline;fill:#E8D8C8;fill-opacity:1;stroke:#3A2E2A;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
-       d="M 132,210 C 136,232 130,244 118,244 C 110,244 106,238 106,226 L 106,212 C 108,204 116,198 122,198 C 126,198 130,204 132,210 Z" />
+       style="display:none;fill:#e8d8c8;fill-opacity:1;stroke:#3a2e2a;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;paint-order:fill markers stroke"
+       d="m 132,210 c 4,22 -2,34 -14,34 -8,0 -12,-6 -12,-18 v -14 c 2,-8 10,-14 16,-14 4,0 8,6 10,12 z" />
   </g>
 </svg>

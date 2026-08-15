@@ -1852,9 +1852,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.4.2"
+version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d262e149917187838d5b42777c8253bcb64500067342904e7d429499a6f277e"
+checksum = "509591b7bcd67f4ef775afad7662703b4935daaa6ec0e5605cfb1090b32a2b6d"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -2395,9 +2395,9 @@ dependencies = [
 
 [[package]]
 name = "find-msvc-tools"
-version = "0.1.10"
+version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26b73573e6edcd2af0cdf47bd6cb58f0b3839491263c314eaad1ccf24430e1de"
+checksum = "d45db016d36b838f563236e9193d0ee6ce38f3f68b6c94e914b4929c96bbb890"
 
 [[package]]
 name = "fixedbitset"
@@ -3362,9 +3362,9 @@ checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
 
 [[package]]
 name = "libredox"
-version = "0.1.19"
+version = "0.1.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2026a5056764a10b2bf5d56488cba40da507f5493a6a429340e2004d9ed085fa"
+checksum = "28d0a00925a9f930d679b6789b721e3a7f9ed110f41b86d2497caa780c3a070a"
 dependencies = [
  "bitflags 2.13.1",
  "libc",
@@ -4867,9 +4867,9 @@ checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
 
 [[package]]
 name = "repose-app"
-version = "0.27.4"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3fc9228a939917917df097161ac773906593ff026bf349ebf70912e084de23e"
+checksum = "9cd452a1b10f7ec9142b19d9ea271f769c3bbf599bcd65b104933530a25e396f"
 dependencies = [
  "log",
  "repose-core",
@@ -4882,7 +4882,7 @@ dependencies = [
 [[package]]
 name = "repose-bevy"
 version = "0.2.0"
-source = "git+https://github.com/mlm-games/repose-bevy#38262bdf4c2f50528fcad7df2f957e879bd65fe4"
+source = "git+https://github.com/mlm-games/repose-bevy#c62e744f3536710aa152876d129881edf665e0cf"
 dependencies = [
  "anyhow",
  "bevy",
@@ -4900,9 +4900,9 @@ dependencies = [
 
 [[package]]
 name = "repose-canvas"
-version = "0.27.4"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f2e4d1f0c7fceda4bf07e0411ebe48c7e2d98c48c4eaa13bb386b288b8db139"
+checksum = "b57830d30c1f3f1eac9baab1df476a6cff081076953154e15a79c6d76c22048f"
 dependencies = [
  "repose-core",
  "repose-ui",
@@ -4910,9 +4910,9 @@ dependencies = [
 
 [[package]]
 name = "repose-core"
-version = "0.27.4"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62c2909d85f6d9bb17a113cf739d5c8a02e46daaa12fddb5089ca2f335191e8a"
+checksum = "ceca410709ba82cd45588628075afe274f6ec0bcc8a6758be42448995aaded34"
 dependencies = [
  "bitflags 2.13.1",
  "log",
@@ -4928,9 +4928,9 @@ dependencies = [
 
 [[package]]
 name = "repose-macros"
-version = "0.27.4"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fcc95ed466611681102964853f3ffca14b46691de7354227973b0e27ffb8d69"
+checksum = "4abe289492f6cc755bcc312519ad088a114f163b8ce9e7b12064e9aee9c779a8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -4939,9 +4939,9 @@ dependencies = [
 
 [[package]]
 name = "repose-material"
-version = "0.27.4"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3779c33bc073ef34c4955600e9609e10ae0cf87a5158b8b7ae16e2f4ccb9a1f3"
+checksum = "4de92fadff8141586e9ad0b4aee19b888d280c98e36f90bb95900a423dd395a3"
 dependencies = [
  "repose-core",
  "repose-text",
@@ -4951,9 +4951,9 @@ dependencies = [
 
 [[package]]
 name = "repose-render-wgpu"
-version = "0.27.4"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c51890e12ffdf1c0597a008f8dea3173229b1023713f397bed96ff250c442b7"
+checksum = "d711242ba2f60c12361f84aba8826348dad0c03a123ea89631ec9d89a3cf0ffd"
 dependencies = [
  "anyhow",
  "bytemuck",
@@ -4970,9 +4970,9 @@ dependencies = [
 
 [[package]]
 name = "repose-text"
-version = "0.27.4"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47f50a16b3a24a7bf0fae9f3e5e5fe2eca7fe4e3037b1267e6fcbe8301b71539"
+checksum = "cd67ab79de1ae075cfd502a3c5987d1a8353f502e896c76961bff7ad48b39b55"
 dependencies = [
  "font-awl",
  "log",
@@ -4986,9 +4986,9 @@ dependencies = [
 
 [[package]]
 name = "repose-tree"
-version = "0.27.4"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1689e561bdbbac654c548695290e82c7761d6cb794176c0796a4c1b95ebc0c53"
+checksum = "20285114209c8bd8f244a557949df0c6ca6a508664a6fd8082f074f4fe5a3894"
 dependencies = [
  "log",
  "rapidhash",
@@ -5000,9 +5000,9 @@ dependencies = [
 
 [[package]]
 name = "repose-ui"
-version = "0.27.4"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e5d7ad22645095fc35c236714884547e6a182d5abadf8473b25bb4fb566182c"
+checksum = "d5c888c49698cc8a2ad11747d156b3af311d1c589a3f437dabaebf9c9eb50767"
 dependencies = [
  "log",
  "repose-core",
@@ -5114,9 +5114,9 @@ checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
 name = "safe_arch"
-version = "1.1.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a52ec151f024d703f9fd65abb7cbe81e7cdb39f18917a3a37e3014470dc7c59"
+checksum = "42c6efa15875e6ecb39ca61fb0b0c1a40b84fac5a5ffe71eef7d1000c8eb3f5f"
 dependencies = [
  "bytemuck",
 ]
@@ -5891,9 +5891,9 @@ checksum = "b6c140620e7ffbb22c2dee59cafe6084a59b5ffc27a8859a5f0d494b5d52b6be"
 
 [[package]]
 name = "uuid"
-version = "1.24.0"
+version = "1.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf3923a6f5c4c6382e0b653c4117f48d631ea17f38ed86e2a828e6f7412f5239"
+checksum = "2cefc03fd367c0c6d4305de1b312cf00248c4114f4a0418ce6a6af769e3b0bd9"
 dependencies = [
  "getrandom 0.4.3",
  "js-sys",
@@ -6005,9 +6005,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-backend"
-version = "0.3.16"
+version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "016ccf01d1c58b6f8999612813e17c9b2390f7d70671428869913310f83f54b8"
+checksum = "38a91b4eaddff87b1cd1074985e3713da4af2c49742d1b356b2c01670a67a078"
 dependencies = [
  "cc",
  "downcast-rs 1.2.1",
