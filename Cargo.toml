@@ -112,6 +112,7 @@ features = ["bevy/android-native-activity"]
 
 [package.metadata.android.sdk]
 min_sdk_version = 26
+version_code = 82
 
 [lints.clippy]
 too_many_arguments = "allow"
