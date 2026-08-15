@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+#[cfg(feature = "physics")]
+use bevy_rapier2d::prelude::Velocity;
 
 use super::components::*;
 use super::round_manager::{RoundManager, RunPhase};
@@ -41,6 +43,40 @@ pub fn validate_round_manager(rm: Res<RoundManager>, warriors: Query<&WarriorRoo
             rm.player_entity.is_some(),
             "GameOver reached with no player entity tracked"
         );
+    }
+}
+
+#[cfg(feature = "physics")]
+pub fn diag_physics_anomalies(
+    limbs: Query<(&WarriorLimb, &Transform, &Velocity)>,
+    roots: Query<(Entity, &WarriorRoot, Option<&HitStun>, Option<&Recovery>, Has<RagdollApplied>)>,
+) {
+    use super::components::*;
+    let root_state = roots
+        .iter()
+        .map(|(e, w, stun, rec, rag)| {
+            (
+                e,
+                w.is_dead,
+                stun.map_or(0.0, |s| s.remaining),
+                rec.map_or(0.0, |r| r.remaining),
+                rag,
+            )
+        })
+        .collect::<Vec<_>>();
+
+    for (limb, tf, vel) in &limbs {
+        let sp = vel.linear.length();
+        if sp > 600.0 || vel.angular.abs() > 8.0 {
+            let (is_dead, stun, rec, rag) = root_state
+                .iter()
+                .find(|(e, ..)| *e == limb.root)
+                .map_or((false, 0.0, 0.0, false), |(_, d, s, r, g)| (*d, *s, *r, *g));
+            eprintln!(
+                ">>> DIAG root={:?} limb={:?} speed={:.0} angvel={:.1} linvel=({:.0},{:.0}) pos=({:.0},{:.0}) dead={} stun={:.1} rec={:.1} rag={}",
+                limb.root, limb.kind, sp, vel.angular, vel.linear.x, vel.linear.y, tf.translation.x, tf.translation.y, is_dead, stun, rec, rag
+            );
+        }
     }
 }
 

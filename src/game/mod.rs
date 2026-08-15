@@ -64,7 +64,10 @@ impl Plugin for GamePlugin {
                     death_fade,
                     cleanup_bounds::cleanup_far_entities,
                     debug_invariants::validate_round_manager,
-                    debug_invariants::validate_warriors,
+                    (
+                        debug_invariants::validate_warriors,
+                        debug_invariants::diag_physics_anomalies,
+                    ),
                 )
                     .run_if(in_state(AppState::InGame))
                     .run_if(|p: Res<Paused>| !p.0)

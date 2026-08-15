@@ -2,7 +2,6 @@ use bevy::prelude::*;
 #[cfg(feature = "physics")]
 use bevy_rapier2d::prelude::*;
 use rand::RngExt;
-#[cfg(feature = "physics")]
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4};
 
 use super::art::WarriorArt;
@@ -11,8 +10,6 @@ use super::components::*;
 const MAX_DRAW: f32 = 100.0;
 const MIN_FORCE: f32 = 100.0;
 const MAX_FORCE_ADD: f32 = 1000.0;
-/// Hip joints are "locked" (approx ±1°/2°) to keep legs planted.
-#[cfg(feature = "physics")]
 const HIP_LIMIT: f32 = 0.035;
 
 pub struct SpawnWarrior {
@@ -144,6 +141,7 @@ pub fn spawn_warrior(commands: &mut Commands, art: &WarriorArt, cfg: SpawnWarrio
             head,
             Vec2::new(0.0, 24.0) * s,
             Vec2::new(0.0, -9.0) * s,
+            (0.0, 10.0, 6.0), // neck
             [-FRAC_PI_4, FRAC_PI_4],
         ); // ±45°
         joint(
@@ -152,6 +150,7 @@ pub fn spawn_warrior(commands: &mut Commands, art: &WarriorArt, cfg: SpawnWarrio
             up_arm_l,
             Vec2::new(-14.0, 12.0) * s,
             Vec2::new(0.0, 13.0) * s,
+            (0.0, 2.0, 1.6), // shoulder, light so knockback flings visibly
             [-FRAC_PI_2, FRAC_PI_2],
         ); // ±90°
         joint(
@@ -160,6 +159,7 @@ pub fn spawn_warrior(commands: &mut Commands, art: &WarriorArt, cfg: SpawnWarrio
             up_arm_r,
             Vec2::new(14.0, 12.0) * s,
             Vec2::new(0.0, 13.0) * s,
+            (0.0, 2.0, 1.6),
             [-FRAC_PI_2, FRAC_PI_2],
         ); // ±90°
         joint(
@@ -168,32 +168,36 @@ pub fn spawn_warrior(commands: &mut Commands, art: &WarriorArt, cfg: SpawnWarrio
             arm_l,
             Vec2::new(0.0, -13.0) * s,
             Vec2::new(0.0, 15.0) * s,
-            [-1.4, 1.4],
-        ); // elbow ±80°
+            (0.0, 2.0, 1.6), // elbow
+            [-FRAC_PI_2, FRAC_PI_2],
+        );
         joint(
             commands,
             up_arm_r,
             arm_r,
             Vec2::new(0.0, -13.0) * s,
             Vec2::new(0.0, 15.0) * s,
-            [-1.4, 1.4],
-        ); // elbow ±80°
+            (0.0, 2.0, 1.6),
+            [-FRAC_PI_2, FRAC_PI_2],
+        );
         joint(
             commands,
             torso,
             leg_l,
             Vec2::new(-8.0, -21.0) * s,
             Vec2::new(0.0, 15.0) * s,
+            (0.0, 15.0, 10.0), // hips stay planted
             [-HIP_LIMIT, HIP_LIMIT],
-        ); // ~locked
+        );
         joint(
             commands,
             torso,
             leg_r,
             Vec2::new(8.0, -21.0) * s,
             Vec2::new(0.0, 15.0) * s,
+            (0.0, 15.0, 10.0),
             [-HIP_LIMIT, HIP_LIMIT],
-        ); // ~locked
+        );
     }
 
     let bow_base = Vec2::new(12.0, 60.0) * s;
@@ -347,11 +351,14 @@ fn joint(
     b: Entity,
     anchor_a: Vec2,
     anchor_b: Vec2,
+    servo: (f32, f32, f32),
     limits: [f32; 2],
 ) {
+    let (rest_angle, stiffness, damping) = servo;
     let joint = RevoluteJointBuilder::new()
         .local_anchor1(anchor_a)
         .local_anchor2(anchor_b)
+        .motor_position(rest_angle, stiffness, damping)
         .limits(limits);
     commands.entity(b).insert(ImpulseJoint::new(a, joint));
 }
@@ -562,6 +569,7 @@ pub fn apply_ragdoll_on_death(
     mut commands: Commands,
     warriors: Query<(Entity, &WarriorRoot), Without<RagdollApplied>>,
     mut impulses: Query<&mut ExternalImpulse>,
+    limbs: Query<(Entity, &WarriorLimb, Has<ImpulseJoint>)>,
 ) {
     for (entity, warrior) in &warriors {
         if !warrior.is_dead {
@@ -573,6 +581,12 @@ pub fn apply_ragdoll_on_death(
         commands.entity(entity).remove::<HitStun>();
         commands.entity(entity).remove::<Recovery>();
         commands.entity(warrior.torso).remove::<LockedAxes>();
+
+        for (limb_entity, limb, has_joint) in &limbs {
+            if limb.root == entity && has_joint {
+                commands.entity(limb_entity).remove::<ImpulseJoint>();
+            }
+        }
 
         if let Ok(mut impulse) = impulses.get_mut(warrior.torso) {
             let mut rng = rand::rng();

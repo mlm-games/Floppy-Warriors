@@ -8,9 +8,9 @@ use bevy_rapier2d::prelude::*;
 pub const GROUND_TOP: f32 = -160.0;
 pub const GROUND_HALF_WIDTH: f32 = 1200.0;
 pub const GROUND_HALF_HEIGHT: f32 = 100.0;
-pub const STAND_Y: f32 = -112.0;
+pub const STAND_Y: f32 = -102.0;
 pub const TILE_WORLD: f32 = 32.0;
-pub const BG_SIZE: Vec2 = Vec2::new(2400.0, 1370.0);
+pub const BG_SIZE: Vec2 = Vec2::new(2400.0, 1440.0);
 
 /// Surface tile (dirt + rounded stone) and fill tile (plain dirt).
 const TILE_SURFACE: (u32, u32) = (0, 1);
@@ -31,7 +31,7 @@ pub fn spawn_arena_tagged(commands: &mut Commands, art: &WarriorArt, tag: impl C
             custom_size: Some(BG_SIZE),
             ..default()
         },
-        Transform::from_xyz(0.0, 0.0, -50.0),
+        Transform::from_xyz(0.0, 40.0, -50.0), // slight lift so horizon sits above ground
     ));
 
     let ground = Ground {
@@ -43,9 +43,9 @@ pub fn spawn_arena_tagged(commands: &mut Commands, art: &WarriorArt, tag: impl C
     let mut ground_e = commands.spawn((
         tag.clone(),
         ground,
-        // Backup fill under tiles (also helps no-physics builds read the floor).
+        // Opaque underlay (reads even if tiles fail to sample).
         Sprite {
-            color: Color::srgb(0.78, 0.44, 0.22),
+            color: Color::srgb(0.72, 0.40, 0.20),
             custom_size: Some(ground.size()),
             ..default()
         },
