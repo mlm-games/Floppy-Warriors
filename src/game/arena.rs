@@ -27,7 +27,8 @@ pub fn spawn_arena_tagged(commands: &mut Commands, art: &WarriorArt, tag: impl C
         tag.clone(),
         Sprite {
             image: art.bg.clone(),
-            color: Color::WHITE,
+            // Darkened as it is too bright.
+            color: Color::srgb(0.28, 0.28, 0.28),
             custom_size: Some(BG_SIZE),
             ..default()
         },
@@ -45,7 +46,7 @@ pub fn spawn_arena_tagged(commands: &mut Commands, art: &WarriorArt, tag: impl C
         ground,
         // Opaque underlay (reads even if tiles fail to sample).
         Sprite {
-            color: Color::srgb(0.72, 0.40, 0.20),
+            color: Color::srgb(0.40, 0.22, 0.12),
             custom_size: Some(ground.size()),
             ..default()
         },
@@ -95,7 +96,7 @@ fn spawn_ground_tiles(
                 image: art.tileset.clone(),
                 rect: Some(surface_rect),
                 custom_size: Some(Vec2::splat(tw)),
-                color: Color::WHITE,
+                color: Color::srgb(0.5, 0.5, 0.5),
                 ..default()
             },
             Transform::from_xyz(x, surface_y, -1.0),
@@ -110,7 +111,7 @@ fn spawn_ground_tiles(
                     image: art.tileset.clone(),
                     rect: Some(fill_rect),
                     custom_size: Some(Vec2::splat(tw)),
-                    color: Color::WHITE,
+                    color: Color::srgb(0.5, 0.5, 0.5),
                     ..default()
                 },
                 Transform::from_xyz(x, y, -1.1),
