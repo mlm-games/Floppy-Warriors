@@ -19,7 +19,8 @@ pub struct WarriorArt {
     pub bow: Handle<Image>,
     /// Full-bleed landscape backdrop (title + gameplay).
     pub bg: Handle<Image>,
-    /// Full tileset atlas (no alpha-trim). 8 columns × 4 rows of cells.
+    /// Full tileset atlas (no alpha-trim). 32 columns × 16 rows of 16px cells
+    /// (Godot's atlas layout; our bake is 4x, so cells are 64px there).
     pub tileset: Handle<Image>,
     /// Pixel size of one cell in `tileset` (width / 8).
     pub tile_px: u32,
@@ -33,8 +34,8 @@ struct SvgBaker {
 
 const CANVAS: u32 = 2048;
 /// Tileset layout contract (must match tileset.svg).
-const TILESET_COLS: u32 = 8;
-const TILESET_ROWS: u32 = 4;
+const TILESET_COLS: u32 = 32;
+const TILESET_ROWS: u32 = 16;
 
 impl SvgBaker {
     fn new() -> anyhow::Result<Self> {
@@ -125,14 +126,6 @@ impl SvgBaker {
 
         Ok((image_rgba8(pw, ph, data, ImageSampler::Default), pw, ph))
     }
-}
-
-/// Atlas cell (col, row) -> pixel rect. Grid is TILESET_COLS x TILESET_ROWS.
-pub fn tileset_rect(tile_px: u32, col: u32, row: u32) -> Rect {
-    debug_assert!(col < TILESET_COLS && row < TILESET_ROWS);
-    let p = tile_px as f32;
-    let min = Vec2::new(col as f32 * p, row as f32 * p);
-    Rect::from_corners(min, min + Vec2::splat(p))
 }
 
 pub fn bake_warrior_art(images: &mut Assets<Image>) -> anyhow::Result<WarriorArt> {

@@ -1,4 +1,4 @@
-use super::art::{WarriorArt, tileset_rect};
+use super::art::WarriorArt;
 use super::components::*;
 use bevy::prelude::*;
 #[cfg(feature = "physics")]
@@ -12,9 +12,9 @@ pub const STAND_Y: f32 = -102.0;
 pub const TILE_WORLD: f32 = 32.0;
 pub const BG_SIZE: Vec2 = Vec2::new(2400.0, 1440.0);
 
-/// Surface tile (dirt + rounded stone) and fill tile (plain dirt).
-const TILE_SURFACE: (u32, u32) = (0, 1);
-const TILE_FILL: (u32, u32) = (1, 1);
+const TILE_SURFACE_ROW: u32 = 4;
+const TILE_FILL_ROWS: [u32; 2] = [5, 6];
+const TILE_FILL_DARK_ROW: u32 = 7;
 
 /// In-game entry point.
 pub fn spawn_arena(mut commands: Commands, art: Res<WarriorArt>) {
@@ -82,40 +82,60 @@ fn spawn_ground_tiles(
     // How many rows of fill below the surface (visual only; collider is thicker).
     let fill_rows = 4;
 
-    let surface_rect = tileset_rect(art.tile_px, TILE_SURFACE.0, TILE_SURFACE.1);
-    let fill_rect = tileset_rect(art.tile_px, TILE_FILL.0, TILE_FILL.1);
+    let strip_px = 4.0 * art.tile_px as f32;
+    let strip_rect = |row: u32| {
+        let p = art.tile_px as f32;
+        Rect::from_corners(
+            Vec2::new(0.0, row as f32 * p),
+            Vec2::new(strip_px, (row + 1) as f32 * p),
+        )
+    };
+    let surface_rect = strip_rect(TILE_SURFACE_ROW);
+    let fill_light_rect = strip_rect(TILE_FILL_ROWS[0]);
+    let fill_dark_rect = strip_rect(TILE_FILL_DARK_ROW);
 
-    for c in 0..cols {
-        let x = start_x + c as f32 * tw;
+    let mut c = 0i32;
+    while c < cols {
+        let n = (cols - c).min(4);
+        let x = start_x + (c as f32 + (n as f32 - 1.0) * 0.5) * tw;
+        let size = Vec2::new(n as f32 * tw, tw);
 
-        // Surface row: top of tile flush with GROUND_TOP
+        // Surface row: top of strip flush with GROUND_TOP
         let surface_y = top - tw * 0.5;
         commands.spawn((
             tag.clone(),
             Sprite {
                 image: art.tileset.clone(),
                 rect: Some(surface_rect),
-                custom_size: Some(Vec2::splat(tw)),
+                custom_size: Some(size),
                 color: Color::srgb(0.5, 0.5, 0.5),
                 ..default()
             },
             Transform::from_xyz(x, surface_y, -1.0),
         ));
 
-        // Fill under surface
+        // Fill under surface; alternate light cap rows, dark strip at the bottom.
         for r in 1..=fill_rows {
+            let rect = if r == fill_rows {
+                fill_dark_rect
+            } else if r % 2 == 0 {
+                strip_rect(TILE_FILL_ROWS[1])
+            } else {
+                fill_light_rect
+            };
             let y = top - tw * 0.5 - r as f32 * tw;
             commands.spawn((
                 tag.clone(),
                 Sprite {
                     image: art.tileset.clone(),
-                    rect: Some(fill_rect),
-                    custom_size: Some(Vec2::splat(tw)),
+                    rect: Some(rect),
+                    custom_size: Some(size),
                     color: Color::srgb(0.5, 0.5, 0.5),
                     ..default()
                 },
                 Transform::from_xyz(x, y, -1.1),
             ));
         }
+        c += n;
     }
 }
