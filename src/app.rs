@@ -301,6 +301,13 @@ fn apply_saved_settings(mut save: ResMut<SaveData>, mut locale: ResMut<LocaleRes
 fn setup_camera(mut commands: Commands) {
     commands.spawn((
         Camera2d,
+        // Arena art uses negative z for back-to-front ordering, so
+        // widen the frustum to include it.
+        Projection::Orthographic(OrthographicProjection {
+            near: -10000.0,
+            far: 10000.0,
+            ..OrthographicProjection::default_2d()
+        }),
         Transform::from_xyz(0.0, 0.0, 1000.0),
         CameraBase {
             translation: Vec3::new(0.0, 0.0, 1000.0),
