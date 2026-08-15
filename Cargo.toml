@@ -108,6 +108,8 @@ getrandom_03 = { version = "0.3", features = [
 getrandom_02 = { version = "0.2", features = ["js"], package = "getrandom" }
 
 [package.metadata.android]
+package = "com.game.floppy_warriors"
+apk_name = "floppy_warriors"
 features = ["bevy/android-native-activity"]
 
 [package.metadata.android.sdk]
