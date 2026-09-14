@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 #[cfg(feature = "physics")]
 use bevy_rapier2d::prelude::*;
+use game_utils_bevy::audio::AudioChannels;
 use game_utils_bevy::vfx::VfxSpawner;
 use rand::RngExt;
 
@@ -227,6 +228,7 @@ fn demo_ai(
     time: Res<Time>,
     asset_server: Res<AssetServer>,
     sfx: Res<super::audio_fx::CombatSfx>,
+    channels: Res<AudioChannels>,
     mut commands: Commands,
     mut ai_q: Query<(Entity, &mut BowState, &mut DemoAi, &DemoSide)>,
     warriors: Query<&WarriorRoot>,
@@ -293,6 +295,7 @@ fn demo_ai(
                 super::audio_fx::play_sfx(
                     &mut commands,
                     &asset_server,
+                    &channels,
                     &sfx.bow_release,
                     0.22,
                     0.08,

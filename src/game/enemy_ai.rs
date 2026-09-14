@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use game_utils_bevy::audio::AudioChannels;
 use rand::RngExt;
 
 use super::components::*;
@@ -30,6 +31,7 @@ pub fn enemy_ai_system(
     phase: Res<RoundManager>,
     asset_server: Res<AssetServer>,
     sfx: Res<super::audio_fx::CombatSfx>,
+    channels: Res<AudioChannels>,
     mut commands: Commands,
     mut enemies: Query<(Entity, &mut WarriorRoot, &mut BowState, &mut EnemyAi), With<EnemyTag>>,
     players: Query<(Entity, &WarriorRoot, &GlobalTransform), (With<PlayerTag>, Without<EnemyTag>)>,
@@ -90,6 +92,7 @@ pub fn enemy_ai_system(
                 super::warrior::fire_from_bow_angled(
                     &mut commands,
                     &asset_server,
+                    &channels,
                     &sfx,
                     enemy_entity,
                     &warrior,

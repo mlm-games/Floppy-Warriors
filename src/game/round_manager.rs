@@ -8,6 +8,7 @@ use crate::game::meta::{self, apply_meta_to_mods};
 use crate::game::warrior::{SpawnWarrior, spawn_warrior};
 use crate::save::SaveData;
 use bevy::prelude::*;
+use game_utils_bevy::audio::AudioChannels;
 use game_utils_bevy::save::SaveManager;
 use rand::RngExt;
 
@@ -489,6 +490,7 @@ pub fn on_hits(
     mut rm: ResMut<RoundManager>,
     asset_server: Res<AssetServer>,
     sfx: Res<super::audio_fx::CombatSfx>,
+    channels: Res<AudioChannels>,
     mut commands: Commands,
     mut warriors: Query<&mut WarriorRoot>,
 ) {
@@ -534,6 +536,7 @@ pub fn on_hits(
                                 player,
                                 &mut commands,
                                 &asset_server,
+                                &channels,
                                 &sfx,
                             );
                         } else {
@@ -544,6 +547,7 @@ pub fn on_hits(
                                 player,
                                 &mut commands,
                                 &asset_server,
+                                &channels,
                                 &sfx,
                             );
                         }
@@ -551,7 +555,7 @@ pub fn on_hits(
                         rm.spawn_cooldown = 1.0;
                     }
                 } else if w.team == Team::Player {
-                    super::audio_fx::play_sfx(&mut commands, &asset_server, &sfx.death, 0.6, 0.0);
+                    super::audio_fx::play_sfx(&mut commands, &asset_server, &channels, &sfx.death, 0.6, 0.0);
                     end_run(&mut rm, false);
                 }
             }
@@ -566,6 +570,7 @@ fn enter_reward(
     player: Option<Entity>,
     commands: &mut Commands,
     asset_server: &AssetServer,
+    channels: &AudioChannels,
     sfx: &super::audio_fx::CombatSfx,
 ) {
     // Already in reward (e.g. multi-kill same frame): don't re-roll / re-heal.
@@ -575,7 +580,7 @@ fn enter_reward(
 
     rm.phase = RunPhase::Reward;
 
-    super::audio_fx::play_sfx(commands, asset_server, &sfx.reward, 0.5, 0.0);
+    super::audio_fx::play_sfx(commands, asset_server, channels, &sfx.reward, 0.5, 0.0);
 
     if let Some(p) = player
         && let Ok(mut w) = warriors.get_mut(p)

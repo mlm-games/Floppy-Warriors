@@ -512,6 +512,7 @@ pub fn sync_bow_draw_visuals(
 pub fn fire_from_bow_angled(
     commands: &mut Commands,
     asset_server: &AssetServer,
+    channels: &game_utils_bevy::audio::AudioChannels,
     sfx: &super::audio_fx::CombatSfx,
     warrior_e: Entity,
     warrior: &WarriorRoot,
@@ -523,7 +524,7 @@ pub fn fire_from_bow_angled(
         return;
     }
 
-    super::audio_fx::play_sfx(commands, asset_server, &sfx.bow_release, 0.45, 0.08);
+    super::audio_fx::play_sfx(commands, asset_server, channels, &sfx.bow_release, 0.45, 0.08);
 
     let mut damage_mult = warrior.damage_mult;
 

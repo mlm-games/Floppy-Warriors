@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 #[cfg(feature = "physics")]
 use bevy_rapier2d::prelude::ExternalImpulse;
-use game_utils_bevy::game_feel::{GameFeel, SlowMotion};
-use game_utils_bevy::screen_effects::{ScreenEffects, Trauma};
+use game_utils_bevy::audio::AudioChannels;
+use game_utils_bevy::game_feel::{GameFeel, SlowMotion};use game_utils_bevy::screen_effects::{ScreenEffects, Trauma};
 use game_utils_bevy::vfx::VfxSpawner;
 use rand::RngExt;
 
@@ -88,6 +88,7 @@ pub fn update_arrows(
     mut trauma: ResMut<Trauma>,
     asset_server: Res<AssetServer>,
     sfx: Res<CombatSfx>,
+    channels: Res<AudioChannels>,
     mut slow_mo: ResMut<SlowMotion>,
     mut hits: MessageWriter<HitConfirmed>,
     mut arrows: Query<(Entity, &mut Arrow, &mut Transform)>,
@@ -307,12 +308,12 @@ pub fn update_arrows(
             }
 
             if headshot {
-                audio_fx::play_sfx(&mut commands, &asset_server, &sfx.headshot, 0.6, 0.08);
+                audio_fx::play_sfx(&mut commands, &asset_server, &channels, &sfx.headshot, 0.6, 0.08);
             } else {
-                audio_fx::play_sfx(&mut commands, &asset_server, &sfx.hit, 0.5, 0.1);
+                audio_fx::play_sfx(&mut commands, &asset_server, &channels, &sfx.hit, 0.5, 0.1);
             }
             if killed {
-                audio_fx::play_sfx(&mut commands, &asset_server, &sfx.kill, 0.55, 0.05);
+                audio_fx::play_sfx(&mut commands, &asset_server, &channels, &sfx.kill, 0.55, 0.05);
             }
 
             hits.write(HitConfirmed {

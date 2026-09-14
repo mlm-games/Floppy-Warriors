@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use game_utils_bevy::audio::AudioM;
+use game_utils_bevy::audio::{AudioChannels, AudioM};
 
 #[derive(Resource)]
 pub struct CombatSfx {
@@ -30,6 +30,7 @@ pub fn load_combat_sfx(mut commands: Commands, asset_server: Res<AssetServer>) {
 pub fn play_sfx(
     commands: &mut Commands,
     asset_server: &AssetServer,
+    channels: &AudioChannels,
     handle: &Handle<AudioSource>,
     volume: f32,
     pitch_var: f32,
@@ -38,6 +39,6 @@ pub fn play_sfx(
         .get_load_state(handle.id())
         .is_some_and(|s| s.is_loaded())
     {
-        AudioM::play_sfx_varied(commands, handle.clone(), volume, pitch_var);
+        AudioM::play_sfx_varied(commands, channels, handle.clone(), volume, pitch_var);
     }
 }
