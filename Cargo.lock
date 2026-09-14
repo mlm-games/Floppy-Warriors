@@ -2447,6 +2447,7 @@ dependencies = [
  "renamite-player",
  "renamite-render-bridge",
  "renamite-render-offscreen",
+ "repose-app",
  "repose-bevy",
  "repose-core",
  "repose-material",
@@ -2665,7 +2666,7 @@ dependencies = [
 [[package]]
 name = "game-utils"
 version = "0.1.2"
-source = "git+https://github.com/mlm-games/game-utils#234f863d4e512bbe438517db49dfefb8902ddf59"
+source = "git+https://github.com/mlm-games/game-utils?rev=234f863d4e512bbe438517db49dfefb8902ddf59#234f863d4e512bbe438517db49dfefb8902ddf59"
 dependencies = [
  "directories",
  "fluent-bundle",
@@ -2679,7 +2680,7 @@ dependencies = [
 [[package]]
 name = "game-utils-bevy"
 version = "0.1.2"
-source = "git+https://github.com/mlm-games/game-utils#234f863d4e512bbe438517db49dfefb8902ddf59"
+source = "git+https://github.com/mlm-games/game-utils?rev=234f863d4e512bbe438517db49dfefb8902ddf59#234f863d4e512bbe438517db49dfefb8902ddf59"
 dependencies = [
  "bevy",
  "game-utils",
@@ -4867,9 +4868,9 @@ checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
 
 [[package]]
 name = "repose-app"
-version = "0.27.6"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cd452a1b10f7ec9142b19d9ea271f769c3bbf599bcd65b104933530a25e396f"
+checksum = "84b12cd52d02d0cafe088d72adb46f1b8fc8deef213a8c6b1147465a19f9fca3"
 dependencies = [
  "log",
  "repose-core",
@@ -4882,7 +4883,7 @@ dependencies = [
 [[package]]
 name = "repose-bevy"
 version = "0.2.0"
-source = "git+https://github.com/mlm-games/repose-bevy#c62e744f3536710aa152876d129881edf665e0cf"
+source = "git+https://github.com/mlm-games/repose-bevy?rev=c62e744f3536710aa152876d129881edf665e0cf#c62e744f3536710aa152876d129881edf665e0cf"
 dependencies = [
  "anyhow",
  "bevy",
@@ -4900,9 +4901,9 @@ dependencies = [
 
 [[package]]
 name = "repose-canvas"
-version = "0.27.6"
+version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b57830d30c1f3f1eac9baab1df476a6cff081076953154e15a79c6d76c22048f"
+checksum = "6bfcb1eb6f917c64814270a4f7ee5f5876a046025de5213813fede37cf1308be"
 dependencies = [
  "repose-core",
  "repose-ui",
@@ -4910,9 +4911,9 @@ dependencies = [
 
 [[package]]
 name = "repose-core"
-version = "0.27.6"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ceca410709ba82cd45588628075afe274f6ec0bcc8a6758be42448995aaded34"
+checksum = "b58e8c3cd96d46c5d15c151df45e9d81e77e90309a027bcc0ed3964c5bfa89df"
 dependencies = [
  "bitflags 2.13.1",
  "log",
@@ -4939,9 +4940,9 @@ dependencies = [
 
 [[package]]
 name = "repose-material"
-version = "0.27.6"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4de92fadff8141586e9ad0b4aee19b888d280c98e36f90bb95900a423dd395a3"
+checksum = "a70ad6e0d8ec37f5ae11ac26666b49d917a3fb134d0e4336d69b5bb522c6cf7d"
 dependencies = [
  "repose-core",
  "repose-text",
@@ -4951,9 +4952,9 @@ dependencies = [
 
 [[package]]
 name = "repose-render-wgpu"
-version = "0.27.6"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d711242ba2f60c12361f84aba8826348dad0c03a123ea89631ec9d89a3cf0ffd"
+checksum = "7b42c010c4ce7018b34bfed16f11867dec92b67498dff3c2338e9b4e8133d2a2"
 dependencies = [
  "anyhow",
  "bytemuck",
@@ -4986,9 +4987,9 @@ dependencies = [
 
 [[package]]
 name = "repose-tree"
-version = "0.27.6"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20285114209c8bd8f244a557949df0c6ca6a508664a6fd8082f074f4fe5a3894"
+checksum = "f654ba22926ae42eb627da0f8ab4989b7315a12b6ad0a017a41a1b3e1fbe3682"
 dependencies = [
  "log",
  "rapidhash",
@@ -5000,9 +5001,9 @@ dependencies = [
 
 [[package]]
 name = "repose-ui"
-version = "0.27.6"
+version = "0.27.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d5c888c49698cc8a2ad11747d156b3af311d1c589a3f437dabaebf9c9eb50767"
+checksum = "a9f5b276722607171164dc2dd02a75dc086451c3b70f0886234f8de29eb7dde5"
 dependencies = [
  "log",
  "repose-core",
