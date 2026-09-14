@@ -47,13 +47,24 @@ impl SvgBaker {
     }
 
     fn import_doc(svg_path: &str) -> anyhow::Result<Document> {
-        let bytes = std::fs::read(svg_path).map_err(|e| anyhow::anyhow!("read {svg_path}: {e}"))?;
-        let report = renamite_io_svg::import_with_report(&bytes)
-            .map_err(|e| anyhow::anyhow!("import {svg_path}: {e}"))?;
-        for w in &report.warnings {
-            bevy::log::warn!("SVG warning [{}] {}: {}", svg_path, w.path, w.message);
+        // WASM has no `std::fs` (panics instead of erroring): caller falls
+        // back to procedural art via the `Err` path, same as a missing file.
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = svg_path;
+            return Err(anyhow::anyhow!("svg disk reads unavailable on web"));
         }
-        Ok(report.value)
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let bytes =
+                std::fs::read(svg_path).map_err(|e| anyhow::anyhow!("read {svg_path}: {e}"))?;
+            let report = renamite_io_svg::import_with_report(&bytes)
+                .map_err(|e| anyhow::anyhow!("import {svg_path}: {e}"))?;
+            for w in &report.warnings {
+                bevy::log::warn!("SVG warning [{}] {}: {}", svg_path, w.path, w.message);
+            }
+            Ok(report.value)
+        }
     }
 
     fn render_doc(
