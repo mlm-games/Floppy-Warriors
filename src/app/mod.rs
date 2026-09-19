@@ -95,6 +95,10 @@ impl App {
             .insert_resource(crate::sim::state::SimStep::default());
         sim.world
             .insert_resource(crate::sim::state::GameOverFlushed::default());
+        sim.world
+            .insert_resource(crate::sim::title_demo::DemoRespawn::default());
+        sim.world.init_resource::<repame_fx::Trauma>();
+        sim.world.init_resource::<repame_fx::Flash>();
         repame_rapier2d::init_world(&mut sim.world, glam::Vec2::new(0.0, -980.0), 20.0);
         repame_rapier2d::register_rapier2d_systems(&mut sim);
         crate::sim::i18n::register(&mut sim.world);

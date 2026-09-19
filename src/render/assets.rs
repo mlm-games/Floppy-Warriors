@@ -360,7 +360,7 @@ pub fn world_instances(world: &mut World, assets: &RenderAssets) -> Vec<SpriteIn
             center: Vec2::new(0.0, 40.0),
             rotation: 0.0,
             size: Vec2::new(bg_size[0], bg_size[1]),
-            color: [1.0, 1.0, 1.0, 1.0],
+            color: [0.28, 0.28, 0.28, 1.0],
             uv_min: Vec2::new(bg_uv.min[0], bg_uv.min[1]),
             uv_max: Vec2::new(bg_uv.max[0], bg_uv.max[1]),
             page: bg_uv.page,

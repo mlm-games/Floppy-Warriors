@@ -124,7 +124,10 @@ fn spawn_demo_warrior(world: &mut World, pos: Vec2, tint: [f32; 4], hp: i32) -> 
 }
 
 pub fn demo_ai(world: &mut World) {
-    let dt = world.resource::<SimStep>().dt;
+    let dt = world
+        .get_resource::<SimStep>()
+        .map(|s| s.dt)
+        .unwrap_or(1.0 / 60.0);
     let demos: Vec<(Entity, WarriorRoot, DemoAi, DemoSide)> = world
         .query::<(Entity, &WarriorRoot, &DemoAi, &DemoSide)>()
         .iter(world)
@@ -256,7 +259,10 @@ pub fn demo_ai(world: &mut World) {
 }
 
 pub fn update_demo_arrows(world: &mut World) {
-    let dt = world.resource::<SimStep>().dt;
+    let dt = world
+        .get_resource::<SimStep>()
+        .map(|s| s.dt)
+        .unwrap_or(1.0 / 60.0);
     let arrows: Vec<(Entity, Entity, Vec2, Vec2)> = world
         .query::<(Entity, &DemoArrow)>()
         .iter(world)
@@ -326,7 +332,10 @@ pub fn update_demo_arrows(world: &mut World) {
 }
 
 pub fn demo_respawn(world: &mut World) {
-    let dt = world.resource::<SimStep>().dt;
+    let dt = world
+        .get_resource::<SimStep>()
+        .map(|s| s.dt)
+        .unwrap_or(1.0 / 60.0);
     let has_queued = world.resource::<DemoRespawn>().queued.is_some();
     if !has_queued {
         let dead: Vec<(Entity, Vec2, [f32; 4], Entity)> = world

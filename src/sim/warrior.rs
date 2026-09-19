@@ -269,6 +269,7 @@ fn spawn_limb(
     mass: f32,
     hit_radius: f32,
 ) -> Entity {
+    let pos = origin + local;
     world
         .spawn((
             WarriorLimb {
@@ -278,7 +279,7 @@ fn spawn_limb(
                 size,
             },
             RapierBody2d {
-                spawn_pos: origin + local,
+                spawn_pos: pos,
                 spawn_angle: 0.0,
                 half_extents: size * 0.5,
                 mass,
@@ -289,7 +290,10 @@ fn spawn_limb(
                 ..Default::default()
             },
             ImpulseRequest::default(),
-            BodySnapshot2d::default(),
+            BodySnapshot2d {
+                pos,
+                ..Default::default()
+            },
         ))
         .id()
 }
