@@ -20,10 +20,9 @@ name = "floppy-warriors"
 path = "src/main.rs"
 
 [features]
-default = ["dev_native", "physics"]
+default = ["dev_native"]
 dev = []
 dev_native = ["dev"]
-physics = ["dep:bevy_rapier2d"]
 # Big-game optional crates (check note below)
 # Keep commented until compatible to avoid breakage.
 # input_manager = ["dep:leafwing-input-manager"]
@@ -34,64 +33,41 @@ physics = ["dep:bevy_rapier2d"]
 # kira_audio = ["dep:bevy_kira_audio"]
 
 [dependencies]
-bevy = { git = "https://github.com/bevyengine/bevy", rev = "fb89a8649d9b359e53ffb6e5492ebb7c059ac8af", default-features = false, features = [
-    "bevy_asset",
-    "bevy_audio",
-    "bevy_color",
-    "bevy_core_pipeline",
-    "bevy_render",
-    "bevy_sprite",
-    "bevy_sprite_render",
-    "bevy_state",
-    "bevy_text",
-    "bevy_ui",
-    "bevy_ui_render",
-    "bevy_camera",
-    "bevy_mesh",
-    "bevy_shader",
-    "bevy_material",
-    "bevy_animation",
-    "bevy_image",
-    "bevy_window",
-    "bevy_winit",
-    "x11",
-    "wayland",
-    "png",
-    "vorbis",
-    "multi_threaded",
-    "default_font",
-    "bevy_log",
-    "async_executor",
-    "reflect_auto_register",
-    "bevy_clipboard",
-    "custom_cursor",
-    "webgpu",
-    "android-native-activity",
-] }
-repose-bevy = { git = "https://github.com/mlm-games/repose-bevy", rev = "7ac0e39940fd46f0f0ec099f38beaa8cf7e03395", default-features = false, features = [
-    "shared-device",
-] }
-wgpu = { version = "30", features = ["webgpu", "webgl"] }
-repose-core = "=0.28.20"
-repose-ui = "=0.28.20"
-repose-app = "=0.28.20"
-repose-material = "=0.28.20"
-repose-render-wgpu = "=0.28.20"
-game-utils = { git = "https://github.com/mlm-games/game-utils", rev = "3b097868f46243e6a806fffebca288b934fe22d0" }
-game-utils-bevy = { git = "https://github.com/mlm-games/game-utils", rev = "3b097868f46243e6a806fffebca288b934fe22d0", features = ["render"] }
+bevy_ecs = "0.19"
+glam = "0.33"
+repame-sim = { path = "../../Repos/repame/crates/repame-sim", version = "0.2" }
+repame-shell = { path = "../../Repos/repame/crates/repame-shell", version = "0.2" }
+repame-anim = { path = "../../Repos/repame/crates/repame-anim", version = "0.2" }
+repame-sprite = { path = "../../Repos/repame/crates/repame-sprite", version = "0.2" }
+repame-atlas = { path = "../../Repos/repame/crates/repame-atlas", version = "0.2" }
+repame-fx = { path = "../../Repos/repame/crates/repame-fx", version = "0.2" }
+repame-input = { path = "../../Repos/repame/crates/repame-input", version = "0.2" }
+repame-audio = { path = "../../Repos/repame/crates/repame-audio", version = "0.2" }
+repame-rapier2d = { path = "../../Repos/repame/crates/repame-rapier2d", version = "0.2" }
+repose-core = { path = "../../Repos/repose/crates/repose-core", version = "0.30" }
+repose-ui = { path = "../../Repos/repose/crates/repose-ui", version = "0.30" }
+repose-canvas = { path = "../../Repos/repose/crates/repose-canvas", version = "0.30" }
+repose-render-wgpu = { path = "../../Repos/repose/crates/repose-render-wgpu", version = "0.30" }
+repose-text = { path = "../../Repos/repose/crates/repose-text", version = "0.30" }
+wgpu = "30"
+repose-material = { path = "../../Repos/repose/crates/repose-material", version = "0.30" }
+repose-app = { path = "../../Repos/repose/crates/repose-app", version = "0.30" }
+repose-platform = { path = "../../Repos/repose/crates/repose-platform", version = "0.30" }
+game-utils = { path = "../../Repos/game-utils/crates/game-utils" }
+log = "0.4"
 rand = "0.10"
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ron = "0.8"
+winit = "0.30"
 anyhow = "1"
-renamite-io-svg = { git = "https://github.com/mlm-games/renamite", rev = "a98ec7cf0e8977e7a9c25166cc559dd882725329" }
-renamite-io-ren = { git = "https://github.com/mlm-games/renamite", rev = "a98ec7cf0e8977e7a9c25166cc559dd882725329" }
-renamite-player = { git = "https://github.com/mlm-games/renamite", rev = "a98ec7cf0e8977e7a9c25166cc559dd882725329" }
-renamite-render-bridge = { git = "https://github.com/mlm-games/renamite", rev = "a98ec7cf0e8977e7a9c25166cc559dd882725329" }
-renamite-render-offscreen = { git = "https://github.com/mlm-games/renamite", rev = "a98ec7cf0e8977e7a9c25166cc559dd882725329" }
-renamite-behavior-common = { git = "https://github.com/mlm-games/renamite", rev = "a98ec7cf0e8977e7a9c25166cc559dd882725329" }
-renamite-model = { git = "https://github.com/mlm-games/renamite", rev = "a98ec7cf0e8977e7a9c25166cc559dd882725329" }
-bevy_rapier2d = { package = "bevy_rapier2d", git = "https://github.com/mlm-games/bevy_rapier", rev = "192f723fd9a5e1f94da5fbe1a5c20b6e76e13bd2", optional = true, default-features = false, features = [
-    "dim2",
-] }
+renamite-io-svg = { path = "../../Repos/renamite/crates/renamite-io-svg" }
+renamite-io-ren = { path = "../../Repos/renamite/crates/renamite-io-ren" }
+renamite-player = { path = "../../Repos/renamite/crates/renamite-player" }
+renamite-render-bridge = { path = "../../Repos/renamite/crates/renamite-render-bridge" }
+renamite-render-offscreen = { path = "../../Repos/renamite/crates/renamite-render-offscreen" }
+renamite-behavior-common = { path = "../../Repos/renamite/crates/renamite-behavior-common" }
+renamite-model = { path = "../../Repos/renamite/crates/renamite-model" }
 # Optional big-game crates (pull in bevy-0.19)
 # leafwing-input-manager = { version = "0.14", optional = true, default-features = false, features = [] }
 # bevy_hanabi = { version = "0.14", optional = true, default-features = false, features = ["2d"] }
@@ -107,11 +83,6 @@ getrandom_03 = { version = "0.3", features = [
     "wasm_js",
 ], package = "getrandom" }
 getrandom_02 = { version = "0.2", features = ["js"], package = "getrandom" }
-
-[package.metadata.android]
-package = "com.game.floppy_warriors"
-apk_name = "floppy_warriors"
-features = ["bevy/android-native-activity"]
 
 [package.metadata.android.sdk]
 min_sdk_version = 26
@@ -139,10 +110,17 @@ inherits = "release"
 opt-level = "s"
 strip = "debuginfo"
 
-# [patch.crates-io]
-# repose-core = { path = "/home/ymsr/Documents/Repos/repose/crates/repose-core" }
-# repose-ui = { path = "/home/ymsr/Documents/Repos/repose/crates/repose-ui" }
-# repose-material = { path = "/home/ymsr/Documents/Repos/repose/crates/repose-material" }
-# repose-render-wgpu = { path = "/home/ymsr/Documents/Repos/repose/crates/repose-render-wgpu" }
-# repose-app = { path = "/home/ymsr/Documents/Repos/repose/crates/repose-app" }
-# repose-text = { path = "/home/ymsr/Documents/Repos/repose/crates/repose-text" }
+[patch.crates-io]
+repose-core = { path = "../../Repos/repose/crates/repose-core" }
+repose-ui = { path = "../../Repos/repose/crates/repose-ui" }
+repose-canvas = { path = "../../Repos/repose/crates/repose-canvas" }
+repose-render-wgpu = { path = "../../Repos/repose/crates/repose-render-wgpu" }
+repose-text = { path = "../../Repos/repose/crates/repose-text" }
+repose-app = { path = "../../Repos/repose/crates/repose-app" }
+repose-platform = { path = "../../Repos/repose/crates/repose-platform" }
+repose-tree = { path = "../../Repos/repose/crates/repose-tree" }
+repose-devtools = { path = "../../Repos/repose/crates/repose-devtools" }
+repose-navigation = { path = "../../Repos/repose/crates/repose-navigation" }
+repose-material = { path = "../../Repos/repose/crates/repose-material" }
+repose-docking = { path = "../../Repos/repose/crates/repose-docking" }
+repose-macros = { path = "../../Repos/repose/crates/repose-macros" }
