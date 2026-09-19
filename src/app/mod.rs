@@ -97,6 +97,7 @@ impl App {
             .insert_resource(crate::sim::state::GameOverFlushed::default());
         sim.world
             .insert_resource(crate::sim::title_demo::DemoRespawn::default());
+        sim.world.insert_resource(crate::ui::UiActions::default());
         sim.world.init_resource::<repame_fx::Trauma>();
         sim.world.init_resource::<repame_fx::Flash>();
         repame_rapier2d::init_world(&mut sim.world, glam::Vec2::new(0.0, -980.0), 20.0);
@@ -418,7 +419,7 @@ impl App {
         if self.state == AppState::Splash {
             self.splash_timer -= dt.as_secs_f32();
             if self.splash_timer <= 0.0 {
-                self.state = AppState::Title;
+                self.goto_title();
             }
             return;
         }

@@ -98,7 +98,7 @@ pub fn compose_root(
     let content = match st.phase {
         AppState::Splash => splash_ui(),
         AppState::Loading => loading_ui(&st),
-        AppState::Title => ZStack(Modifier::new().fill_max_size()).child((
+        AppState::Title => ZStack(Modifier::new().fill_max_size().hit_passthrough()).child((
             title_ui(&st, actions.clone()),
             AnimatedVisibility(
                 st.overlay == OverlayMenu::Settings,
@@ -295,22 +295,15 @@ fn title_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
 
     Column(
         Modifier::new()
-            .fill_max_size()
-            .justify_content(JustifyContent::CENTER)
+            .width(Dp(460.0))
+            .align_self(AlignSelf::CENTER)
+            .padding(Dp(28.0))
+            .background(RColor::from_rgba(8, 8, 14, 150))
+            .clip_rounded(Dp(18.0))
+            .border(Dp(2.0), col(90, 90, 110), Dp(18.0))
             .align_items(AlignItems::CENTER),
     )
-    .child(
-        Column(
-            Modifier::new()
-                .width(Dp(460.0))
-                .padding(Dp(28.0))
-                .background(RColor::from_rgba(8, 8, 14, 150))
-                .clip_rounded(Dp(18.0))
-                .border(Dp(2.0), col(90, 90, 110), Dp(18.0))
-                .align_items(AlignItems::CENTER),
-        )
-        .child(children),
-    )
+    .child(children)
 }
 
 fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
