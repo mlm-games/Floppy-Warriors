@@ -283,11 +283,17 @@ pub fn begin_run(world: &mut World) {
             tint: [0.95, 0.95, 0.98, 1.0],
         },
     );
+    if world.get_resource::<RunState>().is_none() {
+        return;
+    }
     world.resource_mut::<RunState>().player = Some(player);
     start_next_round(world);
 }
 
 pub fn start_next_round(world: &mut World) {
+    if world.get_resource::<RunState>().is_none() {
+        return;
+    }
     let mut rm = world.resource_mut::<RunState>();
     rm.round += 1;
     let round = rm.round;
@@ -306,11 +312,17 @@ pub fn start_next_round(world: &mut World) {
 pub fn spawn_enemies_system(world: &mut World) {
     let dt: f32;
     {
-        let step = world.resource::<SimStep>();
+        let step = match world.get_resource::<SimStep>() {
+            Some(v) => v,
+            None => return,
+        };
         dt = step.dt;
     }
     let (phase, active, spawned, total) = {
-        let rm = world.resource::<RunState>();
+        let rm = match world.get_resource::<RunState>() {
+            Some(v) => v,
+            None => return,
+        };
         (
             rm.phase,
             rm.active_enemy,
@@ -325,6 +337,9 @@ pub fn spawn_enemies_system(world: &mut World) {
         return;
     }
     {
+        if world.get_resource::<RunState>().is_none() {
+            return;
+        }
         let mut rm = world.resource_mut::<RunState>();
         rm.spawn_cooldown -= dt;
         if rm.spawn_cooldown > 0.0 {
@@ -334,6 +349,9 @@ pub fn spawn_enemies_system(world: &mut World) {
     let round = world.resource::<RunState>().round;
     let boss = round > 0 && round.is_multiple_of(5);
     let cfg = build_enemy_config(round, boss);
+    if world.get_resource::<RunState>().is_none() {
+        return;
+    }
     world.resource_mut::<RunState>().current_enemy_score = cfg.score_value;
     let player_x = world
         .resource::<RunState>()
@@ -403,6 +421,9 @@ pub fn spawn_enemies_system(world: &mut World) {
     };
     super::enemy_ai::configure_enemy(&mut ai, &cfg);
     world.entity_mut(enemy).insert(ai);
+    if world.get_resource::<RunState>().is_none() {
+        return;
+    }
     let mut rm = world.resource_mut::<RunState>();
     rm.enemies_spawned += 1;
     rm.active_enemy = Some(enemy);
@@ -410,6 +431,9 @@ pub fn spawn_enemies_system(world: &mut World) {
 }
 
 pub fn on_hits(world: &mut World) {
+    if world.get_resource::<HitEvents>().is_none() {
+        return;
+    }
     let hits: Vec<super::arrow::HitConfirmed> =
         std::mem::take(&mut world.resource_mut::<HitEvents>().0);
     for h in hits {
@@ -417,6 +441,9 @@ pub fn on_hits(world: &mut World) {
         if let Some(p) = player
             && h.shooter == p
         {
+            if world.get_resource::<RunState>().is_none() {
+                return;
+            }
             let mut rm = world.resource_mut::<RunState>();
             rm.damage_dealt += h.damage as u32;
             if h.headshot {
@@ -438,6 +465,9 @@ pub fn on_hits(world: &mut World) {
             let team = world.get::<WarriorRoot>(h.target).map(|w| w.team);
             if let Some(team) = team {
                 if team == Team::Enemy {
+                    if world.get_resource::<RunState>().is_none() {
+                        return;
+                    }
                     let mut rm = world.resource_mut::<RunState>();
                     rm.kills += 1;
                     rm.score += rm.current_enemy_score;
@@ -481,6 +511,9 @@ fn enter_reward(world: &mut World) {
     if world.resource::<RunState>().phase == RunPhase::Reward {
         return;
     }
+    if world.get_resource::<RunState>().is_none() {
+        return;
+    }
     world.resource_mut::<RunState>().phase = RunPhase::Reward;
     world
         .resource::<super::audio::CueQueue>()
@@ -512,6 +545,9 @@ fn enter_reward(world: &mut World) {
             min_round: 1,
             weight: 1,
         });
+    }
+    if world.get_resource::<RunState>().is_none() {
+        return;
     }
     world.resource_mut::<RunState>().reward_choices = choices;
 }
@@ -548,6 +584,9 @@ fn roll_rewards(rm: &RunStateSnapshot) -> Vec<RewardDef> {
 }
 
 fn end_run(world: &mut World, victory: bool) {
+    if world.get_resource::<RunState>().is_none() {
+        return;
+    }
     world.resource_mut::<RunState>().phase = RunPhase::GameOver;
     if victory {
         let mut rm = world.resource_mut::<RunState>();
@@ -560,6 +599,9 @@ fn end_run(world: &mut World, victory: bool) {
 }
 
 pub fn apply_reward_system(world: &mut World) {
+    if world.get_resource::<RewardPick>().is_none() {
+        return;
+    }
     let pick = world.resource_mut::<RewardPick>().0.take();
     let Some(id) = pick else { return };
     if world.resource::<RunState>().phase != RunPhase::Reward {
@@ -638,28 +680,55 @@ pub fn apply_reward_system(world: &mut World) {
             _ => {}
         }
     }
+    if world.get_resource::<RunState>().is_none() {
+        return;
+    }
     world.resource_mut::<RunState>().reward_choices.clear();
     start_next_round(world);
 }
 
 pub fn finalize_game_over_bones(world: &mut World) {
     if world.resource::<RunState>().phase != RunPhase::GameOver {
+        if world
+            .get_resource::<super::state::GameOverFlushed>()
+            .is_none()
+        {
+            return;
+        }
         world.resource_mut::<super::state::GameOverFlushed>().0 = false;
         return;
     }
     if world.resource::<super::state::GameOverFlushed>().0 {
         return;
     }
+    if world
+        .get_resource::<super::state::GameOverFlushed>()
+        .is_none()
+    {
+        return;
+    }
     world.resource_mut::<super::state::GameOverFlushed>().0 = true;
     let (victory, round, score, kills, headshots) = {
-        let rm = world.resource::<RunState>();
+        let rm = match world.get_resource::<RunState>() {
+            Some(v) => v,
+            None => return,
+        };
         (rm.victory, rm.round, rm.score, rm.kills, rm.headshots)
     };
     let earned = {
-        let save = world.resource::<SaveData>();
+        let save = match world.get_resource::<SaveData>() {
+            Some(v) => v,
+            None => return,
+        };
         super::meta::calculate_run_bones(&save, victory, round, score, kills, headshots)
     };
+    if world.get_resource::<RunState>().is_none() {
+        return;
+    }
     world.resource_mut::<RunState>().bones_earned = earned;
+    if world.get_resource::<SaveData>().is_none() {
+        return;
+    }
     let mut save = world.resource_mut::<SaveData>();
     save.bones += earned;
     save.total_runs += 1;

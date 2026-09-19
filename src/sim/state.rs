@@ -52,6 +52,9 @@ pub fn build_schedule() -> Schedule {
 
 fn tick_slowmo(world: &mut World) {
     let dt = world.resource::<SimStep>().dt;
+    if world.get_resource::<super::rounds::SlowMo>().is_none() {
+        return;
+    }
     world.resource_mut::<super::rounds::SlowMo>().tick(dt);
 }
 

@@ -345,6 +345,9 @@ pub fn demo_respawn(world: &mut World) {
             .map(|(e, _, side)| (e, side.pos, side.tint, side.other))
             .collect();
         if let Some((corpse, pos, tint, other)) = dead.into_iter().next() {
+            if world.get_resource::<DemoRespawn>().is_none() {
+                return;
+            }
             world.resource_mut::<DemoRespawn>().queued = Some(RespawnJob {
                 corpse,
                 pos,
@@ -357,12 +360,18 @@ pub fn demo_respawn(world: &mut World) {
         return;
     }
     let done = {
+        if world.get_resource::<DemoRespawn>().is_none() {
+            return;
+        }
         let mut res = world.resource_mut::<DemoRespawn>();
         let job = res.queued.as_mut().unwrap();
         job.timer -= dt;
         job.timer <= 0.0
     };
     if !done {
+        return;
+    }
+    if world.get_resource::<DemoRespawn>().is_none() {
         return;
     }
     let job = world.resource_mut::<DemoRespawn>().queued.take().unwrap();
@@ -385,7 +394,10 @@ pub fn demo_respawn(world: &mut World) {
         },
     ));
     world.despawn(job.corpse);
-    let _ = world.resource::<RunState>();
+    let _ = match world.get_resource::<RunState>() {
+        Some(v) => v,
+        None => return,
+    };
 }
 
 fn clone_root(w: &WarriorRoot) -> WarriorRoot {

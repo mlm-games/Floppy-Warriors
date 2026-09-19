@@ -74,5 +74,8 @@ pub fn step_fx(world: &mut World, dt: f32) {
             repame_fx::step_numbers(&mut commands, &mut numbers, ticks);
         },
     );
+    if world.get_resource::<super::rounds::SlowMo>().is_none() {
+        return;
+    }
     world.resource_mut::<super::rounds::SlowMo>().tick(dt);
 }

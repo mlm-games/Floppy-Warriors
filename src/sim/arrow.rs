@@ -136,7 +136,10 @@ pub fn update_arrows(world: &mut World) {
     let dt: f32;
     let phase: RunPhase;
     {
-        let step = world.resource::<SimStep>();
+        let step = match world.get_resource::<SimStep>() {
+            Some(v) => v,
+            None => return,
+        };
         dt = step.dt;
         phase = world.resource::<super::rounds::RunState>().phase;
     }
@@ -377,6 +380,9 @@ fn resolve_limb_hit(
         }
     }
     {
+        if world.get_resource::<super::rounds::SlowMo>().is_none() {
+            return;
+        }
         let mut slow = world.resource_mut::<super::rounds::SlowMo>();
         if !hit_player {
             if headshot && killed {
@@ -407,6 +413,9 @@ fn resolve_limb_hit(
         }
     }
     {
+        if world.get_resource::<super::rounds::HitEvents>().is_none() {
+            return;
+        }
         let mut hits = world.resource_mut::<super::rounds::HitEvents>();
         hits.0.push(HitConfirmed {
             shooter: arrow.shooter,

@@ -10,7 +10,10 @@ pub fn player_system(world: &mut World) {
     let dt: f32;
     let combat: bool;
     {
-        let step = world.resource::<SimStep>();
+        let step = match world.get_resource::<SimStep>() {
+            Some(v) => v,
+            None => return,
+        };
         dt = step.dt;
         combat = world.resource::<RunState>().phase == RunPhase::Combat;
     }
