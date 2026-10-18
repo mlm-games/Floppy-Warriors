@@ -20,7 +20,6 @@ use repose_ui::anim::animate_f32_from;
 use repose_ui::anim_ext::{
     AnimatedVisibility, AnimatedVisibilityConfig, EnterTransition, ExitTransition,
 };
-use repose_ui::overlay::OverlayHandle;
 use repose_ui::{Column, Row, Spacer, Text as RText, TextStyle, ViewExt, ZStack};
 
 use crate::app::{AppState, OverlayMenu};
@@ -54,11 +53,6 @@ pub enum UiAction {
     ChooseReward(usize),
 }
 
-pub struct UiBridge {
-    pub shared: Arc<Mutex<SharedUi>>,
-    pub actions: Arc<Mutex<Vec<UiAction>>>,
-}
-
 fn spacer(h: f32) -> View {
     Column(Modifier::new().height(Dp(h)).width(Dp(1.0)))
 }
@@ -87,18 +81,14 @@ fn reward_anim_config() -> AnimatedVisibilityConfig {
     }
 }
 
-pub fn compose_root(
-    overlay: OverlayHandle,
-    st: SharedUi,
-    actions: Arc<Mutex<Vec<UiAction>>>,
-) -> View {
+pub fn compose_root(st: SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let root = ZStack(Modifier::new().fill_max_size());
-    let settings_view = settings_ui(overlay, &st, actions.clone());
+    let settings_view = settings_ui(&st, actions.clone());
 
     let content = match st.phase {
         AppState::Splash => splash_ui(),
         AppState::Loading => loading_ui(&st),
-        AppState::Title => ZStack(Modifier::new().fill_max_size().hit_passthrough()).child((
+        AppState::Title => ZStack(Modifier::new().fill_max_size()).child((
             title_ui(&st, actions.clone()),
             AnimatedVisibility(
                 st.overlay == OverlayMenu::Settings,
@@ -295,15 +285,22 @@ fn title_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
 
     Column(
         Modifier::new()
-            .width(Dp(460.0))
-            .align_self(AlignSelf::CENTER)
-            .padding(Dp(28.0))
-            .background(RColor::from_rgba(8, 8, 14, 150))
-            .clip_rounded(Dp(18.0))
-            .border(Dp(2.0), col(90, 90, 110), Dp(18.0))
+            .fill_max_size()
+            .justify_content(JustifyContent::CENTER)
             .align_items(AlignItems::CENTER),
     )
-    .child(children)
+    .child(
+        Column(
+            Modifier::new()
+                .width(Dp(460.0))
+                .padding(Dp(28.0))
+                .background(RColor::from_rgba(8, 8, 14, 150))
+                .clip_rounded(Dp(18.0))
+                .border(Dp(2.0), col(90, 90, 110), Dp(18.0))
+                .align_items(AlignItems::CENTER),
+        )
+        .child(children),
+    )
 }
 
 fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
@@ -335,14 +332,12 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
             col(50, 50, 62)
         };
         let badge = if item.maxed {
-            t(tr, "maxed", "MAX")
+            t(tr, "max", "MAX")
         } else {
             format!("{} {}/{}", t(tr, "level", "Lv"), item.level, item.max_level)
         };
         let cost_label = if item.maxed {
-            t(tr, "maxed", "MAX").to_string()
-        } else if afford {
-            format!("{}: {}", t(tr, "bones", "Bones"), item.cost)
+            t(tr, "max", "MAX")
         } else {
             format!("{}: {}", t(tr, "bones", "Bones"), item.cost)
         };
@@ -397,7 +392,14 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                     Modifier::new().width(Dp(88.0)).height(Dp(38.0)),
                     move || push(&a_buy, UiAction::BuyMeta(id.clone())),
                     ButtonConfig::default(),
-                    move || RText(if item.maxed { "MAX" } else { "Buy" }).size(Sp(15.0)),
+                    move || {
+                        let label = if item.maxed {
+                            t(tr, "max", "MAX")
+                        } else {
+                            t(tr, "buy", "Buy")
+                        };
+                        RText(label).size(Sp(15.0))
+                    },
                 ),
             )),
         ))
@@ -418,7 +420,7 @@ fn bone_shop_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
         })
         .collect();
 
-    let scroll_state = remember(|| ScrollState::new());
+    let scroll_state = remember(ScrollState::new);
     let scroll_binding = match scroll_state.to_binding() {
         repose_core::scroll::ScrollBinding::Vertical(b) => b,
         _ => unreachable!(),
@@ -523,7 +525,7 @@ fn pause_panel(
         mk_button(&t(tr, "settings", "Settings"), col(70, 70, 90), move || {
             push(&a2, UiAction::OpenSettings)
         }),
-        mk_button(&t(tr, "restart", "Restart"), col(90, 90, 60), move || {
+        mk_button(&t(tr, "retry", "Retry"), col(90, 90, 60), move || {
             push(&a3, UiAction::Restart)
         }),
         mk_button(
@@ -547,7 +549,7 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
         st.reward_cards
             .iter()
             .enumerate()
-            .map(|(i, card)| reward_card(card, i, actions.clone()))
+            .map(|(i, card)| reward_card(card, i, actions.clone(), tr))
             .collect()
     };
 
@@ -582,12 +584,20 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                 .align_items(AlignItems::CENTER))
             .child((
                 reward_chip(
-                    format!("ROUND {}", st.run_round),
+                    format!(
+                        "{} {}",
+                        t(tr, "round", "ROUND").to_uppercase(),
+                        st.run_round
+                    ),
                     RColor::from_rgba(255, 210, 120, 36),
                     col(255, 220, 150),
                 ),
                 reward_chip(
-                    format!("SCORE {}", st.run_score),
+                    format!(
+                        "{} {}",
+                        t(tr, "score", "SCORE").to_uppercase(),
+                        st.run_score
+                    ),
                     RColor::from_rgba(120, 170, 255, 32),
                     col(150, 190, 255),
                 ),
@@ -610,7 +620,12 @@ fn reward_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     )
 }
 
-fn reward_card(card: &RewardCardUi, index: usize, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
+fn reward_card(
+    card: &RewardCardUi,
+    index: usize,
+    actions: Arc<Mutex<Vec<UiAction>>>,
+    tr: &std::collections::HashMap<String, String>,
+) -> View {
     let accent = rgb(card.accent_rgb);
     let soft = rgb_alpha(card.accent_rgb, 40);
     let dim_border = rgb_alpha(card.accent_rgb, 110);
@@ -803,7 +818,11 @@ fn reward_card(card: &RewardCardUi, index: usize, actions: Arc<Mutex<Vec<UiActio
                     .justify_content(JustifyContent::CENTER)
                     .align_items(AlignItems::CENTER),
             )
-            .child(RText("SELECT").size(Sp(14.0)).color(col(16, 16, 20))),
+            .child(
+                RText(t(tr, "select", "SELECT"))
+                    .size(Sp(14.0))
+                    .color(col(16, 16, 20)),
+            ),
         )),
     ))
 }
@@ -905,7 +924,7 @@ fn boss_banner_ui(st: &SharedUi) -> View {
                 .clip_rounded(Dp(10.0)),
         )
         .child(
-            RText("BOSS INCOMING")
+            RText(t(&st.translations, "boss-incoming", "BOSS INCOMING"))
                 .size(Sp(34.0))
                 .color(RColor::from_rgba(200, 120, 255, a)),
         ),
@@ -974,7 +993,7 @@ fn game_over_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
                 .size(Sp(15.0))
                 .color(col(170, 170, 180)),
             spacer(12.0),
-            mk_button(&t(tr, "restart", "Restart"), col(90, 90, 60), move || {
+            mk_button(&t(tr, "retry", "Retry"), col(90, 90, 60), move || {
                 push(&a_retry, UiAction::Restart)
             }),
             mk_button(
@@ -986,7 +1005,7 @@ fn game_over_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     )
 }
 
-fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
+fn settings_ui(st: &SharedUi, actions: Arc<Mutex<Vec<UiAction>>>) -> View {
     let a_m_down = actions.clone();
     let a_m_up = actions.clone();
     let a_s_down = actions.clone();
@@ -1001,7 +1020,6 @@ fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiA
     let tr = &st.translations;
     let lang = &st.language;
     let langs = &st.available_languages;
-    let overlay_clone = overlay.clone();
     let actions_clone = actions.clone();
 
     let menu_state: Rc<MenuState> = remember(MenuState::new);
@@ -1038,7 +1056,6 @@ fn settings_ui(overlay: OverlayHandle, st: &SharedUi, actions: Arc<Mutex<Vec<UiA
             ..Default::default()
         },
     );
-    let _ = overlay_clone;
 
     let inner = Column(
         Modifier::new()

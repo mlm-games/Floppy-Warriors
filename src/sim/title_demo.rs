@@ -4,7 +4,6 @@ use rand::RngExt;
 
 use super::arena::STAND_Y;
 use super::comps::*;
-use super::rounds::RunState;
 use super::state::SimStep;
 use super::warrior::{SpawnWarrior, spawn_warrior};
 
@@ -56,7 +55,6 @@ pub const DEMO_ARROW_DAMAGE: i32 = 14;
 pub const DEMO_HP: i32 = 46;
 
 pub fn title_demo_setup(world: &mut World) {
-    super::arena::spawn_ground(world);
     let a_pos = Vec2::new(-280.0, STAND_Y);
     let b_pos = Vec2::new(280.0, STAND_Y);
     let a = spawn_demo_warrior(world, a_pos, [0.36, 0.6, 1.0, 1.0], DEMO_HP);
@@ -96,13 +94,20 @@ pub fn title_demo_setup(world: &mut World) {
 }
 
 pub fn title_demo_teardown(world: &mut World) {
-    let demo: Vec<Entity> = world
+    let demo_roots: Vec<Entity> = world
         .query::<(Entity, &TitleDemo)>()
         .iter(world)
-        .map(|(e, _)| e)
+        .map(|(entity, _)| entity)
         .collect();
-    for e in demo {
-        world.despawn(e);
+    for root in demo_roots {
+        super::warrior::despawn_warrior(world, root);
+    }
+    let demo_arrows: Vec<Entity> = world
+        .query_filtered::<Entity, With<DemoArrow>>()
+        .iter(world)
+        .collect();
+    for entity in demo_arrows {
+        world.despawn(entity);
     }
     world.insert_resource(DemoRespawn::default());
 }
@@ -270,7 +275,7 @@ pub fn update_demo_arrows(world: &mut World) {
         .collect();
     for (arrow_e, shooter, pos, vel) in arrows {
         let prev = pos;
-        let vel = vel + Vec2::new(0.0, -DEMO_GRAVITY * dt);
+        let vel = vel + Vec2::new(0.0, DEMO_GRAVITY * dt);
         let next = prev + vel * dt;
         if let Some(mut a) = world.get_mut::<DemoArrow>(arrow_e) {
             a.velocity = vel;
@@ -305,7 +310,7 @@ pub fn update_demo_arrows(world: &mut World) {
                 }
             }
         }
-        if let Some((root, limb_e, t)) = hit {
+        if let Some((root, _limb_e, t)) = hit {
             let hit_pos = prev + (next - prev) * t;
             let dead = {
                 let mut w = world.get_mut::<WarriorRoot>(root).unwrap();
@@ -320,11 +325,10 @@ pub fn update_demo_arrows(world: &mut World) {
             }
             super::fx::spawn_burst(world, hit_pos, false);
             super::fx::spawn_damage_number(world, DEMO_ARROW_DAMAGE, hit_pos, false);
-            let _ = limb_e;
             world.despawn(arrow_e);
             continue;
         }
-        if next.y < super::arena::GROUND_TOP - 4.0 || next.x.abs() > 1000.0 || next.y > 300.0 {
+        if next.y > super::arena::GROUND_TOP + 4.0 || next.x.abs() > 1000.0 || next.y < -300.0 {
             world.despawn(arrow_e);
             continue;
         }
@@ -376,12 +380,17 @@ pub fn demo_respawn(world: &mut World) {
     }
     let job = world.resource_mut::<DemoRespawn>().queued.take().unwrap();
     world.entity_mut(job.corpse).insert(RagdollApplied);
+    let survivor = world
+        .query::<(Entity, &DemoSide)>()
+        .iter(world)
+        .find(|(entity, side)| *entity != job.corpse && side.other == job.corpse)
+        .map(|(entity, _)| entity);
     let new_root = spawn_demo_warrior(world, job.pos, job.tint, job.health);
     world.entity_mut(new_root).insert((
         DemoSide {
             pos: job.pos,
             tint: job.tint,
-            other: job.other,
+            other: survivor.unwrap_or(job.other),
         },
         DemoAi {
             aim_error: 34.0,
@@ -393,11 +402,12 @@ pub fn demo_respawn(world: &mut World) {
             aim_offset: Vec2::ZERO,
         },
     ));
-    world.despawn(job.corpse);
-    let _ = match world.get_resource::<RunState>() {
-        Some(v) => v,
-        None => return,
-    };
+    if let Some(survivor) = survivor
+        && let Some(mut side) = world.get_mut::<DemoSide>(survivor)
+    {
+        side.other = new_root;
+    }
+    super::warrior::despawn_warrior(world, job.corpse);
 }
 
 fn clone_root(w: &WarriorRoot) -> WarriorRoot {
@@ -445,7 +455,7 @@ mod tests {
     #[test]
     fn demo_spawns_two_warriors_with_ai() {
         let mut world = World::new();
-        world.insert_resource(SimStep { dt: 1.0 / 60.0 });
+        world.insert_resource(SimStep::default());
         world.insert_resource(DemoRespawn::default());
         world.insert_resource(crate::sim::audio::CueQueue::default());
         title_demo_setup(&mut world);
@@ -460,7 +470,7 @@ mod tests {
     #[test]
     fn demo_ai_starts_drawing_after_decision() {
         let mut world = World::new();
-        world.insert_resource(SimStep { dt: 1.0 / 60.0 });
+        world.insert_resource(SimStep::default());
         world.insert_resource(crate::sim::audio::CueQueue::default());
         title_demo_setup(&mut world);
         let first: Entity = world
@@ -478,7 +488,7 @@ mod tests {
     #[test]
     fn demo_death_queues_respawn() {
         let mut world = World::new();
-        world.insert_resource(SimStep { dt: 1.0 / 60.0 });
+        world.insert_resource(SimStep::default());
         world.insert_resource(DemoRespawn::default());
         title_demo_setup(&mut world);
         let first: Entity = world

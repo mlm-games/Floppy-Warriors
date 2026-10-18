@@ -33,50 +33,38 @@ dev_native = ["dev"]
 # kira_audio = ["dep:bevy_kira_audio"]
 
 [dependencies]
-bevy_ecs = "0.19"
+# Direct dep: bevy derive macros expand to `bevy_ecs::` paths, so every
+# game crate names it explicitly. Must unify with repame-sim's 0.20.
+bevy_ecs = "0.20"
+# Same glam as repame: shared math types must unify to one version.
 glam = "0.33"
-repame-sim = { path = "../../Repos/repame/crates/repame-sim", version = "0.2" }
-repame-shell = { path = "../../Repos/repame/crates/repame-shell", version = "0.2" }
-repame-anim = { path = "../../Repos/repame/crates/repame-anim", version = "0.2" }
-repame-sprite = { path = "../../Repos/repame/crates/repame-sprite", version = "0.2" }
-repame-atlas = { path = "../../Repos/repame/crates/repame-atlas", version = "0.2" }
-repame-fx = { path = "../../Repos/repame/crates/repame-fx", version = "0.2" }
-repame-input = { path = "../../Repos/repame/crates/repame-input", version = "0.2" }
-repame-audio = { path = "../../Repos/repame/crates/repame-audio", version = "0.2" }
-repame-rapier2d = { path = "../../Repos/repame/crates/repame-rapier2d", version = "0.2" }
-repose-core = { path = "../../Repos/repose/crates/repose-core", version = "0.30" }
-repose-ui = { path = "../../Repos/repose/crates/repose-ui", version = "0.30" }
-repose-canvas = { path = "../../Repos/repose/crates/repose-canvas", version = "0.30" }
-repose-render-wgpu = { path = "../../Repos/repose/crates/repose-render-wgpu", version = "0.30" }
-repose-text = { path = "../../Repos/repose/crates/repose-text", version = "0.30" }
-wgpu = "30"
-repose-material = { path = "../../Repos/repose/crates/repose-material", version = "0.30" }
-repose-app = { path = "../../Repos/repose/crates/repose-app", version = "0.30" }
-repose-platform = { path = "../../Repos/repose/crates/repose-platform", version = "0.30" }
-game-utils = { path = "../../Repos/game-utils/crates/game-utils" }
+repame-sim = "0.3.29"
+repame-shell = "0.3.29"
+repame-view2d = "0.3.29"
+repame-atlas = "0.3.29"
+repame-fx = "0.3.29"
+repame-input = "0.3.29"
+repame-audio = "0.3.29"
+repame-rapier2d = "0.3.29"
+repose-core = "0.31"
+repose-ui = "0.31"
+repose-material = "0.31"
+repose-render-wgpu = "0.31"
+game-utils = "0.4"
 log = "0.4"
+web-time = "1"
+# PNG decode for atlas uploads (repame ships no image dep; the game decodes
+# its own pixels per repame-atlas docs). Pinned to the cached 0.25 line.
+image = { version = "0.25", default-features = false, features = ["png"] }
 rand = "0.10"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-ron = "0.8"
-winit = "0.30"
 anyhow = "1"
-renamite-io-svg = { path = "../../Repos/renamite/crates/renamite-io-svg" }
-renamite-io-ren = { path = "../../Repos/renamite/crates/renamite-io-ren" }
-renamite-player = { path = "../../Repos/renamite/crates/renamite-player" }
-renamite-render-bridge = { path = "../../Repos/renamite/crates/renamite-render-bridge" }
-renamite-render-offscreen = { path = "../../Repos/renamite/crates/renamite-render-offscreen" }
-renamite-behavior-common = { path = "../../Repos/renamite/crates/renamite-behavior-common" }
-renamite-model = { path = "../../Repos/renamite/crates/renamite-model" }
-# Optional big-game crates (pull in bevy-0.19)
-# leafwing-input-manager = { version = "0.14", optional = true, default-features = false, features = [] }
-# bevy_hanabi = { version = "0.14", optional = true, default-features = false, features = ["2d"] }
-# bevy_pkv = { version = "0.13", optional = true }
-# bevy_asset_loader = { version = "0.22", optional = true, default-features = false, features = ["standard"] }
-# bevy-inspector-egui = { version = "0.28", optional = true }
-# bevy_kira_audio = { version = "0.18", optional = true }
 
-[target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies]
+[target.'cfg(target_os = "android")'.dependencies]
+winit = "0.30"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2"
 getrandom = { version = "0.4", features = ["wasm_js"] }
 getrandom_03 = { version = "0.3", features = [
@@ -109,18 +97,3 @@ lto = "thin"
 inherits = "release"
 opt-level = "s"
 strip = "debuginfo"
-
-[patch.crates-io]
-repose-core = { path = "../../Repos/repose/crates/repose-core" }
-repose-ui = { path = "../../Repos/repose/crates/repose-ui" }
-repose-canvas = { path = "../../Repos/repose/crates/repose-canvas" }
-repose-render-wgpu = { path = "../../Repos/repose/crates/repose-render-wgpu" }
-repose-text = { path = "../../Repos/repose/crates/repose-text" }
-repose-app = { path = "../../Repos/repose/crates/repose-app" }
-repose-platform = { path = "../../Repos/repose/crates/repose-platform" }
-repose-tree = { path = "../../Repos/repose/crates/repose-tree" }
-repose-devtools = { path = "../../Repos/repose/crates/repose-devtools" }
-repose-navigation = { path = "../../Repos/repose/crates/repose-navigation" }
-repose-material = { path = "../../Repos/repose/crates/repose-material" }
-repose-docking = { path = "../../Repos/repose/crates/repose-docking" }
-repose-macros = { path = "../../Repos/repose/crates/repose-macros" }

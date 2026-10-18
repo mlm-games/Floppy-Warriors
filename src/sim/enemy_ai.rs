@@ -150,24 +150,21 @@ pub fn enemy_ai_system(world: &mut World) {
     }
     let player = world.resource::<RunState>().player;
     let Some(player_e) = player else { return };
-    let (player_dead, player_pos) = {
+    let player_pos = {
         let Some(w) = world.get::<WarriorRoot>(player_e) else {
             return;
         };
         if w.is_dead {
             return;
         }
-        let pos = world
+        world
             .get::<repame_rapier2d::BodySnapshot2d>(w.torso)
             .map(|s| s.pos)
-            .unwrap_or(Vec2::ZERO);
-        (w.is_dead, pos)
+            .unwrap_or(Vec2::ZERO)
     };
-    let _ = player_dead;
     let enemies: Vec<(Entity, WarriorRoot, BowState, EnemyAi)> = {
         let mut q = world.query::<(Entity, &WarriorRoot, &BowState, &EnemyAi)>();
         q.iter(world)
-            .filter(|(_, _, _, _)| true)
             .map(|(e, w, b, ai)| {
                 (
                     e,
@@ -220,18 +217,11 @@ pub fn enemy_ai_system(world: &mut World) {
             }
             if draw_timer <= 0.0 {
                 let spawn_origin = origin + Vec2::from_angle(angle) * 36.0;
-                let bow = BowState {
-                    drawing: true,
-                    draw_power,
-                };
-                super::arrow::fire_from_bow(
-                    world,
-                    enemy_entity,
-                    spawn_origin,
-                    angle,
-                    &mut Vec::new(),
-                );
-                let _ = bow;
+                let mut cues = Vec::new();
+                super::arrow::fire_from_bow(world, enemy_entity, spawn_origin, angle, &mut cues);
+                if let Some(queue) = world.get_resource::<super::audio::CueQueue>() {
+                    queue.0.lock().unwrap().extend(cues);
+                }
                 if let Some(mut b) = world.get_mut::<BowState>(enemy_entity) {
                     b.drawing = false;
                     b.draw_power = 0.0;

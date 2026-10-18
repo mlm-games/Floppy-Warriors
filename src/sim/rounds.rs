@@ -5,7 +5,8 @@ use std::collections::HashMap;
 use super::comps::*;
 use super::enemy_ai::build_enemy_config;
 use super::save::SaveData;
-use super::warrior::{CLOTH_TINT, SKIN_DARK_TINT, SKIN_TINT, SpawnWarrior, spawn_warrior};
+use super::state::SimStep;
+use super::warrior::{SpawnWarrior, spawn_warrior};
 
 pub const FINAL_ROUND: u32 = 15;
 
@@ -64,6 +65,14 @@ impl SlowMo {
         self.remaining > 0.0
     }
 
+    pub fn time_scale(&self) -> f32 {
+        if self.active() {
+            self.scale.clamp(0.05, 1.0)
+        } else {
+            1.0
+        }
+    }
+
     pub fn tick(&mut self, dt: f32) {
         if self.remaining > 0.0 {
             self.remaining = (self.remaining - dt).max(0.0);
@@ -93,13 +102,8 @@ impl Default for GroundLine {
 
 impl GroundLine {
     pub fn center_y(self) -> f32 {
-        self.top - self.half_height
+        self.top + self.half_height
     }
-}
-
-#[derive(Resource, Clone, Copy, Debug, Default)]
-pub struct SimStep {
-    pub dt: f32,
 }
 
 #[derive(Clone, Debug)]
@@ -294,6 +298,14 @@ pub fn start_next_round(world: &mut World) {
     if world.get_resource::<RunState>().is_none() {
         return;
     }
+    super::arrow::clear_arrows(world);
+    let player = world.resource::<RunState>().player;
+    if let Some(player) = player
+        && let Some(mut bow) = world.get_mut::<super::comps::BowState>(player)
+    {
+        bow.drawing = false;
+        bow.draw_power = 0.0;
+    }
     let mut rm = world.resource_mut::<RunState>();
     rm.round += 1;
     let round = rm.round;
@@ -363,11 +375,18 @@ pub fn spawn_enemies_system(world: &mut World) {
                 .map(|s| s.pos.x)
         })
         .unwrap_or(-350.0);
-    let spawn_x = if player_x < 0.0 {
-        rand::RngExt::random_range(&mut rand::rng(), 250.0..480.0)
-    } else {
-        rand::RngExt::random_range(&mut rand::rng(), -480.0..-250.0)
-    };
+    let half_width = world
+        .get_resource::<super::arena::ViewExtent>()
+        .map(|extent| extent.half_width)
+        .unwrap_or(super::arena::BASE_HALF_WIDTH)
+        .max(320.0);
+    let home_x = super::arena::CAMERA_HOME.x;
+    let (near, far) = (half_width / 6.0, half_width * 0.75);
+    let side = if player_x < home_x { 1.0 } else { -1.0 };
+    let spawn_x = (home_x + side * rand::RngExt::random_range(&mut rand::rng(), near..far)).clamp(
+        -super::arena::GROUND_HALF_WIDTH + 60.0,
+        super::arena::GROUND_HALF_WIDTH - 60.0,
+    );
     let mut enemy_mods = CombatMods {
         damage_mult: cfg.damage_mult,
         draw_speed_mult: cfg.draw_speed_mult,
@@ -427,7 +446,6 @@ pub fn spawn_enemies_system(world: &mut World) {
     let mut rm = world.resource_mut::<RunState>();
     rm.enemies_spawned += 1;
     rm.active_enemy = Some(enemy);
-    let _ = (SKIN_TINT, SKIN_DARK_TINT, CLOTH_TINT);
 }
 
 pub fn on_hits(world: &mut World) {
@@ -437,13 +455,13 @@ pub fn on_hits(world: &mut World) {
     let hits: Vec<super::arrow::HitConfirmed> =
         std::mem::take(&mut world.resource_mut::<HitEvents>().0);
     for h in hits {
+        if world.resource::<RunState>().phase != RunPhase::Combat {
+            break;
+        }
         let player = world.resource::<RunState>().player;
         if let Some(p) = player
             && h.shooter == p
         {
-            if world.get_resource::<RunState>().is_none() {
-                return;
-            }
             let mut rm = world.resource_mut::<RunState>();
             rm.damage_dealt += h.damage as u32;
             if h.headshot {
@@ -465,28 +483,29 @@ pub fn on_hits(world: &mut World) {
             let team = world.get::<WarriorRoot>(h.target).map(|w| w.team);
             if let Some(team) = team {
                 if team == Team::Enemy {
-                    if world.get_resource::<RunState>().is_none() {
-                        return;
-                    }
-                    let mut rm = world.resource_mut::<RunState>();
-                    rm.kills += 1;
-                    rm.score += rm.current_enemy_score;
-                    rm.enemies_remaining = rm.enemies_remaining.saturating_sub(1);
-                    rm.active_enemy = None;
-                    if rm.enemies_remaining == 0 {
-                        if rm.round >= FINAL_ROUND && rm.round.is_multiple_of(FINAL_ROUND) {
-                            if !rm.victory_claimed {
-                                rm.victory = true;
-                                rm.victory_claimed = true;
-                                rm.score += 250;
+                    let wave_cleared = {
+                        let mut rm = world.resource_mut::<RunState>();
+                        rm.kills += 1;
+                        rm.score += rm.current_enemy_score;
+                        rm.enemies_remaining = rm.enemies_remaining.saturating_sub(1);
+                        rm.active_enemy = None;
+                        if rm.enemies_remaining == 0 {
+                            if rm.round >= FINAL_ROUND && rm.round.is_multiple_of(FINAL_ROUND) {
+                                if !rm.victory_claimed {
+                                    rm.victory = true;
+                                    rm.victory_claimed = true;
+                                    rm.score += 250;
+                                }
+                                rm.loop_count += 1;
                             }
-                            rm.loop_count += 1;
-                            enter_reward(world);
+                            true
                         } else {
-                            enter_reward(world);
+                            rm.spawn_cooldown = 1.0;
+                            false
                         }
-                    } else {
-                        rm.spawn_cooldown = 1.0;
+                    };
+                    if wave_cleared {
+                        enter_reward(world);
                     }
                 } else {
                     super::audio::push_cue(
@@ -507,14 +526,20 @@ pub fn on_hits(world: &mut World) {
     }
 }
 
-fn enter_reward(world: &mut World) {
-    if world.resource::<RunState>().phase == RunPhase::Reward {
-        return;
-    }
-    if world.get_resource::<RunState>().is_none() {
+pub(crate) fn enter_reward(world: &mut World) {
+    if world.get_resource::<RunState>().is_none()
+        || world.resource::<RunState>().phase != RunPhase::Combat
+    {
         return;
     }
     world.resource_mut::<RunState>().phase = RunPhase::Reward;
+    super::arrow::clear_arrows(world);
+    if let Some(player) = world.resource::<RunState>().player
+        && let Some(mut bow) = world.get_mut::<super::comps::BowState>(player)
+    {
+        bow.drawing = false;
+        bow.draw_power = 0.0;
+    }
     world
         .resource::<super::audio::CueQueue>()
         .clone()
@@ -720,7 +745,7 @@ pub fn finalize_game_over_bones(world: &mut World) {
             Some(v) => v,
             None => return,
         };
-        super::meta::calculate_run_bones(&save, victory, round, score, kills, headshots)
+        super::meta::calculate_run_bones(save, victory, round, score, kills, headshots)
     };
     if world.get_resource::<RunState>().is_none() {
         return;
@@ -738,8 +763,8 @@ pub fn finalize_game_over_bones(world: &mut World) {
         save.total_victories += 1;
     }
     save.high_score = save.high_score.max(score);
-    save.last_played_unix = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
+    save.last_played_unix = web_time::SystemTime::now()
+        .duration_since(web_time::UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
 }
@@ -762,6 +787,8 @@ impl RunState {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::sim::arena;
+    use crate::sim::warrior;
 
     fn world_with_round(round: u32) -> World {
         let mut world = World::new();
@@ -776,6 +803,150 @@ mod tests {
     fn roll_rewards_in(world: &World) -> Vec<RewardDef> {
         let rm = world.resource::<RunState>();
         roll_rewards(&rm.clone_state())
+    }
+
+    #[test]
+    fn enemy_spawns_inside_the_published_view_extent() {
+        for half_width in [320.0f32, 640.0, 1280.0] {
+            let mut world = World::new();
+            world.insert_resource(SimStep::default());
+            world.insert_resource(crate::sim::audio::CueQueue::default());
+            world.insert_resource(crate::sim::state::GameOverFlushed::default());
+            world.insert_resource(crate::sim::input::PlayerInput::default());
+            world.insert_resource(HitEvents::default());
+            world.insert_resource(GroundLine::default());
+            world.insert_resource(arena::ViewExtent {
+                half_width,
+                half_height: 360.0,
+            });
+            world.insert_resource(RunState {
+                round: 1,
+                ..Default::default()
+            });
+            start_next_round(&mut world);
+            let player = warrior::spawn_warrior(
+                &mut world,
+                warrior::SpawnWarrior {
+                    translation: Vec2::new(0.0, arena::STAND_Y),
+                    team: Team::Player,
+                    mods: CombatMods::default(),
+                    base_hp: 100,
+                    scale: 1.0,
+                    tint: [1.0, 1.0, 1.0, 1.0],
+                },
+            );
+            world.resource_mut::<RunState>().player = Some(player);
+
+            let mut schedule = crate::sim::state::build_schedule();
+            let mut enemy_x = f32::NAN;
+            for _ in 0..40 {
+                schedule.run(&mut world);
+                if enemy_x.is_nan()
+                    && let Some(enemy) = world.resource::<RunState>().active_enemy
+                {
+                    enemy_x = world
+                        .get::<WarriorRoot>(enemy)
+                        .and_then(|w| world.get::<repame_rapier2d::BodySnapshot2d>(w.torso))
+                        .map(|s| s.pos.x)
+                        .unwrap_or(f32::NAN);
+                }
+            }
+            assert!(enemy_x.is_finite(), "enemy spawns");
+            let home = arena::CAMERA_HOME.x;
+            let offset = enemy_x - home;
+            assert!(
+                offset > 0.0
+                    && offset >= half_width / 6.0 - 40.0
+                    && offset <= half_width * 0.75 + 40.0
+                    && enemy_x.abs() < arena::GROUND_HALF_WIDTH,
+                "half_width {half_width}: enemy spawned at x={enemy_x} (home {home})"
+            );
+        }
+    }
+
+    #[test]
+    fn combat_schedule_spawns_kills_and_advances_rounds() {
+        let mut world = World::new();
+        world.insert_resource(SimStep::default());
+        world.insert_resource(crate::sim::audio::CueQueue::default());
+        world.insert_resource(crate::sim::state::GameOverFlushed::default());
+        world.insert_resource(crate::sim::input::PlayerInput::default());
+        world.insert_resource(HitEvents::default());
+        world.insert_resource(RunState {
+            round: 3,
+            ..Default::default()
+        });
+        world.insert_resource(GroundLine::default());
+        start_next_round(&mut world);
+        let player = warrior::spawn_warrior(
+            &mut world,
+            warrior::SpawnWarrior {
+                translation: Vec2::new(0.0, arena::STAND_Y),
+                team: Team::Player,
+                mods: CombatMods::default(),
+                base_hp: 100,
+                scale: 1.0,
+                tint: [1.0, 1.0, 1.0, 1.0],
+            },
+        );
+        world.resource_mut::<RunState>().player = Some(player);
+        assert_eq!(world.resource::<RunState>().round, 4);
+        assert_eq!(world.resource::<RunState>().enemies_total, 2);
+
+        let mut schedule = crate::sim::state::build_schedule();
+        for _ in 0..40 {
+            schedule.run(&mut world);
+        }
+        let first = world.resource::<RunState>().active_enemy;
+        assert_eq!(world.resource::<RunState>().enemies_spawned, 1);
+        let first = first.expect("first enemy spawns");
+
+        world
+            .resource_mut::<HitEvents>()
+            .0
+            .push(crate::sim::arrow::HitConfirmed {
+                shooter: player,
+                target: first,
+                damage: 999,
+                killed: true,
+                headshot: false,
+            });
+        for _ in 0..40 {
+            schedule.run(&mut world);
+        }
+        let rm = world.resource::<RunState>();
+        assert_eq!(rm.kills, 1);
+        assert_eq!(rm.enemies_remaining, 1);
+        assert_eq!(rm.enemies_spawned, 1);
+        assert!(rm.active_enemy.is_none());
+
+        for _ in 0..120 {
+            schedule.run(&mut world);
+        }
+        let second = world.resource::<RunState>().active_enemy;
+        assert_eq!(world.resource::<RunState>().enemies_spawned, 2);
+        let second = second.expect("second enemy spawns after the kill");
+
+        world
+            .resource_mut::<HitEvents>()
+            .0
+            .push(crate::sim::arrow::HitConfirmed {
+                shooter: player,
+                target: second,
+                damage: 999,
+                killed: true,
+                headshot: false,
+            });
+        schedule.run(&mut world);
+        let rm = world.resource::<RunState>();
+        assert_eq!(rm.phase, RunPhase::Reward);
+        assert_eq!(
+            world
+                .query_filtered::<Entity, With<crate::sim::comps::Arrow>>()
+                .iter(&world)
+                .count(),
+            0
+        );
     }
 
     #[test]

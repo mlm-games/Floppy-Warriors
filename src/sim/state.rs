@@ -1,21 +1,25 @@
 use bevy_ecs::prelude::*;
 use glam::Vec2;
-use repame_rapier2d::{BodySnapshot2d, ImpulseRequest, RapierBody2d};
-use std::collections::{HashMap, HashSet};
+use repame_rapier2d::BodySnapshot2d;
 
-use super::arena::STAND_Y;
 use super::comps::*;
 use super::rounds::RunPhase;
 use super::rounds::RunState;
 
 #[derive(Resource, Clone, Copy, Debug)]
 pub struct SimStep {
+    /// Gameplay delta: fixed step scaled by slow motion.
     pub dt: f32,
+    /// Unscaled fixed step, for effect recovery that must not stretch.
+    pub raw: f32,
 }
 
 impl Default for SimStep {
     fn default() -> Self {
-        Self { dt: 1.0 / 60.0 }
+        Self {
+            dt: 1.0 / 60.0,
+            raw: 1.0 / 60.0,
+        }
     }
 }
 
@@ -51,7 +55,7 @@ pub fn build_schedule() -> Schedule {
 }
 
 fn tick_slowmo(world: &mut World) {
-    let dt = world.resource::<SimStep>().dt;
+    let dt = world.resource::<SimStep>().raw;
     if world.get_resource::<super::rounds::SlowMo>().is_none() {
         return;
     }
@@ -63,32 +67,14 @@ fn tick_dying_fade(world: &mut World) {
     let fading: Vec<(Entity, f32)> = world
         .query::<(Entity, &DyingFade)>()
         .iter(world)
-        .map(|(e, f)| (e, f.0))
+        .map(|(entity, fade)| (entity, fade.0))
         .collect();
-    let roots: Vec<(Entity, Entity)> = world
-        .query::<(Entity, &WarriorLimb)>()
-        .iter(world)
-        .map(|(e, l)| (e, l.root))
-        .collect();
-    for (e, remaining) in fading {
+    for (entity, remaining) in fading {
         let next = remaining - dt;
         if next <= 0.0 {
-            let stuck: Vec<Entity> = world
-                .query::<(Entity, &Arrow)>()
-                .iter(world)
-                .filter(|(_, a)| {
-                    a.stuck_to.is_some_and(|p| {
-                        roots.iter().find(|(le, _)| *le == p).map(|(_, r)| *r) == Some(e)
-                    })
-                })
-                .map(|(ae, _)| ae)
-                .collect();
-            for ae in stuck {
-                world.despawn(ae);
-            }
-            world.despawn(e);
-        } else if let Some(mut f) = world.get_mut::<DyingFade>(e) {
-            f.0 = next;
+            super::warrior::despawn_warrior(world, entity);
+        } else if let Some(mut fade) = world.get_mut::<DyingFade>(entity) {
+            fade.0 = next;
         }
     }
 }
@@ -185,15 +171,4 @@ pub fn diag_anomaly_lines(world: &mut World) -> Vec<String> {
         }
     }
     out
-}
-
-#[allow(dead_code)]
-pub fn touch_unused_imports(
-    _a: &HashMap<String, u32>,
-    _b: &HashSet<String>,
-    _c: &RapierBody2d,
-    _d: &ImpulseRequest,
-    _e: Vec2,
-) {
-    let _ = STAND_Y;
 }

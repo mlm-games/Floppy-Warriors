@@ -25,9 +25,9 @@ pub fn spawn_burst(world: &mut World, pos: Vec2, headshot: bool) {
             base: 105.0,
             range: 55.0,
         },
-        lifetime_ticks: Jittered {
-            base: 35.0,
-            range: 15.0,
+        lifetime_secs: Jittered {
+            base: 0.35,
+            range: 0.15,
         },
         size_px: Jittered {
             base: 5.0,
@@ -56,26 +56,29 @@ pub fn spawn_burst(world: &mut World, pos: Vec2, headshot: bool) {
 }
 
 pub fn step_fx(world: &mut World, dt: f32) {
-    let ticks = (dt * 100.0).round() as i32;
+    step_visual_fx(world, dt);
+    if world.get_resource::<super::rounds::SlowMo>().is_none() {
+        return;
+    }
+    world.resource_mut::<super::rounds::SlowMo>().tick(dt);
+}
+
+pub fn step_visual_fx(world: &mut World, dt: f32) {
     if let Some(mut trauma) = world.get_resource_mut::<repame_fx::Trauma>() {
-        trauma.decay(ticks);
+        trauma.decay_secs(dt);
     }
     if let Some(mut flash) = world.get_resource_mut::<repame_fx::Flash>() {
-        flash.tick(ticks);
+        flash.tick_secs(dt);
     }
     let _ = world.run_system_once(
         move |mut commands: Commands, mut particles: Query<(Entity, &mut repame_fx::Particle)>| {
-            repame_fx::step_particles(&mut commands, &mut particles, ticks);
+            repame_fx::step_particles_secs(&mut commands, &mut particles, dt);
         },
     );
     let _ = world.run_system_once(
         move |mut commands: Commands,
               mut numbers: Query<(Entity, &mut repame_fx::DamageNumber)>| {
-            repame_fx::step_numbers(&mut commands, &mut numbers, ticks);
+            repame_fx::step_numbers_secs(&mut commands, &mut numbers, dt);
         },
     );
-    if world.get_resource::<super::rounds::SlowMo>().is_none() {
-        return;
-    }
-    world.resource_mut::<super::rounds::SlowMo>().tick(dt);
 }

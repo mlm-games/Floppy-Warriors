@@ -2,8 +2,6 @@ use std::sync::{Arc, Mutex};
 
 use bevy_ecs::prelude::*;
 
-use crate::sim::rounds::RunState;
-
 use crate::app::{AppState, OverlayMenu};
 
 #[derive(Clone, Debug)]
@@ -143,17 +141,14 @@ pub fn drain_actions(world: &mut World) -> Vec<crate::app::UiAction> {
     }
 }
 
-pub fn push_action(world: &mut World, action: crate::app::UiAction) {
-    if let Some(actions) = world.get_resource::<UiActions>() {
-        actions.0.lock().unwrap().push(action);
-    }
-}
-
-pub fn sync_shared_ui(app: &mut crate::app::App, ui: &mut SharedUi) {
+pub fn sync_shared_ui(app: &mut crate::app::App, ui: &mut SharedUi, dt: f32) {
+    let loading_progress = app.load_progress();
+    let transition_alpha = app.fade;
     let world = &mut app.sim.world;
     ui.phase = app.state;
     ui.paused = app.paused;
     ui.overlay = app.overlay;
+    ui.loading_progress = loading_progress;
     let save = world.resource::<crate::sim::save::SaveData>().clone();
     let rm = world.resource::<crate::sim::rounds::RunState>().clone();
     ui.high_score = save.high_score;
@@ -161,6 +156,8 @@ pub fn sync_shared_ui(app: &mut crate::app::App, ui: &mut SharedUi) {
     ui.best_round = save.best_round;
     ui.total_runs = save.total_runs;
     ui.total_victories = save.total_victories;
+    ui.offline_bones = app.offline_bones;
+    ui.saved_language = save.settings.language.clone();
     ui.score = rm.score;
     ui.bone_shop_items = crate::sim::meta::CATALOG
         .iter()
@@ -182,12 +179,10 @@ pub fn sync_shared_ui(app: &mut crate::app::App, ui: &mut SharedUi) {
         })
         .collect();
     let levels = world.resource::<crate::sim::audio::AudioLevels>();
-    if ui.overlay != OverlayMenu::Settings {
-        ui.master_vol = levels.master;
-        ui.sfx_vol = levels.sfx;
-        ui.music_vol = levels.music;
-    }
-    ui.transition_alpha = 0.0;
+    ui.master_vol = levels.master;
+    ui.sfx_vol = levels.sfx;
+    ui.music_vol = levels.music;
+    ui.transition_alpha = transition_alpha;
     if let Some(flash) = world.get_resource::<repame_fx::Flash>() {
         ui.flash_alpha = flash.rgba().map(|c| c[3]).unwrap_or(0.0);
     }
@@ -253,13 +248,16 @@ pub fn sync_shared_ui(app: &mut crate::app::App, ui: &mut SharedUi) {
         ui.draw_power = if bow.drawing { bow.draw_power } else { 0.0 };
     }
     if ui.boss_banner_timer > 0.0 {
-        ui.boss_banner_timer = (ui.boss_banner_timer - 1.0 / 60.0).max(0.0);
+        ui.boss_banner_timer = (ui.boss_banner_timer - dt).max(0.0);
     }
-    if rm.round != 0
-        && rm.round.is_multiple_of(5)
-        && rm.phase == crate::sim::rounds::RunPhase::Combat
-    {
-        ui.boss_banner_timer = 2.5;
+    if app.last_boss_round != rm.round {
+        app.last_boss_round = rm.round;
+        if rm.round != 0
+            && rm.round.is_multiple_of(5)
+            && rm.phase == crate::sim::rounds::RunPhase::Combat
+        {
+            ui.boss_banner_timer = 2.5;
+        }
     }
     ui.end_reason = if rm.phase == crate::sim::rounds::RunPhase::GameOver {
         if rm.victory {

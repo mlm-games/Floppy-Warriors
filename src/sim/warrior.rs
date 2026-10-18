@@ -1,6 +1,10 @@
 use bevy_ecs::prelude::*;
 use glam::Vec2;
-use repame_rapier2d::{BodySnapshot2d, ImpulseRequest, RapierBody2d, RapierRevolute};
+use repame_rapier2d::{
+    BodySnapshot2d, ImpulseRequest, RapierBody2d, RapierFixed, RapierPrismatic, RapierRevolute,
+    RapierRope, RapierSpring,
+};
+use std::collections::HashSet;
 use std::f32::consts::{FRAC_PI_2, FRAC_PI_4};
 
 use super::comps::*;
@@ -22,6 +26,68 @@ pub struct SpawnWarrior {
     pub base_hp: i32,
     pub scale: f32,
     pub tint: [f32; 4],
+}
+
+pub fn despawn_warrior(world: &mut World, root: Entity) {
+    let mut owned = HashSet::from([root]);
+    owned.extend(
+        world
+            .query::<(Entity, &WarriorLimb)>()
+            .iter(world)
+            .filter_map(|(entity, limb)| (limb.root == root).then_some(entity)),
+    );
+
+    let revolute: Vec<Entity> = world
+        .query::<(Entity, &RapierRevolute)>()
+        .iter(world)
+        .filter(|(_, joint)| owned.contains(&joint.parent) || owned.contains(&joint.child))
+        .map(|(entity, _)| entity)
+        .collect();
+    let fixed: Vec<Entity> = world
+        .query::<(Entity, &RapierFixed)>()
+        .iter(world)
+        .filter(|(_, joint)| owned.contains(&joint.parent) || owned.contains(&joint.child))
+        .map(|(entity, _)| entity)
+        .collect();
+    let prismatic: Vec<Entity> = world
+        .query::<(Entity, &RapierPrismatic)>()
+        .iter(world)
+        .filter(|(_, joint)| owned.contains(&joint.parent) || owned.contains(&joint.child))
+        .map(|(entity, _)| entity)
+        .collect();
+    let ropes: Vec<Entity> = world
+        .query::<(Entity, &RapierRope)>()
+        .iter(world)
+        .filter(|(_, joint)| owned.contains(&joint.parent) || owned.contains(&joint.child))
+        .map(|(entity, _)| entity)
+        .collect();
+    let springs: Vec<Entity> = world
+        .query::<(Entity, &RapierSpring)>()
+        .iter(world)
+        .filter(|(_, joint)| owned.contains(&joint.parent) || owned.contains(&joint.child))
+        .map(|(entity, _)| entity)
+        .collect();
+    let arrows: Vec<Entity> = world
+        .query::<(Entity, &Arrow)>()
+        .iter(world)
+        .filter(|(_, arrow)| arrow.stuck_to.is_some_and(|target| owned.contains(&target)))
+        .map(|(entity, _)| entity)
+        .collect();
+
+    for entity in revolute
+        .into_iter()
+        .chain(fixed)
+        .chain(prismatic)
+        .chain(ropes)
+        .chain(springs)
+        .chain(arrows)
+    {
+        world.despawn(entity);
+    }
+    for entity in owned.iter().copied().filter(|entity| *entity != root) {
+        world.despawn(entity);
+    }
+    world.despawn(root);
 }
 
 pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
@@ -93,7 +159,7 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         root,
         cfg.translation,
         LimbKind::Head,
-        Vec2::new(0.0, 28.0) * s,
+        Vec2::new(0.0, -28.0) * s,
         Vec2::new(24.0, 24.0) * s,
         0.8 * s,
         12.0 * s,
@@ -103,7 +169,7 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         root,
         cfg.translation,
         LimbKind::UpperArmL,
-        Vec2::new(-19.0, 15.0) * s,
+        Vec2::new(-19.0, -15.0) * s,
         Vec2::new(13.0, 28.0) * s,
         0.45 * s,
         8.0 * s,
@@ -113,7 +179,7 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         root,
         cfg.translation,
         LimbKind::UpperArmR,
-        Vec2::new(19.0, 15.0) * s,
+        Vec2::new(19.0, -15.0) * s,
         Vec2::new(13.0, 28.0) * s,
         0.45 * s,
         8.0 * s,
@@ -123,7 +189,7 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         root,
         cfg.translation,
         LimbKind::ArmL,
-        Vec2::new(-30.0, -8.0) * s,
+        Vec2::new(-30.0, 8.0) * s,
         Vec2::new(13.0, 38.0) * s,
         0.35 * s,
         8.0 * s,
@@ -133,7 +199,7 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         root,
         cfg.translation,
         LimbKind::ArmR,
-        Vec2::new(30.0, -8.0) * s,
+        Vec2::new(30.0, 8.0) * s,
         Vec2::new(13.0, 38.0) * s,
         0.35 * s,
         8.0 * s,
@@ -143,7 +209,7 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         root,
         cfg.translation,
         LimbKind::LegL,
-        Vec2::new(-8.0, -41.0) * s,
+        Vec2::new(-8.0, 41.0) * s,
         Vec2::new(13.0, 35.0) * s,
         0.5 * s,
         9.0 * s,
@@ -153,7 +219,7 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         root,
         cfg.translation,
         LimbKind::LegR,
-        Vec2::new(8.0, -41.0) * s,
+        Vec2::new(8.0, 41.0) * s,
         Vec2::new(13.0, 35.0) * s,
         0.5 * s,
         9.0 * s,
@@ -163,8 +229,8 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         world,
         torso,
         head,
-        Vec2::new(0.0, 24.0) * s,
-        Vec2::new(0.0, -9.0) * s,
+        Vec2::new(0.0, -24.0) * s,
+        Vec2::new(0.0, 9.0) * s,
         (0.0, 10.0, 6.0),
         [-FRAC_PI_4, FRAC_PI_4],
     );
@@ -172,8 +238,8 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         world,
         torso,
         up_arm_l,
-        Vec2::new(-14.0, 12.0) * s,
-        Vec2::new(0.0, 13.0) * s,
+        Vec2::new(-14.0, -12.0) * s,
+        Vec2::new(0.0, -13.0) * s,
         (0.0, 2.0, 1.6),
         [-FRAC_PI_2, FRAC_PI_2],
     );
@@ -181,8 +247,8 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         world,
         torso,
         up_arm_r,
-        Vec2::new(14.0, 12.0) * s,
-        Vec2::new(0.0, 13.0) * s,
+        Vec2::new(14.0, -12.0) * s,
+        Vec2::new(0.0, -13.0) * s,
         (0.0, 2.0, 1.6),
         [-FRAC_PI_2, FRAC_PI_2],
     );
@@ -190,8 +256,8 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         world,
         up_arm_l,
         arm_l,
-        Vec2::new(0.0, -13.0) * s,
-        Vec2::new(0.0, 15.0) * s,
+        Vec2::new(0.0, 13.0) * s,
+        Vec2::new(0.0, -15.0) * s,
         (0.0, 2.0, 1.6),
         [-FRAC_PI_2, FRAC_PI_2],
     );
@@ -199,8 +265,8 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         world,
         up_arm_r,
         arm_r,
-        Vec2::new(0.0, -13.0) * s,
-        Vec2::new(0.0, 15.0) * s,
+        Vec2::new(0.0, 13.0) * s,
+        Vec2::new(0.0, -15.0) * s,
         (0.0, 2.0, 1.6),
         [-FRAC_PI_2, FRAC_PI_2],
     );
@@ -208,8 +274,8 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         world,
         torso,
         leg_l,
-        Vec2::new(-8.0, -21.0) * s,
-        Vec2::new(0.0, 15.0) * s,
+        Vec2::new(-8.0, 21.0) * s,
+        Vec2::new(0.0, -15.0) * s,
         (0.0, 15.0, 10.0),
         [-HIP_LIMIT, HIP_LIMIT],
     );
@@ -217,8 +283,8 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         world,
         torso,
         leg_r,
-        Vec2::new(8.0, -21.0) * s,
-        Vec2::new(0.0, 15.0) * s,
+        Vec2::new(8.0, 21.0) * s,
+        Vec2::new(0.0, -15.0) * s,
         (0.0, 15.0, 10.0),
         [-HIP_LIMIT, HIP_LIMIT],
     );
@@ -252,7 +318,7 @@ pub fn spawn_warrior(world: &mut World, cfg: SpawnWarrior) -> Entity {
         world.entity_mut(root).insert(super::comps::WorldHealthBar {
             root,
             width: 42.0 * s,
-            y_offset: 56.0 * s,
+            y_offset: -56.0 * s,
         });
     }
 
@@ -326,7 +392,6 @@ pub fn apply_ragdoll_on_death(
     mut impulses: Query<&mut ImpulseRequest>,
     joints: Query<(Entity, &RapierRevolute)>,
     limbs: Query<(Entity, &WarriorLimb)>,
-    step: Res<SimStep>,
 ) {
     for (entity, warrior) in &mut warriors {
         if !warrior.is_dead {
@@ -345,11 +410,12 @@ pub fn apply_ragdoll_on_death(
         if let Ok(mut impulse) = impulses.get_mut(warrior.torso) {
             let mut rng = rand::rng();
             use rand::RngExt;
-            impulse.linear +=
-                Vec2::new(rng.random_range(-90.0..90.0), rng.random_range(40.0..140.0));
+            impulse.linear += Vec2::new(
+                rng.random_range(-90.0..90.0),
+                rng.random_range(-140.0..-40.0),
+            );
             impulse.torque += rng.random_range(-12.0..12.0);
         }
-        let _ = step;
     }
 }
 
@@ -386,7 +452,7 @@ pub fn active_puppet_motor(
         };
         if !recovering {
             let y_error = motor.stand_y - snapshot.pos.y;
-            let downward = snapshot.linvel.y.min(0.0);
+            let downward = snapshot.linvel.y.max(0.0);
             let y_impulse = y_error * motor.hover_strength - downward * motor.hover_damping;
             impulse.linear += Vec2::Y * y_impulse * dt;
         }
@@ -448,7 +514,7 @@ fn wrap_angle(mut angle: f32) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::sim::state::{DyingFade, GameOverFlushed};
+    use crate::sim::state::DyingFade;
     use bevy_ecs::system::RunSystemOnce;
 
     #[test]
@@ -478,7 +544,7 @@ mod tests {
     #[test]
     fn ragdoll_marks_dead_and_clears_motor() {
         let mut world = World::new();
-        world.insert_resource(SimStep { dt: 1.0 / 60.0 });
+        world.insert_resource(SimStep::default());
         let root = spawn_warrior(
             &mut world,
             SpawnWarrior {
@@ -499,11 +565,11 @@ mod tests {
     #[test]
     fn motor_pushes_up_when_below_stand() {
         let mut world = World::new();
-        world.insert_resource(SimStep { dt: 1.0 / 60.0 });
+        world.insert_resource(SimStep::default());
         let root = spawn_warrior(
             &mut world,
             SpawnWarrior {
-                translation: Vec2::new(0.0, -102.0),
+                translation: Vec2::new(0.0, crate::sim::arena::STAND_Y),
                 team: Team::Player,
                 mods: CombatMods::default(),
                 base_hp: 100,
@@ -515,17 +581,17 @@ mod tests {
         world.get_mut::<BodySnapshot2d>(torso).unwrap().pos = Vec2::new(0.0, -150.0);
         let _ = world.run_system_once(active_puppet_motor);
         let impulse = world.get::<ImpulseRequest>(torso).unwrap();
-        assert!(impulse.linear.y > 0.0);
+        assert!(impulse.linear.y < 0.0);
     }
 
     #[test]
     fn hitstun_suspends_motor() {
         let mut world = World::new();
-        world.insert_resource(SimStep { dt: 1.0 / 60.0 });
+        world.insert_resource(SimStep::default());
         let root = spawn_warrior(
             &mut world,
             SpawnWarrior {
-                translation: Vec2::new(0.0, -102.0),
+                translation: Vec2::new(0.0, crate::sim::arena::STAND_Y),
                 team: Team::Player,
                 mods: CombatMods::default(),
                 base_hp: 100,

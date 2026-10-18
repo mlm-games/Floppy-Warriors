@@ -178,7 +178,7 @@ pub fn update_arrows(world: &mut World) {
         }
         let prev = arrow.pos;
         let mut vel = arrow.velocity;
-        vel.y -= ARROW_GRAVITY * dt;
+        vel.y += ARROW_GRAVITY * dt;
         let next = prev + vel * dt;
         let arrow_angle = vel.y.atan2(vel.x);
         let hit = find_limb_hit(world, arrow_e, prev, next);
@@ -437,8 +437,18 @@ fn resolve_limb_hit(
     }
 }
 
+pub fn clear_arrows(world: &mut World) {
+    let arrows: Vec<Entity> = world
+        .query_filtered::<Entity, With<Arrow>>()
+        .iter(world)
+        .collect();
+    for entity in arrows {
+        world.despawn(entity);
+    }
+}
+
 fn find_ground_hit(world: &mut World, prev: Vec2, next: Vec2) -> Option<Vec2> {
-    let ground = *world.resource::<super::rounds::GroundLine>();
+    let ground = *world.get_resource::<super::rounds::GroundLine>()?;
     segment_top_rect_hit(
         prev,
         next,
@@ -467,8 +477,8 @@ fn segment_top_rect_hit(a: Vec2, b: Vec2, center: Vec2, size: Vec2) -> Option<(f
     let half = size * 0.5;
     let left = center.x - half.x;
     let right = center.x + half.x;
-    let top = center.y + half.y;
-    if a.y >= top && b.y <= top {
+    let top = center.y - half.y;
+    if a.y <= top && b.y >= top {
         let denom = a.y - b.y;
         if denom.abs() > 0.0001 {
             let t = ((a.y - top) / denom).clamp(0.0, 1.0);
@@ -494,7 +504,7 @@ mod tests {
 
     fn test_world() -> World {
         let mut world = World::new();
-        world.insert_resource(SimStep { dt: 1.0 / 60.0 });
+        world.insert_resource(SimStep::default());
         world.insert_resource(crate::sim::rounds::RunState {
             phase: crate::sim::rounds::RunPhase::Combat,
             ..Default::default()
@@ -579,7 +589,7 @@ mod tests {
         );
         update_arrows(&mut world);
         let arrow = world.query::<&Arrow>().iter(&world).next().unwrap();
-        assert!(arrow.velocity.y < 0.0);
+        assert!(arrow.velocity.y > 0.0);
         assert!(arrow.pos.x > 0.0);
     }
 
@@ -631,8 +641,8 @@ mod tests {
         let (shooter, _) = spawn_root(&mut world, Team::Player, Vec2::new(-350.0, 0.0));
         spawn_arrow(
             &mut world,
-            Vec2::new(0.0, -150.0),
-            Vec2::new(0.0, -600.0),
+            Vec2::new(0.0, -300.0),
+            Vec2::new(0.0, 600.0),
             shooter,
             Team::Player,
             20.0,
@@ -642,7 +652,9 @@ mod tests {
             0.0,
             2.0,
         );
-        update_arrows(&mut world);
+        for _ in 0..60 {
+            update_arrows(&mut world);
+        }
         let arrow = world.query::<&Arrow>().iter(&world).next().unwrap();
         assert!(arrow.has_hit);
         assert_eq!(arrow.stuck_to, None);

@@ -5,6 +5,24 @@ use serde::{Deserialize, Serialize};
 
 pub const SAVE_VERSION: u32 = 2;
 
+#[derive(Deserialize)]
+struct GodotMetaSave {
+    #[serde(default)]
+    bones: u32,
+    #[serde(default)]
+    meta: HashMap<String, u32>,
+    #[serde(default)]
+    best_round: u32,
+    #[serde(default)]
+    total_runs: u32,
+    #[serde(default)]
+    total_kills: u32,
+    #[serde(default)]
+    total_victories: u32,
+    #[serde(default, rename = "ts")]
+    last_played_unix: u64,
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct SettingsData {
     pub master_volume: f32,
@@ -74,6 +92,22 @@ impl game_utils::save::Versioned for SaveData {
 }
 
 impl SaveData {
+    pub fn from_godot_json(text: &str) -> Result<Self, serde_json::Error> {
+        let legacy: GodotMetaSave = serde_json::from_str(text)?;
+        let mut save = Self {
+            bones: legacy.bones,
+            meta_levels: legacy.meta,
+            best_round: legacy.best_round,
+            total_runs: legacy.total_runs,
+            total_kills: legacy.total_kills,
+            total_victories: legacy.total_victories,
+            last_played_unix: legacy.last_played_unix,
+            ..Default::default()
+        };
+        save.migrate();
+        Ok(save)
+    }
+
     pub fn meta_level(&self, id: &str) -> u32 {
         *self.meta_levels.get(id).unwrap_or(&0)
     }
@@ -109,6 +143,22 @@ mod tests {
         assert_eq!(save.settings.master_volume, 1.0);
         assert_eq!(save.settings.sfx_volume, 0.0);
         assert_eq!(save.settings.music_volume, 0.5);
+        assert_eq!(save.version, SAVE_VERSION);
+    }
+
+    #[test]
+    fn imports_godot_meta_json() {
+        let save = SaveData::from_godot_json(
+            r#"{"v":1,"bones":42,"meta":{"power":3},"best_round":7,"total_runs":5,"total_kills":19,"total_victories":1,"ts":1234}"#,
+        )
+        .expect("valid Godot save");
+        assert_eq!(save.bones, 42);
+        assert_eq!(save.meta_level("power"), 3);
+        assert_eq!(save.best_round, 7);
+        assert_eq!(save.total_runs, 5);
+        assert_eq!(save.total_kills, 19);
+        assert_eq!(save.total_victories, 1);
+        assert_eq!(save.last_played_unix, 1234);
         assert_eq!(save.version, SAVE_VERSION);
     }
 

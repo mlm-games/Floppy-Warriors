@@ -41,39 +41,43 @@ pub fn player_system(world: &mut World) {
         .get::<repame_rapier2d::BodySnapshot2d>(warrior.1)
         .map(|s| s.angle)
         .unwrap_or(0.0);
+    let last_local_angle = world.get::<BowAim>(player_e).map(|aim| aim.angle);
     let target = if input.stick.length_squared() > 0.04 {
         origin + input.stick.normalize() * 120.0
+    } else if let Some(aim_world) = input.aim_world {
+        aim_world
+    } else if let Some(local_angle) = last_local_angle {
+        origin + Vec2::from_angle(torso_angle + local_angle) * 100.0
     } else {
-        input.aim_world.unwrap_or(origin + Vec2::X * 100.0)
+        origin + Vec2::X * 100.0
     };
     let angle = (target - origin).y.atan2((target - origin).x);
     let local_angle = angle - torso_angle;
     if let Some(mut aim) = world.get_mut::<BowAim>(player_e) {
         aim.angle = local_angle;
     }
-    if input.draw_pressed {
-        if let Some(mut bow) = world.get_mut::<BowState>(player_e) {
-            if !bow.drawing {
-                bow.drawing = true;
-                bow.draw_power = 0.0;
-                super::audio::push_cue(
-                    world,
-                    super::audio::AudioCue {
-                        name: "bow_draw",
-                        volume: 0.3,
-                        variance: 0.05,
-                    },
-                );
-            }
-        }
+    if input.draw_pressed
+        && let Some(mut bow) = world.get_mut::<BowState>(player_e)
+        && !bow.drawing
+    {
+        bow.drawing = true;
+        bow.draw_power = 0.0;
+        super::audio::push_cue(
+            world,
+            super::audio::AudioCue {
+                name: "bow_draw",
+                volume: 0.3,
+                variance: 0.05,
+            },
+        );
     }
     {
         let draw_speed = warrior.2;
-        if let Some(mut bow) = world.get_mut::<BowState>(player_e) {
-            if bow.drawing {
-                let speed = 160.0 * draw_speed.max(0.1);
-                bow.draw_power = (bow.draw_power + speed * dt).min(100.0);
-            }
+        if let Some(mut bow) = world.get_mut::<BowState>(player_e)
+            && bow.drawing
+        {
+            let speed = 160.0 * draw_speed.max(0.1);
+            bow.draw_power = (bow.draw_power + speed * dt).min(100.0);
         }
     }
     if input.draw_released {
@@ -94,23 +98,21 @@ pub fn player_system(world: &mut World) {
                 bow.draw_power = 0.0;
             }
         }
-    } else if input.lmb_held {
-        if let Some(bow) = world.get::<BowState>(player_e) {
-            if !bow.drawing {
-                if let Some(mut bow) = world.get_mut::<BowState>(player_e) {
-                    bow.drawing = true;
-                    bow.draw_power = 0.0;
-                }
-                super::audio::push_cue(
-                    world,
-                    super::audio::AudioCue {
-                        name: "bow_draw",
-                        volume: 0.3,
-                        variance: 0.05,
-                    },
-                );
-            }
-        }
+    } else if input.lmb_held
+        && let Some(bow) = world.get::<BowState>(player_e)
+        && !bow.drawing
+        && let Some(mut bow) = world.get_mut::<BowState>(player_e)
+    {
+        bow.drawing = true;
+        bow.draw_power = 0.0;
+        super::audio::push_cue(
+            world,
+            super::audio::AudioCue {
+                name: "bow_draw",
+                volume: 0.3,
+                variance: 0.05,
+            },
+        );
     }
     let airdodge = world
         .get::<Airdodge>(player_e)
@@ -131,7 +133,7 @@ pub fn player_system(world: &mut World) {
                 .entity_mut(player_e)
                 .insert(Recovery { remaining: 0.35 });
             if let Some(mut impulse_req) = world.get_mut::<ImpulseRequest>(warrior.1) {
-                impulse_req.linear += Vec2::Y * impulse;
+                impulse_req.linear += -Vec2::Y * impulse;
             }
         }
     }
@@ -145,7 +147,7 @@ mod input_tests {
 
     fn combat_world() -> World {
         let mut world = World::new();
-        world.insert_resource(SimStep { dt: 1.0 / 60.0 });
+        world.insert_resource(SimStep::default());
         world.insert_resource(RunState {
             phase: RunPhase::Combat,
             ..Default::default()
